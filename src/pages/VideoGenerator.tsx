@@ -15,8 +15,6 @@ const VideoGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [predictionId, setPredictionId] = useState<string | null>(null);
-  const [isGeneratingNarration, setIsGeneratingNarration] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   
   // AI-optimized pitch script using PAS framework + emotional storytelling
   const pitchScript = `Picture this: You just spent 3 hours preparing the perfect quote. Your work is solid. Your price is fair. Then you hear those dreaded words... "We're going with someone cheaper."
@@ -90,60 +88,6 @@ ValueBuilder Pro. Stop losing on price. Start winning on value.`;
         variant: "destructive",
       });
     }
-  };
-
-  const handleGenerateNarration = async () => {
-    setIsGeneratingNarration(true);
-    setAudioUrl(null);
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-narration`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ script: pitchScript }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to generate narration");
-      }
-
-      // Convert base64 to blob and create URL
-      const audioBlob = base64ToBlob(data.audioContent, 'audio/mpeg');
-      const url = URL.createObjectURL(audioBlob);
-      setAudioUrl(url);
-
-      toast({
-        title: "Narration generated!",
-        description: "Your pitch voiceover is ready.",
-      });
-    } catch (error) {
-      console.error("Error generating narration:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate narration. Make sure your ElevenLabs API key is configured.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingNarration(false);
-    }
-  };
-
-  const base64ToBlob = (base64: string, mimeType: string) => {
-    const byteCharacters = atob(base64);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    return new Blob([byteArray], { type: mimeType });
   };
 
   const handleGenerate = async () => {
@@ -269,85 +213,30 @@ ValueBuilder Pro. Stop losing on price. Start winning on value.`;
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button
-                onClick={handleGenerate}
-                disabled={isGenerating || !prompt}
-                size="lg"
-                className="w-full"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Video...
-                  </>
-                ) : (
-                  "Generate Video"
-                )}
-              </Button>
-
-              <Button
-                onClick={handleGenerateNarration}
-                disabled={isGeneratingNarration}
-                size="lg"
-                variant="secondary"
-                className="w-full"
-              >
-                {isGeneratingNarration ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Narration...
-                  </>
-                ) : (
-                  "Generate AI Narration"
-                )}
-              </Button>
-            </div>
+            <Button
+              onClick={handleGenerate}
+              disabled={isGenerating || !prompt}
+              size="lg"
+              className="w-full"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Video...
+                </>
+              ) : (
+                "Generate Video"
+              )}
+            </Button>
 
             <div className="mt-8 p-6 bg-card rounded-lg border border-primary/20 shadow-lg">
-              <h2 className="text-2xl font-bold mb-2">🎧 Browser Narration (Free)</h2>
-              <p className="text-sm text-muted-foreground mb-4">Use your device's built-in voices. No keys required.</p>
+              <h2 className="text-2xl font-bold mb-4">🎙️ AI Voice Narration</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Generate professional voiceover using OpenAI's text-to-speech. Requires OpenAI API key.
+              </p>
               <BrowserNarration script={pitchScript} />
             </div>
 
-            {audioUrl && (
-              <div className="mt-8 p-6 bg-card rounded-lg border border-primary/20 shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold">🎤 Your Pitch Narration</h2>
-                  <span className="text-sm text-primary font-semibold">Ready to convert!</span>
-                </div>
-                <div className="mb-4 p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg border border-muted">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <span className="text-primary">📝</span> 
-                    Optimized Script (PAS Framework)
-                  </h3>
-                  <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">
-                    {pitchScript}
-                  </p>
-                </div>
-                <audio
-                  src={audioUrl}
-                  controls
-                  className="w-full"
-                >
-                  Your browser does not support the audio tag.
-                </audio>
-                <div className="mt-4">
-                  <Button
-                    onClick={() => {
-                      const a = document.createElement('a');
-                      a.href = audioUrl;
-                      a.download = 'valuebuilder-pitch-narration.mp3';
-                      a.click();
-                    }}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    Download Narration
-                  </Button>
-                </div>
-              </div>
-            )}
 
             {videoUrl && (
               <div className="mt-8">
