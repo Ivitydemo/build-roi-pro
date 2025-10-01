@@ -49,7 +49,9 @@ const VideoGenerator = () => {
 
 You know you're worth more. But how do you prove it when homeowners only see dollar signs?
 
-Here's the truth: you're constantly toggling. Do I have enough work? Do I have enough capacity? Grow your team for demand, then demand slips — now you risk losing the great talent and subs you worked so hard to secure. It's whack-a-mole on a tightrope.
+Here's the truth: finding the right talent is usually the number one issue for builders. But how can you secure top talent with too little or inconsistent demand?
+
+You're constantly toggling. Do I have enough work? Do I have enough capacity? Grow your team for demand, then demand slips — now you risk losing the great talent and subs you worked so hard to secure. It's whack-a-mole on a tightrope.
 
 What if you could remove project demand as an obstacle entirely? Stop the back-and-forth. Focus where true value lives: delivery.
 
