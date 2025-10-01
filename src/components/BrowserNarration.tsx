@@ -10,18 +10,18 @@ interface BrowserNarrationProps {
   script: string;
 }
 
-// Top ElevenLabs voices with ultra-realistic quality
-const ELEVENLABS_VOICES = [
-  { id: '9BWtsMINqrJLrRacOk9x', name: 'Aria - Professional Female', description: 'Warm, confident, perfect for business presentations' },
-  { id: 'CwhRBWXzGAHq8TQ4Fs17', name: 'Roger - Authoritative Male', description: 'Deep, trustworthy voice for serious topics' },
-  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah - Friendly Female', description: 'Conversational and engaging' },
-  { id: 'IKne3meq5aSn9XLyUdCD', name: 'Charlie - Energetic Male', description: 'Dynamic and enthusiastic' },
-  { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam - Calm Male', description: 'Smooth and reassuring' },
-  { id: 'XB0fDUnXU5powFXDhCwa', name: 'Charlotte - Clear Female', description: 'Articulate and professional' },
+// Top OpenAI voices with excellent quality
+const OPENAI_VOICES = [
+  { id: 'alloy', name: 'Alloy - Neutral & Clear', description: 'Balanced, neutral voice for professional use' },
+  { id: 'echo', name: 'Echo - Professional Male', description: 'Warm, professional male voice' },
+  { id: 'fable', name: 'Fable - Warm & Expressive', description: 'Engaging and expressive' },
+  { id: 'onyx', name: 'Onyx - Deep & Authoritative', description: 'Deep, commanding voice' },
+  { id: 'nova', name: 'Nova - Friendly Female', description: 'Bright, friendly female voice' },
+  { id: 'shimmer', name: 'Shimmer - Energetic Female', description: 'Energetic and vibrant' },
 ];
 
 export default function BrowserNarration({ script }: BrowserNarrationProps) {
-  const [voiceId, setVoiceId] = useState<string>('9BWtsMINqrJLrRacOk9x'); // Default to Aria
+  const [voiceId, setVoiceId] = useState<string>('alloy'); // Default to Alloy
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -42,7 +42,7 @@ export default function BrowserNarration({ script }: BrowserNarrationProps) {
     setIsGenerating(true);
     
     try {
-      console.log('Generating narration with ElevenLabs...');
+      console.log('Generating narration with OpenAI...');
       
       const { data, error } = await supabase.functions.invoke('generate-narration', {
         body: { script, voice: voiceId }
@@ -118,10 +118,10 @@ export default function BrowserNarration({ script }: BrowserNarrationProps) {
     <div className="space-y-6">
       <div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
         <p className="text-sm text-muted-foreground mb-2">
-          🎙️ <strong>Ultra-Realistic AI Voices</strong> - Powered by ElevenLabs
+          🎙️ <strong>Professional AI Voices</strong> - Powered by OpenAI
         </p>
         <p className="text-xs text-muted-foreground">
-          These voices are indistinguishable from real humans, perfect for professional presentations
+          High-quality, natural-sounding voices perfect for professional presentations
         </p>
       </div>
 
@@ -132,7 +132,7 @@ export default function BrowserNarration({ script }: BrowserNarrationProps) {
             <SelectValue placeholder="Select a voice" />
           </SelectTrigger>
           <SelectContent className="max-h-72">
-            {ELEVENLABS_VOICES.map((voice) => (
+            {OPENAI_VOICES.map((voice) => (
               <SelectItem key={voice.id} value={voice.id}>
                 <div className="flex flex-col">
                   <span className="font-medium">{voice.name}</span>
