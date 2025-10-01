@@ -315,11 +315,15 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
                   <video
                     src={videoUrl}
                     controls
+                    loop={!!audioUrl}
                     className="w-full rounded-lg shadow-lg"
                     onPlay={() => {
                       if (audioUrl) {
                         const audio = document.getElementById('pitch-audio') as HTMLAudioElement;
-                        if (audio) audio.play();
+                        if (audio) {
+                          audio.currentTime = 0;
+                          audio.play();
+                        }
                       }
                     }}
                     onPause={() => {
@@ -328,11 +332,26 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
                         if (audio) audio.pause();
                       }
                     }}
+                    onSeeking={(e) => {
+                      if (audioUrl) {
+                        const video = e.currentTarget;
+                        const audio = document.getElementById('pitch-audio') as HTMLAudioElement;
+                        if (audio) audio.currentTime = video.currentTime;
+                      }
+                    }}
                   >
                     Your browser does not support the video tag.
                   </video>
                   {audioUrl && (
-                    <audio id="pitch-audio" src={audioUrl} className="hidden" />
+                    <audio 
+                      id="pitch-audio" 
+                      src={audioUrl} 
+                      className="hidden"
+                      onEnded={() => {
+                        const video = document.querySelector('video');
+                        if (video) video.pause();
+                      }}
+                    />
                   )}
                 </div>
                 <div className="mt-4 flex gap-4">
