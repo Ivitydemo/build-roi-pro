@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Setup from "./pages/Setup";
 import DemoReport from "./pages/DemoReport";
+import DemoReportItemized from "./pages/DemoReportItemized";
 import BuilderImpact from "./pages/BuilderImpact";
 import CRMIntegrations from "./pages/CRMIntegrations";
 import Pricing from "./pages/Pricing";
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/setup" element={<Setup />} />
           <Route path="/demo" element={<DemoReport />} />
+          <Route path="/demo-itemized" element={<DemoReportItemized />} />
           <Route path="/builder-impact" element={<BuilderImpact />} />
           <Route path="/crm-integrations" element={<CRMIntegrations />} />
           <Route path="/pricing" element={<Pricing />} />
