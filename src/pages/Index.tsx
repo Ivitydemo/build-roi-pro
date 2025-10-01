@@ -27,6 +27,9 @@ const Index = () => {
               <Button variant="ghost" onClick={() => navigate('/pricing')}>
                 Pricing
               </Button>
+              <Button variant="ghost" onClick={() => navigate('/partner-portal')}>
+                Partner Portal
+              </Button>
               <Button onClick={() => navigate('/auth')}>
                 Get Started
               </Button>
