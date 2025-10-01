@@ -274,14 +274,17 @@ const DemoReportItemized = () => {
         {/* Call to Action */}
         <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
           <CardContent className="pt-6 text-center">
-            <h2 className="text-2xl font-bold mb-4">Ready to Discuss Your Options?</h2>
+            <h2 className="text-2xl font-bold mb-4">Ready to Get Started?</h2>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Schedule a consultation to review these detailed breakdowns and determine the best investment strategy for your property.
+              Before we connect, discover our exclusive network of vetted partners who can help maximize your investment returns.
             </p>
-            <div className="flex gap-4 justify-center">
-              <Button size="lg">Schedule Consultation</Button>
-              <Button size="lg" variant="outline">Request More Information</Button>
-            </div>
+            <Button 
+              size="lg" 
+              onClick={() => navigate('/demo/partners')}
+              className="text-lg px-8 py-6 h-auto"
+            >
+              See Our Preferred Partners →
+            </Button>
           </CardContent>
         </Card>
 

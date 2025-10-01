@@ -501,11 +501,15 @@ const DemoReport = () => {
               </div>
             </div>
             <div className="text-center">
-              <Button size="lg" className="text-lg px-8">
-                Schedule Your Consultation
+              <Button 
+                size="lg" 
+                className="text-lg px-8"
+                onClick={() => navigate('/demo/partners')}
+              >
+                See Our Preferred Partners →
               </Button>
               <p className="text-sm text-muted-foreground mt-4">
-                Premier Builders Co. • (615) 555-1234 • contact@premierbuilders.com
+                Discover exclusive benefits before scheduling your consultation
               </p>
             </div>
           </CardContent>

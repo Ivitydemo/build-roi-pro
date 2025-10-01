@@ -10,6 +10,7 @@ import Setup from "./pages/Setup";
 import DemoSelection from "./pages/DemoSelection";
 import DemoReport from "./pages/DemoReport";
 import DemoReportItemized from "./pages/DemoReportItemized";
+import PreferredPartners from "./pages/PreferredPartners";
 import BuilderImpact from "./pages/BuilderImpact";
 import CRMIntegrations from "./pages/CRMIntegrations";
 import Pricing from "./pages/Pricing";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/demo" element={<DemoSelection />} />
           <Route path="/demo/package" element={<DemoReport />} />
           <Route path="/demo/itemized" element={<DemoReportItemized />} />
+          <Route path="/demo/partners" element={<PreferredPartners />} />
           {/* Redirect old URL */}
           <Route path="/demo-itemized" element={<DemoReportItemized />} />
           <Route path="/builder-impact" element={<BuilderImpact />} />
