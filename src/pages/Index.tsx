@@ -1,225 +1,293 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Building2, FileText, TrendingUp, Clock, CheckCircle } from 'lucide-react';
+import { Building2, TrendingUp, Clock, CheckCircle, Sparkles, DollarSign, Users, Target, ArrowRight, BarChart3, Shield } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      {/* Navigation */}
+      <nav className="border-b bg-card/50 backdrop-blur-lg sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-8 w-8 text-primary" />
+              <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                ValueBuilder Pro
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" onClick={() => navigate('/demo')}>
+                Demo
+              </Button>
+              <Button onClick={() => navigate('/auth')}>
+                Get Started
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="text-center max-w-5xl mx-auto">
-          <div className="flex items-center justify-center mb-6">
-            <Building2 className="h-16 w-16 text-primary" />
+      <section className="container mx-auto px-4 pt-20 pb-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12 animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <Sparkles className="h-4 w-4" />
+              Transform How You Win Projects
+            </div>
+            <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
+              Stop Competing on Price.
+              <br />
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow-pulse">
+                Lead with Value.
+              </span>
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+              The first platform that shows homeowners the complete financial picture—from before/after value to cash flow impact—so you close at premium pricing without competing.
+            </p>
+            <div className="flex gap-4 justify-center flex-wrap mb-12">
+              <Button size="lg" className="h-14 px-8 text-lg shadow-xl hover:shadow-2xl transition-all" onClick={() => navigate('/demo')}>
+                See Interactive Demo
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button size="lg" variant="outline" className="h-14 px-8 text-lg" onClick={() => navigate('/builder-impact')}>
+                Calculate Your ROI
+              </Button>
+            </div>
           </div>
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Complete Before/After Value Analysis Platform
-          </h1>
-          <p className="text-2xl font-semibold mb-4">
-            Not just market comps. Full financial transformation modeling.
-          </p>
-          <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Show homeowners EXACTLY what happens to their property value, monthly cash flow, and equity position with multiple remodel package scenarios - all customized with your branding and real market data.
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <Button size="lg" onClick={() => navigate('/demo')}>
-              See Interactive Demo
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/auth')}>
-              Sign In
-            </Button>
+
+          {/* Stats Bar */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 animate-fade-in">
+            {[
+              { value: '3-5x', label: 'Higher Close Rate', icon: TrendingUp },
+              { value: '$0', label: 'Competition', icon: Target },
+              { value: '60-75%', label: 'Win Rate', icon: BarChart3 },
+              { value: '2 min', label: 'To Generate', icon: Clock }
+            ].map((stat, idx) => (
+              <div key={idx} className="bg-card border rounded-xl p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
+                <stat.icon className="h-8 w-8 text-primary mx-auto mb-3" />
+                <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.label}</div>
+              </div>
+            ))}
           </div>
-          
-          {/* Key Differentiators */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto">
-            <div className="bg-card border rounded-lg p-4">
-              <div className="text-2xl font-bold text-primary mb-1">3-5</div>
-              <div className="text-xs text-muted-foreground">Package Scenarios</div>
+        </div>
+      </section>
+
+      {/* Paradigm Shift */}
+      <section className="container mx-auto px-4 py-24 bg-gradient-to-br from-card/50 to-muted/20 rounded-3xl my-12 border">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">The Fundamental Shift</h2>
+            <p className="text-xl text-muted-foreground">
+              From reactive bidding to proactive value creation
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Old Way */}
+            <div className="bg-gradient-to-br from-destructive/5 to-destructive/10 border-2 border-destructive/30 rounded-2xl p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-destructive/10 rounded-full blur-3xl" />
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="h-12 w-12 rounded-xl bg-destructive/20 flex items-center justify-center">
+                    <span className="text-2xl">❌</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-destructive">The Old Way</h3>
+                </div>
+                <ul className="space-y-4">
+                  {[
+                    'Wait for RFPs and compete with 5+ contractors',
+                    'Race to the bottom on price',
+                    'Deal with uneducated buyers',
+                    'Beg for work you may never get',
+                    'Close 15-25% if you\'re lucky'
+                  ].map((item, idx) => (
+                    <li key={idx} className="flex gap-3 items-start">
+                      <div className="mt-1 h-2 w-2 rounded-full bg-destructive flex-shrink-0" />
+                      <span className="text-foreground/90">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <div className="bg-card border rounded-lg p-4">
-              <div className="text-2xl font-bold text-primary mb-1">$$$</div>
-              <div className="text-xs text-muted-foreground">Cash Flow Analysis</div>
+
+            {/* New Way */}
+            <div className="bg-gradient-to-br from-primary/5 to-accent/10 border-2 border-primary/30 rounded-2xl p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl" />
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                    <span className="text-2xl">✅</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-primary">The New Way</h3>
+                </div>
+                <ul className="space-y-4">
+                  {[
+                    'YOU bring the opportunity with data',
+                    'Educate homeowners on investment value',
+                    'Position as trusted financial advisor',
+                    'Create budgets based on YOUR capacity',
+                    'Close 60-75% when you own the narrative'
+                  ].map((item, idx) => (
+                    <li key={idx} className="flex gap-3 items-start">
+                      <CheckCircle className="mt-1 h-5 w-5 text-primary flex-shrink-0" />
+                      <span className="text-foreground/90 font-medium">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <div className="bg-card border rounded-lg p-4">
-              <div className="text-2xl font-bold text-primary mb-1">ROI</div>
-              <div className="text-xs text-muted-foreground">Before/After Value</div>
-            </div>
-            <div className="bg-card border rounded-lg p-4">
-              <div className="text-2xl font-bold text-primary mb-1">Auto</div>
-              <div className="text-xs text-muted-foreground">Market Comps</div>
+          </div>
+
+          {/* Impact Stats */}
+          <div className="mt-12 bg-card rounded-2xl p-8 border shadow-lg">
+            <h4 className="font-bold text-2xl mb-8 text-center">Real Business Impact</h4>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-3">
+                  3-5x
+                </div>
+                <p className="text-muted-foreground">Higher close rate when YOU educate the client</p>
+              </div>
+              <div className="text-center">
+                <div className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-3">
+                  Zero
+                </div>
+                <p className="text-muted-foreground">Competitors when you create the opportunity</p>
+              </div>
+              <div className="text-center">
+                <div className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-3">
+                  100%
+                </div>
+                <p className="text-muted-foreground">Control of your revenue pipeline</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Paradigm Shift Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-br from-destructive/10 via-warning/10 to-primary/10 rounded-2xl p-8 border-2 border-primary/20">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold mb-4">Stop Bidding. Start Leading.</h2>
-              <p className="text-xl text-muted-foreground">
-                The fundamental difference between struggling contractors and thriving builders
+      {/* How It Works */}
+      <section className="container mx-auto px-4 py-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Incredibly Simple to Use</h2>
+            <p className="text-xl text-muted-foreground">
+              From address to branded proposal in 2 minutes
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Clock,
+                title: '2-Minute Generation',
+                description: 'Enter an address, select packages. Get a professional ROI analysis with market comps instantly.'
+              },
+              {
+                icon: DollarSign,
+                title: 'Complete Financial Picture',
+                description: 'Show before/after value, monthly cash flow impact, equity gain, and multiple financing scenarios.'
+              },
+              {
+                icon: Shield,
+                title: 'Close at Premium Pricing',
+                description: 'No negotiation needed when clients understand the investment return. You become the obvious choice.'
+              }
+            ].map((feature, idx) => (
+              <div key={idx} className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative bg-card border rounded-2xl p-8 hover:shadow-xl transition-all hover:-translate-y-2">
+                  <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-6">
+                    <feature.icon className="h-7 w-7 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="container mx-auto px-4 py-24 bg-gradient-to-br from-muted/30 to-card/50 rounded-3xl my-12 border">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Everything You Need</h2>
+            <p className="text-xl text-muted-foreground">
+              Professional tools to dominate your market
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {[
+              { icon: TrendingUp, text: 'Automatic market comparable sales' },
+              { icon: DollarSign, text: 'HELOC and refinance calculators' },
+              { icon: Users, text: 'Before/after photo library' },
+              { icon: Target, text: 'Custom remodel packages' },
+              { icon: CheckCircle, text: 'Branded PDF reports' },
+              { icon: BarChart3, text: 'Excel spreadsheet exports' },
+              { icon: Sparkles, text: 'Email delivery system' },
+              { icon: Shield, text: 'Shareable proposal links' }
+            ].map((feature, idx) => (
+              <div key={idx} className="flex items-center gap-4 bg-card border rounded-xl p-6 hover:shadow-lg transition-all hover:-translate-y-1">
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <feature.icon className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-lg font-medium">{feature.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="container mx-auto px-4 py-24">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="bg-gradient-to-br from-primary via-accent to-primary p-[2px] rounded-3xl">
+            <div className="bg-background rounded-3xl p-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                Ready to Transform Your Business?
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Calculate exactly how many additional projects and revenue this platform will generate for YOUR business
               </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8 mb-8">
-              {/* Old Way */}
-              <div className="bg-destructive/5 border-2 border-destructive/20 rounded-lg p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="h-8 w-8 rounded-full bg-destructive/20 flex items-center justify-center text-destructive font-bold">
-                    ✗
-                  </div>
-                  <h3 className="text-xl font-bold text-destructive">The Old Way: Reactive Bidding</h3>
-                </div>
-                <ul className="space-y-3 text-sm">
-                  <li className="flex gap-2">
-                    <span className="text-destructive">→</span>
-                    <span>Wait for homeowners to decide on their own</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-destructive">→</span>
-                    <span>Compete with 3-5 other contractors on price</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-destructive">→</span>
-                    <span>Deal with uneducated buyers who "cheap out"</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-destructive">→</span>
-                    <span>Beg for work you may never get</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-destructive">→</span>
-                    <span>Close rate: 15-25% (if you're lucky)</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* New Way */}
-              <div className="bg-primary/5 border-2 border-primary/30 rounded-lg p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                    ✓
-                  </div>
-                  <h3 className="text-xl font-bold text-primary">The New Way: Proactive Advisory</h3>
-                </div>
-                <ul className="space-y-3 text-sm">
-                  <li className="flex gap-2">
-                    <span className="text-primary">→</span>
-                    <span>YOU bring the idea with sound business case</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-primary">→</span>
-                    <span>Educate homeowners on investment opportunity</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-primary">→</span>
-                    <span>Position as trusted advisor, not vendor</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-primary">→</span>
-                    <span>CREATE client budgets based on YOUR capacity</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-primary">→</span>
-                    <span>Close rate: 60-75% when you own the narrative</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="bg-card rounded-lg p-6 border">
-              <h4 className="font-bold text-lg mb-4 text-center">The Numbers Don't Lie</h4>
-              <div className="grid md:grid-cols-3 gap-6 text-center">
-                <div>
-                  <div className="text-4xl font-bold text-primary mb-2">3-5x</div>
-                  <p className="text-sm text-muted-foreground">Higher close rate when YOU educate the client</p>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold text-primary mb-2">$0</div>
-                  <p className="text-sm text-muted-foreground">Competitors when you create the opportunity</p>
-                </div>
-                <div>
-                  <div className="text-4xl font-bold text-primary mb-2">100%</div>
-                  <p className="text-sm text-muted-foreground">Control of your revenue pipeline</p>
-                </div>
+              <div className="flex gap-4 justify-center flex-wrap">
+                <Button size="lg" className="h-14 px-8 text-lg shadow-xl" onClick={() => navigate('/builder-impact')}>
+                  <BarChart3 className="mr-2 h-5 w-5" />
+                  Builder Impact Calculator
+                </Button>
+                <Button size="lg" variant="outline" className="h-14 px-8 text-lg" onClick={() => navigate('/demo')}>
+                  See Sample Delivery
+                </Button>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          <div className="text-center p-6 bg-card rounded-lg border">
-            <Clock className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">2 Minutes to Generate</h3>
-            <p className="text-muted-foreground">
-              Input address, get professional ROI proposal instantly
-            </p>
-          </div>
-
-          <div className="text-center p-6 bg-card rounded-lg border">
-            <TrendingUp className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Show the Investment</h3>
-            <p className="text-muted-foreground">
-              Equity gain + financing = educated buyers who see value
-            </p>
-          </div>
-
-          <div className="text-center p-6 bg-card rounded-lg border">
-            <FileText className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Close at Premium Pricing</h3>
-            <p className="text-muted-foreground">
-              No negotiation needed when they understand ROI
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="container mx-auto px-4 py-16 bg-card/50 rounded-2xl max-w-5xl">
-        <h2 className="text-3xl font-bold text-center mb-12">What's Included</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            'Automatic market comparable sales',
-            'HELOC and refinance calculators',
-            'Before/after photo library',
-            'Custom remodel packages',
-            'Branded PDF reports',
-            'Excel spreadsheet exports',
-            'Email delivery',
-            'Shareable proposal links'
-          ].map((feature, index) => (
-            <div key={index} className="flex items-start gap-3">
-              <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
-              <span className="text-lg">{feature}</span>
+      {/* Footer */}
+      <footer className="border-t bg-card/50 backdrop-blur-lg mt-12">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Building2 className="h-5 w-5" />
+              <span className="text-sm">© 2025 ValueBuilder Pro</span>
             </div>
-          ))}
+            <div className="flex gap-6 text-sm text-muted-foreground">
+              <button onClick={() => navigate('/auth')} className="hover:text-primary transition-colors">
+                Sign In
+              </button>
+              <button onClick={() => navigate('/demo')} className="hover:text-primary transition-colors">
+                Demo
+              </button>
+            </div>
+          </div>
         </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <h2 className="text-3xl font-bold mb-4">Calculate Your Business Impact</h2>
-        <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          See exactly how many additional projects and dollars this platform will generate for YOUR business
-        </p>
-        <div className="flex gap-4 justify-center flex-wrap">
-          <Button size="lg" onClick={() => navigate('/builder-impact')}>
-            <TrendingUp className="mr-2 h-5 w-5" />
-            Builder Impact Calculator
-          </Button>
-          <Button size="lg" variant="outline" onClick={() => navigate('/demo')}>
-            See Sample Delivery
-          </Button>
-        </div>
-      </section>
+      </footer>
     </div>
   );
 };
