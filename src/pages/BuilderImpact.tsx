@@ -15,39 +15,74 @@ const BuilderImpact = () => {
     interestedLeadsPercent: 40, // What % of leads express genuine interest
   });
 
-  const [scenario, setScenario] = useState<'inquiries' | 'proactive' | null>(null);
+  const [scenario, setScenario] = useState<'inquiries' | 'proactive' | 'both' | null>(null);
   const [scenarioSelected, setScenarioSelected] = useState(false);
+  const [inputsInquiries, setInputsInquiries] = useState({
+    monthlyLeads: 50,
+    currentCloseRate: 20,
+    avgProjectValue: 125000,
+    interestedLeadsPercent: 40,
+  });
+  const [inputsProactive, setInputsProactive] = useState({
+    monthlyLeads: 50,
+    currentCloseRate: 20,
+    avgProjectValue: 125000,
+    interestedLeadsPercent: 40,
+  });
 
-  const handleScenarioSelect = (selectedScenario: 'inquiries' | 'proactive') => {
+  const handleScenarioSelect = (selectedScenario: 'inquiries' | 'proactive' | 'both') => {
     setScenario(selectedScenario);
     setScenarioSelected(true);
   };
 
-  // Current scenario calculations
+  // Current scenario calculations (for single scenarios)
   const currentEstimates = Math.round(inputs.monthlyLeads * 12 * (inputs.currentCloseRate / 100));
   const currentRevenue = currentEstimates * inputs.avgProjectValue;
   
-  // Scenario 1: Responding to Inquiries (warm leads who expressed interest)
+  // Scenario 1: Responding to Inquiries
   const interestedLeads = Math.round(inputs.monthlyLeads * 12 * (inputs.interestedLeadsPercent / 100));
-  const inquiriesCloseRate = 0.65; // 65% when educating interested buyers
+  const inquiriesCloseRate = 0.65;
   const inquiriesProjects = Math.round(interestedLeads * inquiriesCloseRate);
   const inquiriesRevenue = inquiriesProjects * inputs.avgProjectValue;
   
-  // Scenario 2: Proactive Advisory (reaching out to all leads proactively)
-  const proactiveReachOut = Math.round(inputs.monthlyLeads * 12 * 0.60); // Reach 60% of total leads
-  const proactiveCloseRate = 0.35; // 35% close rate for proactive education
+  // Scenario 2: Proactive Advisory
+  const proactiveReachOut = Math.round(inputs.monthlyLeads * 12 * 0.60);
+  const proactiveCloseRate = 0.35;
   const proactiveProjects = Math.round(proactiveReachOut * proactiveCloseRate);
   const proactiveRevenue = proactiveProjects * inputs.avgProjectValue;
   
+  // "Both" scenario calculations
+  const currentEstimatesInq = Math.round(inputsInquiries.monthlyLeads * 12 * (inputsInquiries.currentCloseRate / 100));
+  const currentRevenueInq = currentEstimatesInq * inputsInquiries.avgProjectValue;
+  const interestedLeadsInq = Math.round(inputsInquiries.monthlyLeads * 12 * (inputsInquiries.interestedLeadsPercent / 100));
+  const inquiriesProjectsInq = Math.round(interestedLeadsInq * inquiriesCloseRate);
+  const inquiriesRevenueInq = inquiriesProjectsInq * inputsInquiries.avgProjectValue;
+  
+  const currentEstimatesPro = Math.round(inputsProactive.monthlyLeads * 12 * (inputsProactive.currentCloseRate / 100));
+  const currentRevenuePro = currentEstimatesPro * inputsProactive.avgProjectValue;
+  const proactiveReachOutPro = Math.round(inputsProactive.monthlyLeads * 12 * 0.60);
+  const proactiveProjectsPro = Math.round(proactiveReachOutPro * proactiveCloseRate);
+  const proactiveRevenuePro = proactiveProjectsPro * inputsProactive.avgProjectValue;
+  
+  // Combined results for "both"
+  const combinedCurrentEstimates = currentEstimatesInq;
+  const combinedCurrentRevenue = currentRevenueInq;
+  const combinedProjects = inquiriesProjectsInq + proactiveProjectsPro;
+  const combinedRevenue = inquiriesRevenueInq + proactiveRevenuePro;
+  const combinedAdditionalProjects = combinedProjects - combinedCurrentEstimates;
+  const combinedAdditionalRevenue = combinedRevenue - combinedCurrentRevenue;
+  
   // Use selected scenario
-  const withPlatformProjects = scenario === 'inquiries' ? inquiriesProjects : proactiveProjects;
-  const withPlatformRevenue = scenario === 'inquiries' ? inquiriesRevenue : proactiveRevenue;
+  const withPlatformProjects = scenario === 'inquiries' ? inquiriesProjects : scenario === 'proactive' ? proactiveProjects : combinedProjects;
+  const withPlatformRevenue = scenario === 'inquiries' ? inquiriesRevenue : scenario === 'proactive' ? proactiveRevenue : combinedRevenue;
   const closeRate = scenario === 'inquiries' ? inquiriesCloseRate : proactiveCloseRate;
   const leadsUsed = scenario === 'inquiries' ? interestedLeads : proactiveReachOut;
   
-  const additionalProjects = withPlatformProjects - currentEstimates;
-  const additionalRevenue = withPlatformRevenue - currentRevenue;
-  const revenueIncrease = currentRevenue > 0 ? Math.round((additionalRevenue / currentRevenue) * 100) : 0;
+  const additionalProjects = scenario === 'both' ? combinedAdditionalProjects : withPlatformProjects - currentEstimates;
+  const additionalRevenue = scenario === 'both' ? combinedAdditionalRevenue : withPlatformRevenue - currentRevenue;
+  const revenueIncrease = scenario === 'both' 
+    ? (combinedCurrentRevenue > 0 ? Math.round((combinedAdditionalRevenue / combinedCurrentRevenue) * 100) : 0)
+    : (currentRevenue > 0 ? Math.round((additionalRevenue / currentRevenue) * 100) : 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 p-8">
@@ -77,7 +112,13 @@ const BuilderImpact = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    💡 <span className="font-semibold text-foreground">Most builders will want BOTH scenarios</span> - but let's look at them one at a time so you understand the math behind each approach.
+                  </p>
+                </div>
+                
+                <div className="grid md:grid-cols-3 gap-4">
                   {/* Responding to Inquiries */}
                   <Card 
                     className="cursor-pointer hover:border-primary transition-all hover:shadow-lg"
@@ -147,6 +188,41 @@ const BuilderImpact = () => {
                       </Button>
                     </CardContent>
                   </Card>
+
+                  {/* Both Scenarios */}
+                  <Card 
+                    className="cursor-pointer hover:border-primary transition-all hover:shadow-lg border-primary/40"
+                    onClick={() => handleScenarioSelect('both')}
+                  >
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-primary" />
+                        Both Scenarios
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Model <span className="font-semibold">BOTH approaches</span> with different inputs for each. Get complete picture of your total opportunity.
+                      </p>
+                      <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+                        <p className="text-sm font-semibold text-primary mb-1">Combined Impact</p>
+                        <p className="text-xs text-muted-foreground">
+                          See aggregate results from using warm inquiry follow-ups AND proactive outreach together.
+                        </p>
+                      </div>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <p><span className="font-semibold text-foreground">Best for:</span></p>
+                        <ul className="space-y-1 ml-4">
+                          <li>• Complete business case analysis</li>
+                          <li>• Understanding full platform potential</li>
+                          <li>• Using multiple sales strategies</li>
+                        </ul>
+                      </div>
+                      <Button className="w-full" variant="default" onClick={() => handleScenarioSelect('both')}>
+                        Model Both Approaches
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <div className="bg-muted/50 rounded-lg p-4 text-sm">
@@ -167,14 +243,34 @@ const BuilderImpact = () => {
             <div className="mb-4 flex items-center justify-between">
               <div className="bg-card border rounded-lg px-4 py-2">
                 <p className="text-sm text-muted-foreground">Selected Strategy:</p>
-                <p className="font-bold">{scenario === 'inquiries' ? 'Responding to Inquiries (65% close rate)' : 'Proactive Advisory (35% close rate)'}</p>
+                <p className="font-bold">
+                  {scenario === 'inquiries' ? 'Responding to Inquiries (65% close rate)' 
+                    : scenario === 'proactive' ? 'Proactive Advisory (35% close rate)'
+                    : 'Both Scenarios - Combined Analysis'}
+                </p>
               </div>
               <Button variant="outline" size="sm" onClick={() => setScenarioSelected(false)}>
                 Change Strategy
               </Button>
             </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {scenario === 'both' ? (
+          /* Both Scenarios - Two Input Forms Side by Side */
+          <div className="space-y-8">
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <p className="text-muted-foreground text-lg mb-4">
+                  📋 Feature coming soon - For now, select a single scenario to model your business impact.
+                </p>
+                <Button onClick={() => setScenarioSelected(false)}>
+                  Go Back to Choose Single Scenario
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          /* Single Scenario - Original Form */
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Input Card */}
           <Card>
             <CardHeader>
@@ -399,6 +495,7 @@ const BuilderImpact = () => {
             </Card>
           </div>
         </div>
+        )}
           </div>
         )}
       </div>
