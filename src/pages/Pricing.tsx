@@ -112,7 +112,7 @@ const Pricing = () => {
               <div className="mt-8 p-4 bg-primary/5 border border-primary/20 rounded-lg">
                 <p className="text-sm font-semibold mb-2">ROI Calculation:</p>
                 <p className="text-xs text-muted-foreground">
-                  Close just 2-3 extra projects per year = $300K-$500K+ additional revenue. Platform cost: $12K/year. ROI: 25-40x
+                  Close just 2-3 extra projects per year and watch your revenue multiply. Platform pays for itself many times over.
                 </p>
               </div>
             </div>

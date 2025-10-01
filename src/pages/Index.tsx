@@ -58,14 +58,14 @@ const Index = () => {
               "We're going with someone cheaper" • Never hear it again
             </div>
             <h1 className="text-5xl md:text-7xl font-bold leading-tight text-white animate-fade-in-up">
-              Stop Losing Deals You
+              Stop Competing for Budget
               <br />
               <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                Deserve to Win
+                and Start Creating It
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              You're not too expensive. You just haven't shown them why you're worth it. Generate 2-minute ROI reports that prove $500K+ equity gains and watch price objections vanish.
+              Stop losing deals you deserve to win. You're not too expensive—you just haven't shown them why you're worth it. Generate 2-minute ROI reports that prove massive equity gains and watch price objections vanish.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <Button size="lg" className="text-lg px-8 py-6 bg-white text-black hover:bg-gray-100 shadow-2xl" onClick={() => navigate('/demo')}>
@@ -88,8 +88,8 @@ const Index = () => {
                 <div className="text-white/90 text-sm md:text-base font-medium">Higher Close Rate</div>
               </div>
               <div className="text-center backdrop-blur-sm bg-white/10 rounded-2xl p-6 border-2 border-white/20">
-                <div className="text-4xl md:text-5xl font-bold text-white mb-2">$500K+</div>
-                <div className="text-white/90 text-sm md:text-base font-medium">Average ROI Proven</div>
+                <div className="text-4xl md:text-5xl font-bold text-white mb-2">Proven ROI</div>
+                <div className="text-white/90 text-sm md:text-base font-medium">Equity Value Gains</div>
               </div>
             </div>
           </div>
