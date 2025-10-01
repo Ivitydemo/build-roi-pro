@@ -49,9 +49,9 @@ const VideoGenerator = () => {
 
 You know you're worth more. But how do you prove it when homeowners only see dollar signs?
 
-Here's the brutal truth: most builders think the problem is winning enough work. It isn't. The real constraint is delivery capability — doing the right jobs, at the right margin, with predictable outcomes. When you shift the conversation to delivery and results, price stops being the headline.
+Here's the truth: most builders think the challenge is winning enough work. But the real constraint? Delivery capability — doing the right jobs, at the right margin, with predictable outcomes. When you shift the conversation to delivery and results, price stops being the headline.
 
-And here's the kicker: with the right narrative, you're not responding to bids — you're creating the demand and the budget. You set the scope. You define the priorities. You control the timeline. Winning the work isn't the issue anymore — it's about proving you can deliver the best outcome, fast and confidently.
+And here's what changes everything: with the right narrative, you're not responding to bids — you're creating the demand and the budget. You set the scope. You define the priorities. You control the timeline. You're not fighting to win work — you're proving you can deliver the best outcome, fast and confidently.
 
 What if you could make that shift in 2 minutes, automatically?
 
@@ -65,17 +65,19 @@ The results? Our contractors close 3 to 5 times more deals. Not by dropping pric
 
 Even better: this works in every market condition. When others chase price, you control the conversation. When the market dips, you're still closing because you've mastered the one skill that transcends cycles: financial selling tied to delivery.
 
-You're not a victim of the market. You're not even a victor in the market. You own your course entirely. While others hope for better conditions, you create your own opportunities — and the budget to fund them.
+While your competitors struggle and hope for better conditions, you create your own opportunities — and the budget to fund them. You own your course entirely.
 
 Every report syncs directly to your CRM. No data entry. No missed follow-ups. Just clean workflows that turn prospects into contracts, automatically.
 
 Here's what this really means: scale at will, protect margin, and operate with unshakeable confidence.
 
-Stop chasing bids. Start controlling your destiny.
+But here's the reality: right now, your competitors are racing to the bottom on price. And while they're doing that, the smart ones? They're already using tools like this to separate themselves. Every day you wait, someone else in your market is closing deals you should be winning.
 
-Right now, while competitors race to the bottom on price, you can rise above with value.
+Don't get left behind.
 
-ValueBuilder Pro. Reframe around delivery. Create the demand — and the budget. Own your market.`;
+Stop chasing bids. Start controlling your destiny. Get ValueBuilder Pro today and join the contractors who are already transforming their business.
+
+Visit ValueBuilderPro dot com and get started in minutes. Your next deal is waiting — close it like a pro.`;
 
   // Helper to get audio duration from blob
   const getAudioDuration = (blob: Blob): Promise<number> => {
