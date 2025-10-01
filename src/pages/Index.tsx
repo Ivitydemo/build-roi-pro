@@ -34,20 +34,14 @@ const Index = () => {
 
       {/* Video Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-        {/* Video Background */}
+        {/* Hero Background Image */}
         <div className="absolute inset-0 bg-black">
           <div className="relative w-full h-full">
-            {/* Placeholder for video - replace with actual video URL */}
-            <video 
-              autoPlay 
-              loop 
-              muted 
-              playsInline
+            <img 
+              src="/hero-video.jpg" 
+              alt="Luxury home with financial growth visualization"
               className="absolute inset-0 w-full h-full object-cover opacity-40"
-            >
-              {/* Add your video source here */}
-              <source src="/hero-video.mp4" type="video/mp4" />
-            </video>
+            />
             {/* Dark overlay for text readability */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
           </div>
