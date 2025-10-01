@@ -14,6 +14,25 @@ const VideoGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [predictionId, setPredictionId] = useState<string | null>(null);
+  const [isGeneratingNarration, setIsGeneratingNarration] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  
+  // AI-generated pitch script for ValueBuilder Pro
+  const pitchScript = `Transform your home service business with ValueBuilder Pro.
+  
+In today's competitive market, customers don't just want quotes - they want to understand the real value and return on investment of their projects.
+
+ValueBuilder Pro revolutionizes how you present your services. In just 2 minutes, generate comprehensive value reports that showcase:
+
+Market comparables that prove your competitive pricing
+Financial projections showing long-term savings and ROI
+Professional visualizations that build trust and credibility
+
+Our clients see 3 to 5 times higher close rates because they're not competing on price alone - they're demonstrating undeniable value.
+
+With seamless CRM integration, every report syncs automatically to your pipeline. No double entry, no missed follow-ups, just smooth workflows that scale with your business.
+
+Stop losing deals to competitors who undercut on price. Start winning with value. ValueBuilder Pro - where every project tells a compelling story of return on investment.`;
 
   const checkStatus = async (id: string) => {
     try {
@@ -60,6 +79,60 @@ const VideoGenerator = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleGenerateNarration = async () => {
+    setIsGeneratingNarration(true);
+    setAudioUrl(null);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-narration`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ script: pitchScript }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate narration");
+      }
+
+      // Convert base64 to blob and create URL
+      const audioBlob = base64ToBlob(data.audioContent, 'audio/mpeg');
+      const url = URL.createObjectURL(audioBlob);
+      setAudioUrl(url);
+
+      toast({
+        title: "Narration generated!",
+        description: "Your pitch voiceover is ready.",
+      });
+    } catch (error) {
+      console.error("Error generating narration:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate narration. Make sure your ElevenLabs API key is configured.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingNarration(false);
+    }
+  };
+
+  const base64ToBlob = (base64: string, mimeType: string) => {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: mimeType });
   };
 
   const handleGenerate = async () => {
@@ -169,21 +242,73 @@ const VideoGenerator = () => {
               />
             </div>
 
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || !prompt}
-              size="lg"
-              className="w-full"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating Video...
-                </>
-              ) : (
-                "Generate Video"
-              )}
-            </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || !prompt}
+                size="lg"
+                className="w-full"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating Video...
+                  </>
+                ) : (
+                  "Generate Video"
+                )}
+              </Button>
+
+              <Button
+                onClick={handleGenerateNarration}
+                disabled={isGeneratingNarration}
+                size="lg"
+                variant="secondary"
+                className="w-full"
+              >
+                {isGeneratingNarration ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating Narration...
+                  </>
+                ) : (
+                  "Generate AI Narration"
+                )}
+              </Button>
+            </div>
+
+            {audioUrl && (
+              <div className="mt-8 p-6 bg-card rounded-lg border">
+                <h2 className="text-2xl font-bold mb-4">Pitch Narration</h2>
+                <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+                  <h3 className="font-semibold mb-2">Script:</h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">
+                    {pitchScript}
+                  </p>
+                </div>
+                <audio
+                  src={audioUrl}
+                  controls
+                  className="w-full"
+                >
+                  Your browser does not support the audio tag.
+                </audio>
+                <div className="mt-4">
+                  <Button
+                    onClick={() => {
+                      const a = document.createElement('a');
+                      a.href = audioUrl;
+                      a.download = 'valuebuilder-pitch-narration.mp3';
+                      a.click();
+                    }}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Download Narration
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {videoUrl && (
               <div className="mt-8">
