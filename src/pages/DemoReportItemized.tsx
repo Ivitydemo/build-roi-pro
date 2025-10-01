@@ -187,7 +187,7 @@ const DemoReportItemized = () => {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => navigate('/demo')}
+                onClick={() => navigate('/demo/package')}
                 className="text-xs"
               >
                 Switch to Package View →

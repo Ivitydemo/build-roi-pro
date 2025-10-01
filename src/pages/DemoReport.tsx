@@ -72,7 +72,7 @@ const DemoReport = () => {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => navigate('/demo-itemized')}
+                onClick={() => navigate('/demo/itemized')}
                 className="text-xs"
               >
                 Switch to Itemized View →

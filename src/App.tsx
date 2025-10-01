@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Setup from "./pages/Setup";
+import DemoSelection from "./pages/DemoSelection";
 import DemoReport from "./pages/DemoReport";
 import DemoReportItemized from "./pages/DemoReportItemized";
 import BuilderImpact from "./pages/BuilderImpact";
@@ -28,8 +29,9 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/setup" element={<Setup />} />
-          <Route path="/demo" element={<DemoReport />} />
-          <Route path="/demo-itemized" element={<DemoReportItemized />} />
+          <Route path="/demo" element={<DemoSelection />} />
+          <Route path="/demo/package" element={<DemoReport />} />
+          <Route path="/demo/itemized" element={<DemoReportItemized />} />
           <Route path="/builder-impact" element={<BuilderImpact />} />
           <Route path="/crm-integrations" element={<CRMIntegrations />} />
           <Route path="/pricing" element={<Pricing />} />
