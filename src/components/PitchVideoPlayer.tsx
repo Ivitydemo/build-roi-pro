@@ -22,19 +22,27 @@ export const PitchVideoPlayer = ({ scenes, audioUrl }: PitchVideoPlayerProps) =>
   // Preload all images
   useEffect(() => {
     const loadImages = async () => {
-      const imagePromises = scenes.map((scene) => {
+      const imagePromises = scenes.map((scene, index) => {
         return new Promise<HTMLImageElement>((resolve, reject) => {
           const img = new Image();
           img.crossOrigin = "anonymous";
-          img.onload = () => resolve(img);
-          img.onerror = reject;
+          img.onload = () => {
+            console.log(`Image ${index + 1} loaded successfully`);
+            resolve(img);
+          };
+          img.onerror = (e) => {
+            console.error(`Error loading image ${index + 1}:`, e);
+            reject(e);
+          };
           img.src = scene.imageUrl;
         });
       });
 
       try {
         imagesRef.current = await Promise.all(imagePromises);
-        console.log("All images loaded");
+        console.log("All images loaded, drawing first scene");
+        // Draw the first scene immediately
+        drawScene(0);
       } catch (error) {
         console.error("Error loading images:", error);
       }
@@ -43,13 +51,26 @@ export const PitchVideoPlayer = ({ scenes, audioUrl }: PitchVideoPlayerProps) =>
     loadImages();
   }, [scenes]);
 
+  // Redraw when canvas ref is available
+  useEffect(() => {
+    if (canvasRef.current && imagesRef.current.length > 0) {
+      drawScene(0);
+    }
+  }, [canvasRef.current]);
+
   // Draw current scene on canvas
   const drawScene = (time: number) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.log("No canvas ref");
+      return;
+    }
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      console.log("No canvas context");
+      return;
+    }
 
     let elapsed = 0;
     let currentSceneIndex = 0;
@@ -62,31 +83,46 @@ export const PitchVideoPlayer = ({ scenes, audioUrl }: PitchVideoPlayerProps) =>
       elapsed += scenes[i].duration;
     }
 
+    console.log(`Drawing scene ${currentSceneIndex + 1} at time ${time.toFixed(1)}s`);
+
     const img = imagesRef.current[currentSceneIndex];
-    if (img && img.complete) {
-      // Clear canvas
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (!img) {
+      console.log(`No image available for scene ${currentSceneIndex + 1}`);
+      return;
+    }
 
-      // Calculate aspect ratio fit
-      const imgAspect = img.width / img.height;
-      const canvasAspect = canvas.width / canvas.height;
+    if (!img.complete) {
+      console.log(`Image ${currentSceneIndex + 1} not fully loaded yet`);
+      return;
+    }
 
-      let drawWidth, drawHeight, offsetX, offsetY;
+    // Clear canvas
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      if (imgAspect > canvasAspect) {
-        drawWidth = canvas.width;
-        drawHeight = canvas.width / imgAspect;
-        offsetX = 0;
-        offsetY = (canvas.height - drawHeight) / 2;
-      } else {
-        drawHeight = canvas.height;
-        drawWidth = canvas.height * imgAspect;
-        offsetX = (canvas.width - drawWidth) / 2;
-        offsetY = 0;
-      }
+    // Calculate aspect ratio fit
+    const imgAspect = img.width / img.height;
+    const canvasAspect = canvas.width / canvas.height;
 
+    let drawWidth, drawHeight, offsetX, offsetY;
+
+    if (imgAspect > canvasAspect) {
+      drawWidth = canvas.width;
+      drawHeight = canvas.width / imgAspect;
+      offsetX = 0;
+      offsetY = (canvas.height - drawHeight) / 2;
+    } else {
+      drawHeight = canvas.height;
+      drawWidth = canvas.height * imgAspect;
+      offsetX = (canvas.width - drawWidth) / 2;
+      offsetY = 0;
+    }
+
+    try {
       ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+      console.log(`Successfully drew scene ${currentSceneIndex + 1}`);
+    } catch (error) {
+      console.error(`Error drawing image ${currentSceneIndex + 1}:`, error);
     }
   };
 
