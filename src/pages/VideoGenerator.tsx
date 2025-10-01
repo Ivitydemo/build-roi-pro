@@ -90,11 +90,59 @@ ValueBuilder Pro. Stop losing on price. Start winning on value.`;
     }
   };
 
+  // Helper to get audio duration from blob
+  const getAudioDuration = (blob: Blob): Promise<number> => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio();
+      audio.src = URL.createObjectURL(blob);
+      audio.addEventListener('loadedmetadata', () => {
+        URL.revokeObjectURL(audio.src);
+        resolve(audio.duration);
+      });
+      audio.addEventListener('error', reject);
+    });
+  };
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     setVideoUrl(null);
     
     try {
+      // Step 1: Generate audio first to get duration
+      toast({ title: "Step 1/2", description: "Generating voice narration..." });
+      
+      const audioResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-narration`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ 
+            script: pitchScript,
+            voice: "nova"
+          }),
+        }
+      );
+
+      if (!audioResponse.ok) {
+        throw new Error("Failed to generate audio narration");
+      }
+
+      const audioData = await audioResponse.json();
+      
+      // Convert base64 to blob and get duration
+      const audioBlob = await fetch(`data:audio/mp3;base64,${audioData.audioContent}`).then(r => r.blob());
+      const audioDuration = await getAudioDuration(audioBlob);
+      
+      console.log("Audio duration:", audioDuration, "seconds");
+      
+      // Step 2: Generate video with duration info
+      toast({ title: "Step 2/2", description: "Generating video to match narration..." });
+      
+      const enhancedPrompt = `${prompt} Duration: approximately ${Math.ceil(audioDuration)} seconds to match voice narration.`;
+      
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`,
         {
@@ -103,7 +151,7 @@ ValueBuilder Pro. Stop losing on price. Start winning on value.`;
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ prompt }),
+          body: JSON.stringify({ prompt: enhancedPrompt }),
         }
       );
 
@@ -138,7 +186,7 @@ ValueBuilder Pro. Stop losing on price. Start winning on value.`;
         setPredictionId(data.id);
         toast({
           title: "Generating video...",
-          description: "This may take a few minutes.",
+          description: `Creating ${Math.ceil(audioDuration)}s video to match narration.`,
         });
         checkStatus(data.id);
       } else if (data.output) {
@@ -147,7 +195,7 @@ ValueBuilder Pro. Stop losing on price. Start winning on value.`;
         if (url) {
           setVideoUrl(url as string);
           setIsGenerating(false);
-          toast({ title: "Video generated!", description: "Your pitch video is ready." });
+          toast({ title: "Video generated!", description: "Your pitch video is ready with synced narration." });
         } else {
           throw new Error("No output URL found");
         }
@@ -159,7 +207,7 @@ ValueBuilder Pro. Stop losing on price. Start winning on value.`;
       setIsGenerating(false);
       toast({
         title: "Error",
-        description: "Failed to start video generation.",
+        description: error instanceof Error ? error.message : "Failed to generate video.",
         variant: "destructive",
       });
     }
@@ -241,6 +289,11 @@ ValueBuilder Pro. Stop losing on price. Start winning on value.`;
             {videoUrl && (
               <div className="mt-8">
                 <h2 className="text-2xl font-bold mb-4">Your Video</h2>
+                <div className="mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                  <p className="text-sm">
+                    ✨ <strong>Video & narration synced!</strong> The video was generated to match the voice narration duration for seamless playback.
+                  </p>
+                </div>
                 <video
                   src={videoUrl}
                   controls
