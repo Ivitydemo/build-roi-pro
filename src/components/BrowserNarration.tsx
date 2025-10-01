@@ -1,241 +1,208 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Pause, Play, Square } from "lucide-react";
+import { Play, Square, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface BrowserNarrationProps {
   script: string;
 }
 
-const supportsSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
-
-// Split long text into manageable chunks/sentences to improve reliability
-function chunkText(text: string, maxLen = 220): string[] {
-  // Split by sentence enders while keeping punctuation
-  const parts = text
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  const chunks: string[] = [];
-  let buf = "";
-  for (const p of parts) {
-    if ((buf + " " + p).trim().length <= maxLen) {
-      buf = (buf ? buf + " " : "") + p;
-    } else {
-      if (buf) chunks.push(buf);
-      if (p.length <= maxLen) {
-        chunks.push(p);
-        buf = "";
-      } else {
-        // Hard wrap very long sentences
-        for (let i = 0; i < p.length; i += maxLen) {
-          chunks.push(p.slice(i, i + maxLen));
-        }
-        buf = "";
-      }
-    }
-  }
-  if (buf) chunks.push(buf);
-  return chunks;
-}
+// Top ElevenLabs voices with ultra-realistic quality
+const ELEVENLABS_VOICES = [
+  { id: '9BWtsMINqrJLrRacOk9x', name: 'Aria - Professional Female', description: 'Warm, confident, perfect for business presentations' },
+  { id: 'CwhRBWXzGAHq8TQ4Fs17', name: 'Roger - Authoritative Male', description: 'Deep, trustworthy voice for serious topics' },
+  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah - Friendly Female', description: 'Conversational and engaging' },
+  { id: 'IKne3meq5aSn9XLyUdCD', name: 'Charlie - Energetic Male', description: 'Dynamic and enthusiastic' },
+  { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam - Calm Male', description: 'Smooth and reassuring' },
+  { id: 'XB0fDUnXU5powFXDhCwa', name: 'Charlotte - Clear Female', description: 'Articulate and professional' },
+];
 
 export default function BrowserNarration({ script }: BrowserNarrationProps) {
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [voiceKey, setVoiceKey] = useState<string>("");
-  const [rate, setRate] = useState<number>(1);
-  const [pitch, setPitch] = useState<number>(1);
-  const [speaking, setSpeaking] = useState(false);
-  const [paused, setPaused] = useState(false);
+  const [voiceId, setVoiceId] = useState<string>('9BWtsMINqrJLrRacOk9x'); // Default to Aria
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { toast } = useToast();
 
-  const queueRef = useRef<string[]>([]);
-  const idxRef = useRef<number>(0);
-  const canceledRef = useRef<boolean>(false);
-
-  // Load voices and set a stable unique key (voiceURI preferred)
-  useEffect(() => {
-    if (!supportsSpeech) return;
-
-    const load = () => {
-      const list = window.speechSynthesis.getVoices();
-      // Deduplicate by voiceURI if present
-      const map = new Map<string, SpeechSynthesisVoice>();
-      for (const v of list) {
-        const key = v.voiceURI || `${v.name}-${v.lang}`;
-        if (!map.has(key)) map.set(key, v);
-      }
-      const unique = Array.from(map.values());
-      setVoices(unique);
-
-      if (!voiceKey && unique.length > 0) {
-        const preferred =
-          unique.find((v) => /en(-|_)?(US|GB)/i.test(v.lang) && /female/i.test(v.name)) ||
-          unique.find((v) => /en(-|_)?(US|GB)/i.test(v.lang)) ||
-          unique[0];
-        setVoiceKey(preferred.voiceURI || `${preferred.name}-${preferred.lang}`);
-      }
-    };
-
-    // Some browsers populate asynchronously
-    load();
-    window.speechSynthesis.onvoiceschanged = load;
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }, [voiceKey]);
-
-  const selectedVoice = useMemo(() => {
-    if (!voiceKey) return null;
-    return (
-      voices.find((v) => (v.voiceURI || `${v.name}-${v.lang}`) === voiceKey) || null
-    );
-  }, [voices, voiceKey]);
-
-  const stop = () => {
-    if (!supportsSpeech) return;
-    canceledRef.current = true;
-    window.speechSynthesis.cancel();
-    queueRef.current = [];
-    idxRef.current = 0;
-    setSpeaking(false);
-    setPaused(false);
-  };
-
-  const speakNext = () => {
-    if (!supportsSpeech) return;
-    if (canceledRef.current) return;
-
-    const idx = idxRef.current;
-    if (idx >= queueRef.current.length) {
-      setSpeaking(false);
-      setPaused(false);
+  const generateAudio = async () => {
+    if (!script.trim()) {
+      toast({
+        title: "No script",
+        description: "Please provide a script to narrate",
+        variant: "destructive"
+      });
       return;
     }
 
-    const u = new SpeechSynthesisUtterance(queueRef.current[idx]);
-    u.rate = rate; // 0.1 - 10
-    u.pitch = pitch; // 0 - 2
-    if (selectedVoice) u.voice = selectedVoice;
+    setIsGenerating(true);
+    
+    try {
+      console.log('Generating narration with ElevenLabs...');
+      
+      const { data, error } = await supabase.functions.invoke('generate-narration', {
+        body: { script, voice: voiceId }
+      });
 
-    u.onend = () => {
-      if (canceledRef.current) return;
-      idxRef.current = idx + 1;
-      speakNext();
-    };
-    u.onerror = () => {
-      if (canceledRef.current) return;
-      idxRef.current = idx + 1;
-      speakNext();
-    };
+      if (error) throw error;
+      
+      if (data?.audioContent) {
+        // Clean up old audio URL if it exists
+        if (audioUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
 
-    window.speechSynthesis.speak(u);
+        // Convert base64 to blob
+        const binaryString = atob(data.audioContent);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: 'audio/mpeg' });
+        const url = URL.createObjectURL(blob);
+        
+        setAudioUrl(url);
+        
+        toast({
+          title: "Audio generated!",
+          description: "Ultra-realistic narration ready to play"
+        });
+      }
+    } catch (error) {
+      console.error('Error generating narration:', error);
+      toast({
+        title: "Generation failed",
+        description: error instanceof Error ? error.message : "Failed to generate audio",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const play = () => {
-    if (!supportsSpeech) return;
-
-    // If paused, just resume
-    if (paused) {
-      window.speechSynthesis.resume();
-      setPaused(false);
+  const playAudio = () => {
+    if (!audioUrl) {
+      toast({
+        title: "No audio",
+        description: "Generate audio first",
+        variant: "destructive"
+      });
       return;
     }
 
-    // If already speaking, restart
-    if (speaking) {
-      stop();
-    }
-
-    canceledRef.current = false;
-    queueRef.current = chunkText(script);
-    idxRef.current = 0;
-
-    if (queueRef.current.length === 0) return;
-
-    setSpeaking(true);
-    speakNext();
-  };
-
-  const pause = () => {
-    if (!supportsSpeech) return;
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-      window.speechSynthesis.pause();
-      setPaused(true);
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play();
+        setIsPlaying(true);
+      }
     }
   };
 
-  if (!supportsSpeech) {
-    return (
-      <div className="p-4 rounded border border-destructive/40 bg-destructive/10 text-destructive">
-        Your browser does not support speech synthesis. Please try Chrome, Edge, or Safari.
-      </div>
-    );
-  }
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+    }
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label>Voice</Label>
-          <Select value={voiceKey} onValueChange={setVoiceKey}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a voice" />
-            </SelectTrigger>
-            <SelectContent className="max-h-72">
-              {voices.map((v, i) => {
-                const key = v.voiceURI || `${v.name}-${v.lang}`;
-                return (
-                  <SelectItem key={key} value={key}>
-                    {v.name} {v.lang ? `(${v.lang})` : ""}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        </div>
+    <div className="space-y-6">
+      <div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
+        <p className="text-sm text-muted-foreground mb-2">
+          🎙️ <strong>Ultra-Realistic AI Voices</strong> - Powered by ElevenLabs
+        </p>
+        <p className="text-xs text-muted-foreground">
+          These voices are indistinguishable from real humans, perfect for professional presentations
+        </p>
+      </div>
 
-        <div className="space-y-2">
-          <Label>Rate: {rate.toFixed(2)}</Label>
-          <Slider
-            value={[rate]}
-            onValueChange={(val) => setRate(val[0])}
-            min={0.75}
-            max={1.25}
-            step={0.01}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Pitch: {pitch.toFixed(2)}</Label>
-          <Slider
-            value={[pitch]}
-            onValueChange={(val) => setPitch(val[0])}
-            min={0.75}
-            max={1.25}
-            step={0.01}
-          />
-        </div>
+      <div className="space-y-2">
+        <Label>Voice Selection</Label>
+        <Select value={voiceId} onValueChange={setVoiceId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a voice" />
+          </SelectTrigger>
+          <SelectContent className="max-h-72">
+            {ELEVENLABS_VOICES.map((voice) => (
+              <SelectItem key={voice.id} value={voice.id}>
+                <div className="flex flex-col">
+                  <span className="font-medium">{voice.name}</span>
+                  <span className="text-xs text-muted-foreground">{voice.description}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex items-center gap-3">
-        {!speaking || paused ? (
-          <Button onClick={play} size="lg">
-            <Play className="mr-2 h-4 w-4" />
-            {paused ? "Resume" : "Play"}
-          </Button>
-        ) : (
-          <Button onClick={pause} variant="secondary" size="lg">
-            <Pause className="mr-2 h-4 w-4" />
-            Pause
-          </Button>
-        )}
-        <Button onClick={stop} variant="outline" size="lg">
-          <Square className="mr-2 h-4 w-4" />
-          Stop
+        <Button 
+          onClick={generateAudio} 
+          disabled={isGenerating}
+          size="lg"
+          className="min-w-[140px]"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            'Generate Audio'
+          )}
         </Button>
+
+        {audioUrl && (
+          <>
+            <Button 
+              onClick={playAudio} 
+              variant={isPlaying ? "secondary" : "default"}
+              size="lg"
+            >
+              {isPlaying ? (
+                <>
+                  <Square className="mr-2 h-4 w-4" />
+                  Pause
+                </>
+              ) : (
+                <>
+                  <Play className="mr-2 h-4 w-4" />
+                  Play
+                </>
+              )}
+            </Button>
+
+            <Button 
+              onClick={stopAudio} 
+              variant="outline" 
+              size="lg"
+            >
+              <Square className="mr-2 h-4 w-4" />
+              Stop
+            </Button>
+          </>
+        )}
       </div>
+
+      {/* Hidden audio element */}
+      {audioUrl && (
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          onEnded={() => setIsPlaying(false)}
+          onPause={() => setIsPlaying(false)}
+          onPlay={() => setIsPlaying(true)}
+        />
+      )}
     </div>
   );
 }
