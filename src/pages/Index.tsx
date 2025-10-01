@@ -62,7 +62,7 @@ const Index = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 animate-fade-in">
             {[
               { value: '3-5x', label: 'Higher Close Rate', icon: TrendingUp },
-              { value: '$0', label: 'Competition', icon: Target },
+              { value: 'Minimal', label: 'Competition', icon: Target },
               { value: '60-75%', label: 'Win Rate', icon: BarChart3 },
               { value: '2 min', label: 'To Generate', icon: Clock }
             ].map((stat, idx) => (
@@ -154,9 +154,9 @@ const Index = () => {
               </div>
               <div className="text-center">
                 <div className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-3">
-                  Zero
+                  Minimal
                 </div>
-                <p className="text-muted-foreground">Competitors when you create the opportunity</p>
+                <p className="text-muted-foreground">Competition when you create the opportunity</p>
               </div>
               <div className="text-center">
                 <div className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-3">
