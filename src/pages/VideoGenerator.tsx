@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -20,6 +20,10 @@ import scene12 from "@/assets/pitch-scenes/scene-12.jpg";
 const VideoGenerator = () => {
   const navigate = useNavigate();
   const [audioUrl] = useState<string>("/path-to-pregenerated-audio.mp3"); // Will be set to actual audio
+  
+  useEffect(() => {
+    document.title = "See ValueBuilder Pro in Action";
+  }, []);
   
   // Define pitch scenes with pre-generated images
   const pitchScenes = [
