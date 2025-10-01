@@ -62,10 +62,22 @@ const DemoReport = () => {
               </Button>
               <div className="flex items-center gap-2">
                 <Building2 className="h-8 w-8 text-primary" />
-                <span className="text-xl font-bold">Sample Deliverable</span>
+                <div>
+                  <span className="text-xl font-bold">Sample Deliverable</span>
+                  <div className="text-xs text-muted-foreground">Package-Based View</div>
+                </div>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/demo-itemized')}
+                className="text-xs"
+              >
+                Switch to Itemized View →
+              </Button>
+              <div className="h-4 w-px bg-border" />
               <Button variant="outline" size="sm">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
