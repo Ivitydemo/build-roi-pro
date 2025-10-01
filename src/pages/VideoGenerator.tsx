@@ -15,8 +15,7 @@ const VideoGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [predictionId, setPredictionId] = useState<string | null>(null);
-  const [audioBase64, setAudioBase64] = useState<string | null>(null);
-  const [isCombining, setIsCombining] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   
   // AI-optimized pitch script using PAS framework + emotional storytelling
   const pitchScript = `Picture this: You just spent 3 hours preparing the perfect quote. Your work is solid. Your price is fair. Then you hear those dreaded words... "We're going with someone cheaper."
@@ -77,16 +76,10 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
         if (url) {
           setVideoUrl(url as string);
           setIsGenerating(false);
-          
-          // Automatically combine with audio if available
-          if (audioBase64) {
-            combineVideoAudio(url as string, audioBase64);
-          } else {
-            toast({
-              title: "Video generated!",
-              description: "Your pitch video is ready.",
-            });
-          }
+          toast({
+            title: "Video generated!",
+            description: audioUrl ? "Your pitch video with narration is ready to play!" : "Your pitch video is ready.",
+          });
         }
       } else if (data.status === "failed") {
         setIsGenerating(false);
@@ -110,53 +103,6 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
     }
   };
 
-  const combineVideoAudio = async (videoUrl: string, audioBase64: string) => {
-    setIsCombining(true);
-    toast({
-      title: "Combining video and audio...",
-      description: "Creating your final pitch video with synced narration.",
-    });
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/combine-video-audio`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ videoUrl, audioBase64 }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to combine video and audio");
-      }
-
-      // Convert base64 back to blob URL
-      const videoBlob = await fetch(`data:video/mp4;base64,${data.videoBase64}`).then(r => r.blob());
-      const combinedUrl = URL.createObjectURL(videoBlob);
-      
-      setVideoUrl(combinedUrl);
-      setIsCombining(false);
-      
-      toast({
-        title: "Success!",
-        description: "Your pitch video with narration is ready!",
-      });
-    } catch (error) {
-      console.error("Error combining video and audio:", error);
-      setIsCombining(false);
-      toast({
-        title: "Combination failed",
-        description: "Showing video without audio. " + (error instanceof Error ? error.message : ""),
-        variant: "destructive",
-      });
-    }
-  };
 
   // Helper to get audio duration from blob
   const getAudioDuration = (blob: Blob): Promise<number> => {
@@ -200,11 +146,11 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
 
       const audioData = await audioResponse.json();
       
-      // Store audio for later combination
-      setAudioBase64(audioData.audioContent);
-      
-      // Convert base64 to blob and get duration
+      // Convert base64 to blob URL and store
       const audioBlob = await fetch(`data:audio/mp3;base64,${audioData.audioContent}`).then(r => r.blob());
+      const audioBlobUrl = URL.createObjectURL(audioBlob);
+      setAudioUrl(audioBlobUrl);
+      
       const audioDuration = await getAudioDuration(audioBlob);
       
       console.log("Audio duration:", audioDuration, "seconds");
@@ -334,7 +280,7 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
 
             <Button
               onClick={handleGenerate}
-              disabled={isGenerating || isCombining || !prompt}
+              disabled={isGenerating || !prompt}
               size="lg"
               className="w-full"
             >
@@ -342,11 +288,6 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Generating Video...
-                </>
-              ) : isCombining ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Combining Video & Audio...
                 </>
               ) : (
                 "Generate Video with Narration"
@@ -367,18 +308,33 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
                 <h2 className="text-2xl font-bold mb-4">Your Complete Pitch Video</h2>
                 <div className="mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
                   <p className="text-sm">
-                    ✨ <strong>Professional pitch video ready!</strong> {audioBase64 ? "Video and voice narration are perfectly synced for maximum impact." : "Add narration by clicking 'Generate Audio' above, then regenerate the video."}
+                    ✨ <strong>Professional pitch video ready!</strong> {audioUrl ? "Play the video to see and hear your complete pitch." : "Add narration by clicking 'Generate Audio' above, then regenerate the video."}
                   </p>
                 </div>
-                <video
-                  src={videoUrl}
-                  controls
-                  className="w-full rounded-lg shadow-lg"
-                  autoPlay
-                  loop
-                >
-                  Your browser does not support the video tag.
-                </video>
+                <div className="relative">
+                  <video
+                    src={videoUrl}
+                    controls
+                    className="w-full rounded-lg shadow-lg"
+                    onPlay={() => {
+                      if (audioUrl) {
+                        const audio = document.getElementById('pitch-audio') as HTMLAudioElement;
+                        if (audio) audio.play();
+                      }
+                    }}
+                    onPause={() => {
+                      if (audioUrl) {
+                        const audio = document.getElementById('pitch-audio') as HTMLAudioElement;
+                        if (audio) audio.pause();
+                      }
+                    }}
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                  {audioUrl && (
+                    <audio id="pitch-audio" src={audioUrl} className="hidden" />
+                  )}
+                </div>
                 <div className="mt-4 flex gap-4">
                   <Button
                     onClick={() => window.open(videoUrl, "_blank")}
@@ -386,7 +342,20 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
                   >
                     Download Video
                   </Button>
-                  <Button onClick={() => setVideoUrl(null)} variant="outline">
+                  {audioUrl && (
+                    <Button
+                      onClick={() => {
+                        const a = document.createElement('a');
+                        a.href = audioUrl;
+                        a.download = 'pitch-narration.mp3';
+                        a.click();
+                      }}
+                      variant="outline"
+                    >
+                      Download Audio
+                    </Button>
+                  )}
+                  <Button onClick={() => { setVideoUrl(null); setAudioUrl(null); }} variant="outline">
                     Generate Another
                   </Button>
                 </div>
