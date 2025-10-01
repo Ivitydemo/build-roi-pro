@@ -53,10 +53,13 @@ serve(async (req) => {
     // Get the audio as array buffer
     const arrayBuffer = await response.arrayBuffer()
     
-    // Convert to base64
-    const base64Audio = btoa(
-      String.fromCharCode(...new Uint8Array(arrayBuffer))
-    )
+    // Convert to base64 safely (without stack overflow)
+    const bytes = new Uint8Array(arrayBuffer)
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i])
+    }
+    const base64Audio = btoa(binary)
 
     return new Response(
       JSON.stringify({ audioContent: base64Audio }),
