@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
 import BrowserNarration from "@/components/BrowserNarration";
+import { PitchVideoPlayer } from "@/components/PitchVideoPlayer";
 
 const VideoGenerator = () => {
   const navigate = useNavigate();
@@ -13,10 +14,62 @@ const VideoGenerator = () => {
     "Emotional journey: Start with a frustrated contractor losing a deal, papers scattered. Transform to confident contractor presenting on tablet, client nodding with impressed smile. End with handshake and celebration. Professional, cinematic lighting, 4K quality showing before/after transformation."
   );
   const [isGenerating, setIsGenerating] = useState(false);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [predictionId, setPredictionId] = useState<string | null>(null);
+  const [scenes, setScenes] = useState<any[] | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isGeneratingScenes, setIsGeneratingScenes] = useState(false);
   
+  // Define pitch scenes with timing
+  const pitchScenes = [
+    {
+      duration: 15,
+      prompt: "Professional contractor sitting at desk, frustrated expression, scattered papers and calculator, rejected quote document visible, dramatic lighting, photorealistic, 4K quality"
+    },
+    {
+      duration: 12,
+      prompt: "Close-up of homeowner comparing multiple contractor quotes on kitchen table, calculator and pen, confused expression, overhead lighting, photorealistic"
+    },
+    {
+      duration: 18,
+      prompt: "Split screen comparison: left side showing cheap contractor with poor work quality, right side showing professional contractor with quality materials, dramatic contrast, photorealistic"
+    },
+    {
+      duration: 15,
+      prompt: "Contractor responding to bid request on laptop, clock showing late hours, stack of bid requests, tired expression, home office setting, cinematic lighting"
+    },
+    {
+      duration: 20,
+      prompt: "Confident contractor presenting ValueBuilder Pro report on tablet to interested homeowner couple in their living room, nodding with impressed smiles, modern home interior, professional lighting"
+    },
+    {
+      duration: 15,
+      prompt: "Tablet screen showing ValueBuilder Pro interface with home value comparison before and after renovation, graphs and charts, clean modern UI design, close-up shot"
+    },
+    {
+      duration: 18,
+      prompt: "Homeowner couple looking at detailed value report, pointing at financial impact section, engaged and educated expressions, comfortable home setting, warm lighting"
+    },
+    {
+      duration: 12,
+      prompt: "Contractor shaking hands with happy homeowner clients, signed contract visible on table, celebration mood, professional attire, bright daylight through windows"
+    },
+    {
+      duration: 15,
+      prompt: "Graph showing 3-5x increase in closed deals, upward trending arrow, professional business chart with ValueBuilder Pro branding, clean corporate aesthetic"
+    },
+    {
+      duration: 18,
+      prompt: "Contractor working confidently in different market conditions - sunny day, rainy day, showing adaptability and success, split timeline view, cinematic quality"
+    },
+    {
+      duration: 12,
+      prompt: "ValueBuilder Pro CRM dashboard on computer screen showing automated workflow, synced customer data, clean interface, professional workspace background"
+    },
+    {
+      duration: 17,
+      prompt: "Successful contractor team in modern office, growth charts on wall, confident poses, celebrating success, professional business environment, bright lighting"
+    }
+  ];
+
   // AI-optimized pitch script using PAS framework + emotional storytelling
   const pitchScript = `Picture this: You just spent 3 hours preparing the perfect quote. Your work is solid. Your price is fair. Then you hear those dreaded words... "We're going with someone cheaper."
 
@@ -54,56 +107,6 @@ Right now, while your competitors are racing to the bottom on price, you can ris
 
 ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.`;
 
-  const checkStatus = async (id: string) => {
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ predictionId: id }),
-        }
-      );
-
-      const data = await response.json();
-      
-      if (data.status === "succeeded") {
-        const out = data.output;
-        const url = typeof out === "string" ? out : out?.url ?? out?.[0]?.url ?? out?.[0];
-        if (url) {
-          setVideoUrl(url as string);
-          setIsGenerating(false);
-          toast({
-            title: "Video generated!",
-            description: audioUrl ? "Your pitch video with narration is ready to play!" : "Your pitch video is ready.",
-          });
-        }
-      } else if (data.status === "failed") {
-        setIsGenerating(false);
-        toast({
-          title: "Generation failed",
-          description: "There was an error generating your video.",
-          variant: "destructive",
-        });
-      } else {
-        // Still processing, check again in 3 seconds
-        setTimeout(() => checkStatus(id), 3000);
-      }
-    } catch (error) {
-      console.error("Error checking status:", error);
-      setIsGenerating(false);
-      toast({
-        title: "Error",
-        description: "Failed to check video status.",
-        variant: "destructive",
-      });
-    }
-  };
-
-
   // Helper to get audio duration from blob
   const getAudioDuration = (blob: Blob): Promise<number> => {
     return new Promise((resolve, reject) => {
@@ -119,7 +122,7 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
 
   const handleGenerate = async () => {
     setIsGenerating(true);
-    setVideoUrl(null);
+    setScenes(null);
     
     try {
       // Step 1: Generate audio first to get duration
@@ -155,70 +158,35 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
       
       console.log("Audio duration:", audioDuration, "seconds");
       
-      // Step 2: Generate video with duration info
-      toast({ title: "Step 2/2", description: "Generating video to match narration..." });
+      // Step 2: Generate scene images
+      setIsGeneratingScenes(true);
+      toast({ title: "Step 2/2", description: "Generating scene images for your pitch..." });
       
-      const enhancedPrompt = `${prompt} Duration: approximately ${Math.ceil(audioDuration)} seconds to match voice narration.`;
-      
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`,
+      const scenesResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-pitch-scenes`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({ prompt: enhancedPrompt }),
+          body: JSON.stringify({ scenes: pitchScenes }),
         }
       );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        const msg = data?.error as string | undefined;
-        if (response.status === 429) {
-          toast({
-            title: "Rate limited",
-            description: "Replicate free tier limit hit. Please wait a few seconds or add a payment method to your Replicate account.",
-            variant: "destructive",
-          });
-          setIsGenerating(false);
-          return;
-        }
-        if (response.status === 422) {
-          toast({
-            title: "Model access error",
-            description: msg || "The selected video model isn't available. Please try again.",
-            variant: "destructive",
-          });
-          setIsGenerating(false);
-          return;
-        }
-        toast({ title: "Error", description: msg || "Failed to start video generation.", variant: "destructive" });
-        setIsGenerating(false);
-        return;
+      if (!scenesResponse.ok) {
+        throw new Error("Failed to generate scene images");
       }
 
-      if (data.id) {
-        setPredictionId(data.id);
-        toast({
-          title: "Generating video...",
-          description: `Creating ${Math.ceil(audioDuration)}s video to match narration.`,
-        });
-        checkStatus(data.id);
-      } else if (data.output) {
-        const out = data.output;
-        const url = typeof out === "string" ? out : out?.url ?? out?.[0]?.url ?? out?.[0];
-        if (url) {
-          setVideoUrl(url as string);
-          setIsGenerating(false);
-          toast({ title: "Video generated!", description: "Your pitch video is ready with synced narration." });
-        } else {
-          throw new Error("No output URL found");
-        }
-      } else {
-        throw new Error("No prediction ID returned");
-      }
+      const scenesData = await scenesResponse.json();
+      setScenes(scenesData.scenes);
+      setIsGeneratingScenes(false);
+      setIsGenerating(false);
+      
+      toast({ 
+        title: "Complete!", 
+        description: "Your pitch video with narration is ready to play!" 
+      });
     } catch (error) {
       console.error("Error generating video:", error);
       setIsGenerating(false);
@@ -280,17 +248,17 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
 
             <Button
               onClick={handleGenerate}
-              disabled={isGenerating || !prompt}
+              disabled={isGenerating || isGeneratingScenes || !prompt}
               size="lg"
               className="w-full"
             >
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating Video...
+                  {isGeneratingScenes ? "Generating Scene Images..." : "Generating Audio..."}
                 </>
               ) : (
-                "Generate Video with Narration"
+                "Generate Complete Pitch Video"
               )}
             </Button>
 
@@ -303,63 +271,36 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
             </div>
 
 
-            {videoUrl && (
-              <div className="mt-8 space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold mb-4">Your Pitch Video</h2>
-                  <div className="mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
-                    <p className="text-sm">
-                      🎬 <strong>Professional pitch video generated!</strong> Use this as b-roll or visual content for your presentation.
-                    </p>
-                  </div>
-                  <video
-                    src={videoUrl}
-                    controls
-                    className="w-full rounded-lg shadow-lg"
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                  <div className="mt-4">
-                    <Button
-                      onClick={() => window.open(videoUrl, "_blank")}
-                      variant="outline"
-                    >
-                      Download Video
-                    </Button>
-                  </div>
+            {scenes && audioUrl && (
+              <div className="mt-8">
+                <h2 className="text-2xl font-bold mb-4">Your Complete Pitch Video</h2>
+                <div className="mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                  <p className="text-sm">
+                    ✨ <strong>Professional pitch video with narration ready!</strong> AI-generated scenes perfectly synced with your voice narration.
+                  </p>
                 </div>
+                
+                <PitchVideoPlayer scenes={scenes} audioUrl={audioUrl} />
 
-                {audioUrl && (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4">Your Voice Narration</h2>
-                    <div className="mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
-                      <p className="text-sm">
-                        🎙️ <strong>Professional voiceover ready!</strong> Download or play your complete pitch narration.
-                      </p>
-                    </div>
-                    <audio
-                      src={audioUrl}
-                      controls
-                      className="w-full"
-                    />
-                    <div className="mt-4">
-                      <Button
-                        onClick={() => {
-                          const a = document.createElement('a');
-                          a.href = audioUrl;
-                          a.download = 'pitch-narration.mp3';
-                          a.click();
-                        }}
-                        variant="outline"
-                      >
-                        Download Audio
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-4">
-                  <Button onClick={() => { setVideoUrl(null); setAudioUrl(null); }} variant="outline">
+                <div className="mt-4 flex gap-4">
+                  <Button
+                    onClick={() => {
+                      const a = document.createElement('a');
+                      a.href = audioUrl;
+                      a.download = 'pitch-narration.mp3';
+                      a.click();
+                    }}
+                    variant="outline"
+                  >
+                    Download Audio
+                  </Button>
+                  <Button 
+                    onClick={() => { 
+                      setScenes(null); 
+                      setAudioUrl(null); 
+                    }} 
+                    variant="outline"
+                  >
                     Generate Another
                   </Button>
                 </div>
