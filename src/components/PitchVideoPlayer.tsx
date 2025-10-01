@@ -83,6 +83,11 @@ export const PitchVideoPlayer = ({ scenes, audioUrl }: PitchVideoPlayerProps) =>
       elapsed += scenes[i].duration;
     }
 
+    // If the time exceeds total video duration, clamp to the last scene
+    if (time >= totalDuration) {
+      currentSceneIndex = scenes.length - 1;
+    }
+
     console.log(`Drawing scene ${currentSceneIndex + 1} at time ${time.toFixed(1)}s`);
 
     const img = imagesRef.current[currentSceneIndex];
@@ -129,7 +134,7 @@ export const PitchVideoPlayer = ({ scenes, audioUrl }: PitchVideoPlayerProps) =>
   // Animation loop
   const animate = () => {
     const audio = audioRef.current;
-    if (!audio || !isPlaying) return;
+    if (!audio || audio.paused) return;
 
     const time = audio.currentTime;
     setCurrentTime(time);
@@ -141,9 +146,15 @@ export const PitchVideoPlayer = ({ scenes, audioUrl }: PitchVideoPlayerProps) =>
   const handlePlay = () => {
     const audio = audioRef.current;
     if (audio) {
-      audio.play();
-      setIsPlaying(true);
-      animate();
+      audio
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          animationRef.current = requestAnimationFrame(animate);
+        })
+        .catch((err) => {
+          console.error("Audio play failed:", err);
+        });
     }
   };
 

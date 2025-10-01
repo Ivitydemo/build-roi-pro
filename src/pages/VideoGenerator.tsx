@@ -49,37 +49,33 @@ const VideoGenerator = () => {
 
 You know you're worth more. But how do you prove it when homeowners only see dollar signs?
 
-Here's the brutal truth: 73% of contractors lose deals not because they're too expensive, but because they can't demonstrate their value. You're competing with a number on a page... and numbers lie.
+Here's the brutal truth: most builders think the problem is winning enough work. It isn't. The real constraint is delivery capability — doing the right jobs, at the right margin, with predictable outcomes. When you shift the conversation to delivery and results, price stops being the headline.
 
-And here's the real trap: You're responding to bids. Huge time investments. Lower odds of closing. Razor-thin margins. You're at the mercy of whoever's shopping around for the lowest price.
+And here's the kicker: with the right narrative, you're not responding to bids — you're creating the demand and the budget. You set the scope. You define the priorities. You control the timeline. Winning the work isn't the issue anymore — it's about proving you can deliver the best outcome, fast and confidently.
 
-But here's what the top contractors know: Your biggest obstacle isn't opportunity. It's delivery capacity. When you can prove value instantly, you control your destiny. You're not responding to bids anymore. You're creating demand. Not the market. You do.
-
-What if instead, you could step out of the comparison game entirely? In 2 minutes. Automatically.
+What if you could make that shift in 2 minutes, automatically?
 
 That's ValueBuilder Pro.
 
-Imagine walking into your next appointment with a comprehensive value report that shows homeowners the transformation you're creating for their most valuable asset.
+Walk into your next appointment with a comprehensive value report that reframes the decision around outcomes, not price. It shows the revised value of their home after your work versus its current value, the financial impact of their investment, and the long-term returns they'll realize. It positions you as the trusted advisor — not a number on a page.
 
-This isn't about comparing you to other contractors. It's a complete paradigm shift. Your report reveals the revised value of their home after your work versus its current value. The financial impact of their investment. The long-term returns they'll realize. All presented with the professionalism and education that positions you as their trusted advisor.
+Homeowners see you differently now. You're not another bid to compare. You're the expert who educated them, made the decision frictionless, and showed the total value — not just the cost. Most people choose the firm that advised them on the idea itself.
 
-Homeowners see you differently now. You're not another bid to compare. You're the expert who educated them, made their decision frictionless, and showed them the true value of their investment. Most will go with the firm that advised them on the idea itself.
+The results? Our contractors close 3 to 5 times more deals. Not by dropping prices — by proving delivery capability and demonstrating undeniable value.
 
-The results? Our contractors close 3 to 5 times more deals. Not by dropping prices. By demonstrating undeniable value.
+Even better: this works in every market condition. When others chase price, you control the conversation. When the market dips, you're still closing because you've mastered the one skill that transcends cycles: financial selling tied to delivery.
 
-And here's where it gets really powerful: This financial selling capability works in every market condition. When others are struggling, you're thriving. When the market dips, your competitors disappear. But you? You're closing deals because you've mastered the one skill that transcends market cycles.
+You're not a victim of the market. You're not even a victor in the market. You own your course entirely. While others hope for better conditions, you create your own opportunities — and the budget to fund them.
 
-You're not a victim of the market. You're not even a victor in the market. You own your course entirely. While others pray for better conditions, you create your own opportunities.
+Every report syncs directly to your CRM. No data entry. No missed follow-ups. Just clean workflows that turn prospects into contracts, automatically.
 
-Every report syncs directly to your CRM. No data entry. No missed follow-ups. Just smooth workflows that turn prospects into contracts, automatically.
-
-Here's what this really means: Scale at will. Higher margins. Unshakeable confidence. And the freedom to grow your business on your terms, regardless of what the economy is doing.
+Here's what this really means: scale at will, protect margin, and operate with unshakeable confidence.
 
 Stop chasing bids. Start controlling your destiny.
 
-Right now, while your competitors are racing to the bottom on price, you can rise above with value. The choice is yours.
+Right now, while competitors race to the bottom on price, you can rise above with value.
 
-ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.`;
+ValueBuilder Pro. Reframe around delivery. Create the demand — and the budget. Own your market.`;
 
   // Helper to get audio duration from blob
   const getAudioDuration = (blob: Blob): Promise<number> => {
