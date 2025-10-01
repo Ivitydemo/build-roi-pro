@@ -23,6 +23,8 @@ You know you're worth more. But how do you prove it when homeowners only see dol
 
 Here's the brutal truth: 73% of contractors lose deals not because they're too expensive, but because they can't demonstrate their value. You're competing with a number on a page... and numbers lie.
 
+But here's what the top contractors know: Your biggest obstacle isn't opportunity. It's delivery capacity. When you can prove value instantly, you control when you scale. Not the market. You do.
+
 What if instead, you could show your prospects exactly why you're worth every penny? In 2 minutes. Automatically.
 
 That's ValueBuilder Pro.
@@ -35,13 +37,17 @@ Homeowners see the full picture. Suddenly, you're not competing on price anymore
 
 The results? Our contractors close 3 to 5 times more deals. Not by dropping prices. By demonstrating undeniable value.
 
-And it gets better: Every report syncs directly to your CRM. No data entry. No missed follow-ups. Just smooth workflows that turn prospects into contracts, automatically.
+And here's where it gets really powerful: This financial selling capability works in every market condition. When others are struggling, you're thriving. When the market dips, your competitors disappear. But you? You're closing deals because you've mastered the one skill that transcends market cycles.
 
-Here's what this really means: More wins. Higher margins. Less stress. And finally, getting paid what you're actually worth.
+You're not a victim of the market. You're not even a victor in the market. You own your course entirely. While others pray for better conditions, you create your own opportunities.
+
+Every report syncs directly to your CRM. No data entry. No missed follow-ups. Just smooth workflows that turn prospects into contracts, automatically.
+
+Here's what this really means: Scale at will. Higher margins. Unshakeable confidence. And the freedom to grow your business on your terms, regardless of what the economy is doing.
 
 Right now, while your competitors are racing to the bottom on price, you can rise above with value. The choice is yours.
 
-ValueBuilder Pro. Stop losing on price. Start winning on value.`;
+ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.`;
 
   const checkStatus = async (id: string) => {
     try {
