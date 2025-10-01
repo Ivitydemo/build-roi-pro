@@ -302,7 +302,7 @@ const DemoReport = () => {
               const isPositiveROI = netBenefit > 0;
               
               return (
-                <div key={idx} className="mb-8 last:mb-0">
+                <div key={idx} className="mb-8 last:mb-0 border-2 border-border rounded-xl p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-primary/50 cursor-pointer">
                   <div className="mb-4">
                     <h3 className="font-bold text-xl mb-3">{pkg.name}</h3>
                     
