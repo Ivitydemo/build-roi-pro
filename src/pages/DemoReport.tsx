@@ -182,15 +182,15 @@ const DemoReport = () => {
                 </div>
                 <div className="grid md:grid-cols-4 gap-4 mb-4">
                   <div className="bg-background rounded-lg p-3">
-                    <div className="text-xs text-muted-foreground mb-1">Investment</div>
+                    <div className="text-xs text-muted-foreground mb-1">Investment Required</div>
                     <div className="text-lg font-bold">${pkg.investment.toLocaleString()}</div>
                   </div>
-                  <div className="bg-background rounded-lg p-3">
-                    <div className="text-xs text-muted-foreground mb-1">After Value</div>
-                    <div className="text-lg font-bold">${pkg.afterValue.toLocaleString()}</div>
+                  <div className="bg-gradient-to-br from-success/10 to-success/5 border border-success/20 rounded-lg p-3">
+                    <div className="text-xs font-semibold text-success mb-1">After Renovation Value</div>
+                    <div className="text-lg font-bold text-success">${pkg.afterValue.toLocaleString()}</div>
                   </div>
                   <div className="bg-background rounded-lg p-3">
-                    <div className="text-xs text-muted-foreground mb-1">ROI</div>
+                    <div className="text-xs text-muted-foreground mb-1">Return on Investment</div>
                     <div className="text-lg font-bold text-success">{pkg.roiPercent}%</div>
                   </div>
                   <div className="bg-background rounded-lg p-3">
