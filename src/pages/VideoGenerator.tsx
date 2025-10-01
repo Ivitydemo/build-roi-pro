@@ -304,76 +304,61 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
 
 
             {videoUrl && (
-              <div className="mt-8">
-                <h2 className="text-2xl font-bold mb-4">Your Complete Pitch Video</h2>
-                <div className="mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
-                  <p className="text-sm">
-                    ✨ <strong>Professional pitch video ready!</strong> {audioUrl ? "Play the video to see and hear your complete pitch." : "Add narration by clicking 'Generate Audio' above, then regenerate the video."}
-                  </p>
-                </div>
-                <div className="relative">
+              <div className="mt-8 space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">Your Pitch Video</h2>
+                  <div className="mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                    <p className="text-sm">
+                      🎬 <strong>Professional pitch video generated!</strong> Use this as b-roll or visual content for your presentation.
+                    </p>
+                  </div>
                   <video
                     src={videoUrl}
                     controls
-                    loop={!!audioUrl}
                     className="w-full rounded-lg shadow-lg"
-                    onPlay={() => {
-                      if (audioUrl) {
-                        const audio = document.getElementById('pitch-audio') as HTMLAudioElement;
-                        if (audio) {
-                          audio.currentTime = 0;
-                          audio.play();
-                        }
-                      }
-                    }}
-                    onPause={() => {
-                      if (audioUrl) {
-                        const audio = document.getElementById('pitch-audio') as HTMLAudioElement;
-                        if (audio) audio.pause();
-                      }
-                    }}
-                    onSeeking={(e) => {
-                      if (audioUrl) {
-                        const video = e.currentTarget;
-                        const audio = document.getElementById('pitch-audio') as HTMLAudioElement;
-                        if (audio) audio.currentTime = video.currentTime;
-                      }
-                    }}
                   >
                     Your browser does not support the video tag.
                   </video>
-                  {audioUrl && (
-                    <audio 
-                      id="pitch-audio" 
-                      src={audioUrl} 
-                      className="hidden"
-                      onEnded={() => {
-                        const video = document.querySelector('video');
-                        if (video) video.pause();
-                      }}
-                    />
-                  )}
-                </div>
-                <div className="mt-4 flex gap-4">
-                  <Button
-                    onClick={() => window.open(videoUrl, "_blank")}
-                    variant="outline"
-                  >
-                    Download Video
-                  </Button>
-                  {audioUrl && (
+                  <div className="mt-4">
                     <Button
-                      onClick={() => {
-                        const a = document.createElement('a');
-                        a.href = audioUrl;
-                        a.download = 'pitch-narration.mp3';
-                        a.click();
-                      }}
+                      onClick={() => window.open(videoUrl, "_blank")}
                       variant="outline"
                     >
-                      Download Audio
+                      Download Video
                     </Button>
-                  )}
+                  </div>
+                </div>
+
+                {audioUrl && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-4">Your Voice Narration</h2>
+                    <div className="mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                      <p className="text-sm">
+                        🎙️ <strong>Professional voiceover ready!</strong> Download or play your complete pitch narration.
+                      </p>
+                    </div>
+                    <audio
+                      src={audioUrl}
+                      controls
+                      className="w-full"
+                    />
+                    <div className="mt-4">
+                      <Button
+                        onClick={() => {
+                          const a = document.createElement('a');
+                          a.href = audioUrl;
+                          a.download = 'pitch-narration.mp3';
+                          a.click();
+                        }}
+                        variant="outline"
+                      >
+                        Download Audio
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-4">
                   <Button onClick={() => { setVideoUrl(null); setAudioUrl(null); }} variant="outline">
                     Generate Another
                   </Button>
