@@ -289,62 +289,108 @@ const DemoReport = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calculator className="h-6 w-6 text-primary" />
-              Financing Analysis
+              Financial Analysis & Transparency
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-6">
-              Multiple financing options available to fund your remodel investment. All scenarios assume current market rates.
+              We believe in complete transparency. Here's the full financial picture for each scenario, so you can make an informed decision with absolute confidence.
             </p>
-            {packages.map((pkg, idx) => (
-              <div key={idx} className="mb-6 last:mb-0">
-                <div className="flex items-baseline justify-between mb-3">
-                  <h3 className="font-bold text-lg">{pkg.name}</h3>
-                  <div className="text-right">
-                    <div className="text-sm text-muted-foreground">Target Value (Expected)</div>
-                    <div className="text-xl font-bold text-success">${pkg.afterValue.expected.toLocaleString()}</div>
+            {packages.map((pkg, idx) => {
+              const valueAdd = pkg.afterValue.expected - propertyData.currentValue;
+              const netBenefit = valueAdd - pkg.investment;
+              const isPositiveROI = netBenefit > 0;
+              
+              return (
+                <div key={idx} className="mb-8 last:mb-0">
+                  <div className="mb-4">
+                    <h3 className="font-bold text-xl mb-3">{pkg.name}</h3>
+                    
+                    {/* Value Add Breakdown */}
+                    <div className="bg-muted/30 rounded-lg p-4 mb-4">
+                      <div className="text-sm font-semibold mb-3">Financial Breakdown (Expected Scenario)</div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Current Property Value:</span>
+                          <span className="font-mono font-semibold">${propertyData.currentValue.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Target Value After Remodel:</span>
+                          <span className="font-mono font-semibold">${pkg.afterValue.expected.toLocaleString()}</span>
+                        </div>
+                        <div className="border-t pt-2 flex justify-between items-center">
+                          <span className="font-semibold">Total Value Added:</span>
+                          <span className="font-mono font-bold text-lg text-success">+${valueAdd.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">Your Investment:</span>
+                          <span className="font-mono font-semibold">-${pkg.investment.toLocaleString()}</span>
+                        </div>
+                        <div className={`border-t pt-2 flex justify-between items-center ${isPositiveROI ? 'bg-success/10' : 'bg-muted/50'} -mx-4 px-4 py-2 rounded`}>
+                          <span className="font-bold">Net Financial Benefit:</span>
+                          <span className={`font-mono font-bold text-xl ${isPositiveROI ? 'text-success' : 'text-foreground'}`}>
+                            {isPositiveROI ? '+' : ''}${netBenefit.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Contextual Messaging */}
+                      <div className="mt-4 pt-4 border-t">
+                        {isPositiveROI ? (
+                          <p className="text-sm text-muted-foreground">
+                            <span className="font-semibold text-success">Home Run Deal:</span> This scenario adds ${valueAdd.toLocaleString()} in value while you invest ${pkg.investment.toLocaleString()}, resulting in a net gain of ${netBenefit.toLocaleString()}. You improve your home AND build equity.
+                          </p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            <span className="font-semibold text-foreground">Quality of Life Investment:</span> While this scenario has a ${Math.abs(netBenefit).toLocaleString()} net cost, you're investing in your daily living experience. The true cost is ${Math.abs(netBenefit).toLocaleString()}—not the full ${pkg.investment.toLocaleString()} investment—and you get a home worth ${pkg.afterValue.expected.toLocaleString()}.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Financing Options */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="border rounded-lg p-4 bg-card">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <div className="font-semibold mb-1">HELOC Option</div>
+                            <div className="text-xs text-muted-foreground">Home Equity Line of Credit @ 8.5%</div>
+                          </div>
+                          <DollarSign className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="text-3xl font-bold text-primary mb-2">${pkg.monthly.heloc.toLocaleString()}/mo</div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <div>• 10-year term</div>
+                          <div>• Interest-only available</div>
+                          <div>• Tax-deductible interest*</div>
+                          <div>• Total cost: ${(pkg.monthly.heloc * 120).toLocaleString()}</div>
+                        </div>
+                      </div>
+                      <div className="border rounded-lg p-4 bg-card">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <div className="font-semibold mb-1">Cash-Out Refinance</div>
+                            <div className="text-xs text-muted-foreground">30-year fixed @ 7.25%</div>
+                          </div>
+                          <Home className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="text-3xl font-bold text-primary mb-2">+${pkg.monthly.refinance.toLocaleString()}/mo</div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <div>• Increase to mortgage payment</div>
+                          <div>• Lower overall rate vs HELOC</div>
+                          <div>• Single payment convenience</div>
+                          <div>• Long-term fixed rate security</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="border rounded-lg p-4 bg-card">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="font-semibold mb-1">HELOC Option</div>
-                        <div className="text-xs text-muted-foreground">Home Equity Line of Credit @ 8.5%</div>
-                      </div>
-                      <DollarSign className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="text-3xl font-bold text-primary mb-2">${pkg.monthly.heloc.toLocaleString()}/mo</div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div>• 10-year term</div>
-                      <div>• Interest-only available</div>
-                      <div>• Tax-deductible interest*</div>
-                      <div>• Total cost: ${(pkg.monthly.heloc * 120).toLocaleString()}</div>
-                    </div>
-                  </div>
-                  <div className="border rounded-lg p-4 bg-card">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="font-semibold mb-1">Cash-Out Refinance</div>
-                        <div className="text-xs text-muted-foreground">30-year fixed @ 7.25%</div>
-                      </div>
-                      <Home className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="text-3xl font-bold text-primary mb-2">+${pkg.monthly.refinance.toLocaleString()}/mo</div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div>• Increase to mortgage payment</div>
-                      <div>• Lower overall rate vs HELOC</div>
-                      <div>• Single payment convenience</div>
-                      <div>• Long-term fixed rate security</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            <div className="bg-muted/50 rounded-lg p-4 mt-6 text-sm">
-              <p className="font-semibold mb-2">💡 Smart Financing Tip:</p>
+              );
+            })}
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-6 text-sm">
+              <p className="font-semibold mb-2">💡 Our Commitment to Transparency:</p>
               <p className="text-muted-foreground">
-                Many homeowners use a HELOC for construction, then refinance into the improved value after completion for better long-term rates and to unlock additional equity.
+                We show you the complete math because we believe informed clients make the best decisions. Whether the ROI is positive or not, you deserve to know the true financial impact. Many homeowners use a HELOC for construction, then refinance into the improved value after completion for better long-term rates.
               </p>
             </div>
           </CardContent>
