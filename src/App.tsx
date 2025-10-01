@@ -18,6 +18,7 @@ import VideoGenerator from "./pages/VideoGenerator";
 import PartnerPortal from "./pages/PartnerPortal";
 import PartnerLeads from "./pages/PartnerLeads";
 import PartnerCommissions from "./pages/PartnerCommissions";
+import PartnerComparison from "./pages/PartnerComparison";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/partner-portal" element={<PartnerPortal />} />
           <Route path="/partner-leads" element={<PartnerLeads />} />
           <Route path="/partner-commissions" element={<PartnerCommissions />} />
+          <Route path="/partner-comparison" element={<PartnerComparison />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

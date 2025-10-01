@@ -213,6 +213,9 @@ const PartnerPortal = () => {
             <Button variant="outline" onClick={() => navigate("/partner-commissions")}>
               View Commissions
             </Button>
+            <Button variant="outline" onClick={() => navigate("/partner-comparison")}>
+              Compare Tiers
+            </Button>
           </div>
         </div>
       </div>
