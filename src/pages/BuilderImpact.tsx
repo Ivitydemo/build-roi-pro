@@ -12,17 +12,32 @@ const BuilderImpact = () => {
     monthlyLeads: 50,
     currentCloseRate: 20,
     avgProjectValue: 125000,
-    targetProjects: 24
+    interestedLeadsPercent: 40, // What % of leads express genuine interest
   });
+
+  const [scenario, setScenario] = useState<'inquiries' | 'proactive'>('inquiries');
 
   // Current scenario calculations
   const currentEstimates = Math.round(inputs.monthlyLeads * 12 * (inputs.currentCloseRate / 100));
   const currentRevenue = currentEstimates * inputs.avgProjectValue;
   
-  // With platform scenario (60% close rate on proposals sent)
-  const proposalsSent = Math.round(inputs.monthlyLeads * 12 * 0.5); // Send proposal to 50% of leads
-  const withPlatformProjects = Math.round(proposalsSent * 0.65); // 65% close rate
-  const withPlatformRevenue = withPlatformProjects * inputs.avgProjectValue;
+  // Scenario 1: Responding to Inquiries (warm leads who expressed interest)
+  const interestedLeads = Math.round(inputs.monthlyLeads * 12 * (inputs.interestedLeadsPercent / 100));
+  const inquiriesCloseRate = 0.65; // 65% when educating interested buyers
+  const inquiriesProjects = Math.round(interestedLeads * inquiriesCloseRate);
+  const inquiriesRevenue = inquiriesProjects * inputs.avgProjectValue;
+  
+  // Scenario 2: Proactive Advisory (reaching out to all leads proactively)
+  const proactiveReachOut = Math.round(inputs.monthlyLeads * 12 * 0.60); // Reach 60% of total leads
+  const proactiveCloseRate = 0.35; // 35% close rate for proactive education
+  const proactiveProjects = Math.round(proactiveReachOut * proactiveCloseRate);
+  const proactiveRevenue = proactiveProjects * inputs.avgProjectValue;
+  
+  // Use selected scenario
+  const withPlatformProjects = scenario === 'inquiries' ? inquiriesProjects : proactiveProjects;
+  const withPlatformRevenue = scenario === 'inquiries' ? inquiriesRevenue : proactiveRevenue;
+  const closeRate = scenario === 'inquiries' ? inquiriesCloseRate : proactiveCloseRate;
+  const leadsUsed = scenario === 'inquiries' ? interestedLeads : proactiveReachOut;
   
   const additionalProjects = withPlatformProjects - currentEstimates;
   const additionalRevenue = withPlatformRevenue - currentRevenue;
@@ -61,6 +76,16 @@ const BuilderImpact = () => {
                   onChange={(e) => setInputs({...inputs, monthlyLeads: parseInt(e.target.value) || 0})}
                 />
                 <p className="text-xs text-muted-foreground">How many potential customers contact you per month?</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>What % Express Genuine Interest?</Label>
+                <Input
+                  type="number"
+                  value={inputs.interestedLeadsPercent}
+                  onChange={(e) => setInputs({...inputs, interestedLeadsPercent: parseInt(e.target.value) || 0})}
+                />
+                <p className="text-xs text-muted-foreground">Ask questions, schedule calls, request info - not just tire-kickers</p>
               </div>
 
               <div className="space-y-2">
@@ -105,10 +130,41 @@ const BuilderImpact = () => {
 
           {/* Results Card */}
           <div className="space-y-6">
+            {/* Scenario Selector */}
+            <Card>
+              <CardContent className="pt-6">
+                <Label className="mb-3 block font-semibold">Choose Your Scenario:</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    variant={scenario === 'inquiries' ? 'default' : 'outline'}
+                    onClick={() => setScenario('inquiries')}
+                    className="h-auto py-4 flex flex-col items-start gap-1"
+                  >
+                    <span className="font-semibold">Responding to Inquiries</span>
+                    <span className="text-xs opacity-80">Warm leads who asked questions</span>
+                  </Button>
+                  <Button
+                    variant={scenario === 'proactive' ? 'default' : 'outline'}
+                    onClick={() => setScenario('proactive')}
+                    className="h-auto py-4 flex flex-col items-start gap-1"
+                  >
+                    <span className="font-semibold">Proactive Advisory</span>
+                    <span className="text-xs opacity-80">Reaching out to educate all leads</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5">
               <CardHeader>
-                <CardTitle className="text-2xl">With This Platform</CardTitle>
-                <CardDescription>Conservative projections based on advisor-led sales model</CardDescription>
+                <CardTitle className="text-2xl">
+                  {scenario === 'inquiries' ? 'Responding to Inquiries' : 'Proactive Advisory Approach'}
+                </CardTitle>
+                <CardDescription>
+                  {scenario === 'inquiries' 
+                    ? 'When you educate buyers who already expressed interest'
+                    : 'When you proactively reach out to educate all qualified leads'}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Key Metrics */}
@@ -127,8 +183,10 @@ const BuilderImpact = () => {
                       <TrendingUp className="h-4 w-4 text-success" />
                       <span className="text-sm text-muted-foreground">Close Rate</span>
                     </div>
-                    <p className="text-3xl font-bold text-success">65%</p>
-                    <p className="text-xs text-muted-foreground">when you educate</p>
+                    <p className="text-3xl font-bold text-success">{Math.round(closeRate * 100)}%</p>
+                    <p className="text-xs text-muted-foreground">
+                      {scenario === 'inquiries' ? 'on warm inquiries' : 'on proactive outreach'}
+                    </p>
                   </div>
                 </div>
 
@@ -150,24 +208,61 @@ const BuilderImpact = () => {
                 <div className="space-y-3">
                   <p className="font-semibold text-sm">How This Works:</p>
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-start gap-2">
-                      <span className="text-primary font-bold">1.</span>
-                      <p>
-                        Send proposals to <span className="font-semibold">{proposalsSent} leads/year</span> (50% of your total leads)
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-primary font-bold">2.</span>
-                      <p>
-                        Close <span className="font-semibold">65% of those proposals</span> (vs your current {inputs.currentCloseRate}%)
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-primary font-bold">3.</span>
-                      <p>
-                        Result: <span className="font-semibold">{withPlatformProjects} total projects</span> (up from {currentEstimates})
-                      </p>
-                    </div>
+                    {scenario === 'inquiries' ? (
+                      <>
+                        <div className="flex items-start gap-2">
+                          <span className="text-primary font-bold">1.</span>
+                          <p>
+                            <span className="font-semibold">{interestedLeads} leads/year</span> express genuine interest ({inputs.interestedLeadsPercent}% of total)
+                          </p>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="text-primary font-bold">2.</span>
+                          <p>
+                            Send custom analysis to these <span className="font-semibold">warm, engaged prospects</span>
+                          </p>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="text-primary font-bold">3.</span>
+                          <p>
+                            Close <span className="font-semibold">{Math.round(closeRate * 100)}%</span> when you educate vs bid (current: {inputs.currentCloseRate}%)
+                          </p>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="text-primary font-bold">4.</span>
+                          <p>
+                            Result: <span className="font-semibold">{withPlatformProjects} total projects</span> (up from {currentEstimates})
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-start gap-2">
+                          <span className="text-primary font-bold">1.</span>
+                          <p>
+                            Proactively reach <span className="font-semibold">{proactiveReachOut} leads/year</span> (60% of total pipeline)
+                          </p>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="text-primary font-bold">2.</span>
+                          <p>
+                            Send <span className="font-semibold">unsolicited but valuable</span> property analysis (email sequence)
+                          </p>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="text-primary font-bold">3.</span>
+                          <p>
+                            Close <span className="font-semibold">{Math.round(closeRate * 100)}%</span> by creating demand vs waiting (current: {inputs.currentCloseRate}%)
+                          </p>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="text-primary font-bold">4.</span>
+                          <p>
+                            Result: <span className="font-semibold">{withPlatformProjects} total projects</span> (up from {currentEstimates})
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
