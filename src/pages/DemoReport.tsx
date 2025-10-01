@@ -44,9 +44,40 @@ const DemoReport = () => {
             <Building2 className="h-10 w-10 text-primary" />
             <div>
               <h1 className="text-3xl font-bold">Interactive Demo Report</h1>
-              <p className="text-muted-foreground">See how each report is customized for your client's property</p>
+              <p className="text-muted-foreground">See how to CREATE client budgets instead of waiting to bid</p>
             </div>
           </div>
+          
+          {/* Advisory Positioning Banner */}
+          <Card className="mt-6 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg mb-2">You're Not Bidding. You're Advising.</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    When YOU bring this analysis to a homeowner, you're the trusted advisor showing them an investment opportunity they didn't know existed. You're not competing with other contractors - you created the opportunity.
+                  </p>
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-primary font-bold">60-75%</span>
+                      <span className="text-muted-foreground">close rate (vs 15-25% when bidding)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-primary font-bold">$0</span>
+                      <span className="text-muted-foreground">competitors</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-primary font-bold">100%</span>
+                      <span className="text-muted-foreground">premium pricing</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -260,36 +291,56 @@ const DemoReport = () => {
                 {/* Value Proposition */}
                 <Card className="bg-gradient-to-br from-success/10 to-primary/10 border-success/20">
                   <CardHeader>
-                    <CardTitle>What Makes This Powerful</CardTitle>
+                    <CardTitle>Why This Changes Everything</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 text-sm">
-                    <div className="flex gap-3">
-                      <div className="text-success text-xl">✓</div>
-                      <div>
-                        <p className="font-semibold">Personalized for Each Client</p>
-                        <p className="text-muted-foreground">Their property, their neighborhood, their investment goals</p>
+                  <CardContent className="space-y-4">
+                    <div className="bg-card rounded-lg p-4 border">
+                      <p className="font-bold text-lg mb-2">You Own the Narrative</p>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        When you bring THIS to a homeowner, you're not one of five contractors bidding. You're the expert who showed them a $231,000 equity opportunity they didn't know existed.
+                      </p>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="bg-primary/20 text-primary px-2 py-1 rounded font-semibold">Result:</span>
+                        <span>No price shopping. No negotiation. Just trust.</span>
                       </div>
                     </div>
-                    <div className="flex gap-3">
-                      <div className="text-success text-xl">✓</div>
-                      <div>
-                        <p className="font-semibold">Shows ROI, Not Just Cost</p>
-                        <p className="text-muted-foreground">Clients see the equity gain, not just the expense</p>
+
+                    <div className="space-y-3 text-sm">
+                      <div className="flex gap-3">
+                        <div className="text-success text-xl">✓</div>
+                        <div>
+                          <p className="font-semibold">Educated Buyers Don't Cheap Out</p>
+                          <p className="text-muted-foreground">They understand it's an investment with 148% ROI, not an expense</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="text-success text-xl">✓</div>
+                        <div>
+                          <p className="font-semibold">You Control Your Pipeline</p>
+                          <p className="text-muted-foreground">Generate opportunities based on YOUR capacity, not market timing</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="text-success text-xl">✓</div>
+                        <div>
+                          <p className="font-semibold">Premium Pricing Justified</p>
+                          <p className="text-muted-foreground">When they see $231K gain, your $169K price feels like a steal</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="text-success text-xl">✓</div>
+                        <div>
+                          <p className="font-semibold">Fully Customized = Credibility</p>
+                          <p className="text-muted-foreground">Your branding + their specific property = instant trust</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex gap-3">
-                      <div className="text-success text-xl">✓</div>
-                      <div>
-                        <p className="font-semibold">Financing Built In</p>
-                        <p className="text-muted-foreground">Monthly payment scenarios make it feel affordable</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="text-success text-xl">✓</div>
-                      <div>
-                        <p className="font-semibold">Your Brand, Your Expertise</p>
-                        <p className="text-muted-foreground">Every page reinforces your professional credibility</p>
-                      </div>
+
+                    <div className="bg-primary/10 rounded-lg p-4 border border-primary/30 mt-4">
+                      <p className="font-bold text-center mb-2">The Math is Simple</p>
+                      <p className="text-sm text-center text-muted-foreground">
+                        15% close rate (bidding) → 60% close rate (advisory) = <span className="text-primary font-bold">4x more revenue</span> from the same leads
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
