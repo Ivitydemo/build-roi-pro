@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 const DemoReport = () => {
   const navigate = useNavigate();
+  // Data structures updated to support low/expected/best scenarios
 
   const propertyData = {
     address: '1810 Ivy Crest Drive',
