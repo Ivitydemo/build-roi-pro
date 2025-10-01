@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
+import BrowserNarration from "@/components/BrowserNarration";
 
 const VideoGenerator = () => {
   const navigate = useNavigate();
@@ -301,6 +302,12 @@ ValueBuilder Pro. Stop losing on price. Start winning on value.`;
                   "Generate AI Narration"
                 )}
               </Button>
+            </div>
+
+            <div className="mt-8 p-6 bg-card rounded-lg border border-primary/20 shadow-lg">
+              <h2 className="text-2xl font-bold mb-2">🎧 Browser Narration (Free)</h2>
+              <p className="text-sm text-muted-foreground mb-4">Use your device's built-in voices. No keys required.</p>
+              <BrowserNarration script={pitchScript} />
             </div>
 
             {audioUrl && (
