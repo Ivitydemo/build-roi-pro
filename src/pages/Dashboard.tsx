@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, FileText, Image, Package, Settings, LogOut, PlusCircle } from 'lucide-react';
+import { Building2, FileText, Image, Package, Settings, LogOut, PlusCircle, Webhook } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
@@ -175,6 +175,16 @@ const Dashboard = () => {
                 Photo Library
               </CardTitle>
               <CardDescription>Upload before/after project photos</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/crm-integrations')}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Webhook className="h-5 w-5" />
+                CRM Integrations
+              </CardTitle>
+              <CardDescription>Connect to Buildertrend, HubSpot, and more</CardDescription>
             </CardHeader>
           </Card>
 

@@ -112,6 +112,47 @@ export type Database = {
           },
         ]
       }
+      crm_integrations: {
+        Row: {
+          builder_id: string
+          created_at: string
+          crm_name: string | null
+          id: string
+          is_active: boolean | null
+          last_used_at: string | null
+          updated_at: string
+          webhook_url: string
+        }
+        Insert: {
+          builder_id: string
+          created_at?: string
+          crm_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          updated_at?: string
+          webhook_url: string
+        }
+        Update: {
+          builder_id?: string
+          created_at?: string
+          crm_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          updated_at?: string
+          webhook_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_builder"
+            columns: ["builder_id"]
+            isOneToOne: false
+            referencedRelation: "builder_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       photo_library: {
         Row: {
           builder_id: string

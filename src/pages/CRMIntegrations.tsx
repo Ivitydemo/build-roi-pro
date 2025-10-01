@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,13 +7,55 @@ import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, Webhook, Check, Copy, ExternalLink, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 const CRMIntegrations = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [webhookUrl, setWebhookUrl] = useState('');
   const [testingWebhook, setTestingWebhook] = useState(false);
   const [webhookSaved, setWebhookSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [integrationId, setIntegrationId] = useState<string | null>(null);
+
+  // Load existing webhook configuration
+  useEffect(() => {
+    const loadIntegration = async () => {
+      if (!user) return;
+
+      try {
+        // Get builder profile
+        const { data: profile } = await supabase
+          .from('builder_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profile) {
+          // Get active integration
+          const { data: integration } = await supabase
+            .from('crm_integrations')
+            .select('*')
+            .eq('builder_id', profile.id)
+            .eq('is_active', true)
+            .maybeSingle();
+
+          if (integration) {
+            setWebhookUrl(integration.webhook_url);
+            setIntegrationId(integration.id);
+            setWebhookSaved(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading integration:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadIntegration();
+  }, [user]);
 
   const crms = [
     { name: 'Buildertrend', description: 'Leading construction management software', popular: true },
@@ -35,8 +77,54 @@ const CRMIntegrations = () => {
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Please sign in to save webhook",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      // Store webhook in builder profile or separate integrations table
+      // Get builder profile
+      const { data: profile } = await supabase
+        .from('builder_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile) {
+        throw new Error('Builder profile not found');
+      }
+
+      if (integrationId) {
+        // Update existing integration
+        const { error } = await supabase
+          .from('crm_integrations')
+          .update({ 
+            webhook_url: webhookUrl,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', integrationId);
+
+        if (error) throw error;
+      } else {
+        // Create new integration
+        const { data, error } = await supabase
+          .from('crm_integrations')
+          .insert({
+            builder_id: profile.id,
+            webhook_url: webhookUrl,
+            crm_name: 'Zapier',
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        if (data) setIntegrationId(data.id);
+      }
+
       toast({
         title: "Webhook Saved",
         description: "Your CRM integration webhook has been configured successfully.",
@@ -87,6 +175,14 @@ const CRMIntegrations = () => {
         body: JSON.stringify(testData),
       });
 
+      // Update last_used_at
+      if (integrationId) {
+        await supabase
+          .from('crm_integrations')
+          .update({ last_used_at: new Date().toISOString() })
+          .eq('id', integrationId);
+      }
+
       toast({
         title: "Test Sent",
         description: "Test data sent to your CRM. Check your Zap history or CRM to confirm receipt.",
@@ -128,6 +224,17 @@ Data sent with each report:
       description: "Setup instructions copied to clipboard",
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading integrations...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
