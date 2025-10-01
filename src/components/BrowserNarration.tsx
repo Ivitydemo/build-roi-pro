@@ -11,57 +11,132 @@ interface BrowserNarrationProps {
 
 const supportsSpeech = typeof window !== "undefined" && "speechSynthesis" in window;
 
+// Split long text into manageable chunks/sentences to improve reliability
+function chunkText(text: string, maxLen = 220): string[] {
+  // Split by sentence enders while keeping punctuation
+  const parts = text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const chunks: string[] = [];
+  let buf = "";
+  for (const p of parts) {
+    if ((buf + " " + p).trim().length <= maxLen) {
+      buf = (buf ? buf + " " : "") + p;
+    } else {
+      if (buf) chunks.push(buf);
+      if (p.length <= maxLen) {
+        chunks.push(p);
+        buf = "";
+      } else {
+        // Hard wrap very long sentences
+        for (let i = 0; i < p.length; i += maxLen) {
+          chunks.push(p.slice(i, i + maxLen));
+        }
+        buf = "";
+      }
+    }
+  }
+  if (buf) chunks.push(buf);
+  return chunks;
+}
+
 export default function BrowserNarration({ script }: BrowserNarrationProps) {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [voiceName, setVoiceName] = useState<string>("");
+  const [voiceKey, setVoiceKey] = useState<string>("");
   const [rate, setRate] = useState<number>(1);
   const [pitch, setPitch] = useState<number>(1);
   const [speaking, setSpeaking] = useState(false);
   const [paused, setPaused] = useState(false);
 
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const queueRef = useRef<string[]>([]);
+  const idxRef = useRef<number>(0);
+  const canceledRef = useRef<boolean>(false);
 
-  // Load voices (handle async population in some browsers)
+  // Load voices and set a stable unique key (voiceURI preferred)
   useEffect(() => {
     if (!supportsSpeech) return;
 
     const load = () => {
       const list = window.speechSynthesis.getVoices();
-      setVoices(list);
-      // Pick a sensible default once voices are available
-      if (!voiceName && list.length > 0) {
+      // Deduplicate by voiceURI if present
+      const map = new Map<string, SpeechSynthesisVoice>();
+      for (const v of list) {
+        const key = v.voiceURI || `${v.name}-${v.lang}`;
+        if (!map.has(key)) map.set(key, v);
+      }
+      const unique = Array.from(map.values());
+      setVoices(unique);
+
+      if (!voiceKey && unique.length > 0) {
         const preferred =
-          list.find(v => /en(-|_)?(US|GB)/i.test(v.lang) && /female/i.test(v.name)) ||
-          list.find(v => /en(-|_)?(US|GB)/i.test(v.lang)) ||
-          list[0];
-        setVoiceName(preferred?.name || list[0].name);
+          unique.find((v) => /en(-|_)?(US|GB)/i.test(v.lang) && /female/i.test(v.name)) ||
+          unique.find((v) => /en(-|_)?(US|GB)/i.test(v.lang)) ||
+          unique[0];
+        setVoiceKey(preferred.voiceURI || `${preferred.name}-${preferred.lang}`);
       }
     };
 
+    // Some browsers populate asynchronously
     load();
     window.speechSynthesis.onvoiceschanged = load;
-
     return () => {
       window.speechSynthesis.onvoiceschanged = null;
     };
-  }, [voiceName]);
+  }, [voiceKey]);
 
-  const selectedVoice = useMemo(
-    () => voices.find(v => v.name === voiceName) || null,
-    [voices, voiceName]
-  );
+  const selectedVoice = useMemo(() => {
+    if (!voiceKey) return null;
+    return (
+      voices.find((v) => (v.voiceURI || `${v.name}-${v.lang}`) === voiceKey) || null
+    );
+  }, [voices, voiceKey]);
 
   const stop = () => {
     if (!supportsSpeech) return;
+    canceledRef.current = true;
     window.speechSynthesis.cancel();
-    utteranceRef.current = null;
+    queueRef.current = [];
+    idxRef.current = 0;
     setSpeaking(false);
     setPaused(false);
   };
 
+  const speakNext = () => {
+    if (!supportsSpeech) return;
+    if (canceledRef.current) return;
+
+    const idx = idxRef.current;
+    if (idx >= queueRef.current.length) {
+      setSpeaking(false);
+      setPaused(false);
+      return;
+    }
+
+    const u = new SpeechSynthesisUtterance(queueRef.current[idx]);
+    u.rate = rate; // 0.1 - 10
+    u.pitch = pitch; // 0 - 2
+    if (selectedVoice) u.voice = selectedVoice;
+
+    u.onend = () => {
+      if (canceledRef.current) return;
+      idxRef.current = idx + 1;
+      speakNext();
+    };
+    u.onerror = () => {
+      if (canceledRef.current) return;
+      idxRef.current = idx + 1;
+      speakNext();
+    };
+
+    window.speechSynthesis.speak(u);
+  };
+
   const play = () => {
     if (!supportsSpeech) return;
-    // If currently paused, just resume
+
+    // If paused, just resume
     if (paused) {
       window.speechSynthesis.resume();
       setPaused(false);
@@ -73,25 +148,14 @@ export default function BrowserNarration({ script }: BrowserNarrationProps) {
       stop();
     }
 
-    const u = new SpeechSynthesisUtterance(script);
-    u.rate = rate; // 0.1 - 10
-    u.pitch = pitch; // 0 - 2
-    if (selectedVoice) u.voice = selectedVoice;
+    canceledRef.current = false;
+    queueRef.current = chunkText(script);
+    idxRef.current = 0;
 
-    u.onend = () => {
-      setSpeaking(false);
-      setPaused(false);
-      utteranceRef.current = null;
-    };
-    u.onerror = () => {
-      setSpeaking(false);
-      setPaused(false);
-      utteranceRef.current = null;
-    };
+    if (queueRef.current.length === 0) return;
 
-    utteranceRef.current = u;
-    window.speechSynthesis.speak(u);
     setSpeaking(true);
+    speakNext();
   };
 
   const pause = () => {
@@ -115,16 +179,19 @@ export default function BrowserNarration({ script }: BrowserNarrationProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label>Voice</Label>
-          <Select value={voiceName} onValueChange={setVoiceName}>
+          <Select value={voiceKey} onValueChange={setVoiceKey}>
             <SelectTrigger>
               <SelectValue placeholder="Select a voice" />
             </SelectTrigger>
             <SelectContent className="max-h-72">
-              {voices.map((v) => (
-                <SelectItem key={v.name} value={v.name}>
-                  {v.name} {v.lang ? `(${v.lang})` : ""}
-                </SelectItem>
-              ))}
+              {voices.map((v, i) => {
+                const key = v.voiceURI || `${v.name}-${v.lang}`;
+                return (
+                  <SelectItem key={key} value={key}>
+                    {v.name} {v.lang ? `(${v.lang})` : ""}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>
