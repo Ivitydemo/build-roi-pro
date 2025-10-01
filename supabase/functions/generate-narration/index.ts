@@ -46,8 +46,24 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('OpenAI API error:', response.status, errorText)
-      throw new Error(`OpenAI API error: ${response.status}`)
+      let message = `OpenAI TTS error (${response.status})`
+      try {
+        const parsed = JSON.parse(errorText)
+        message = parsed.error?.message || message
+      } catch {}
+
+      // Surface quota/rate-limit clearly to client
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'OpenAI quota exceeded or rate limited. Please add billing/credits or try again later.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      return new Response(
+        JSON.stringify({ error: message }),
+        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Get the audio as array buffer
