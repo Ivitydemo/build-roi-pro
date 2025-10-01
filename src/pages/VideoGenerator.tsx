@@ -27,15 +27,15 @@ And here's the real trap: You're responding to bids. Huge time investments. Lowe
 
 But here's what the top contractors know: Your biggest obstacle isn't opportunity. It's delivery capacity. When you can prove value instantly, you control your destiny. You're not responding to bids anymore. You're creating demand. Not the market. You do.
 
-What if instead, you could show your prospects exactly why you're worth every penny? In 2 minutes. Automatically.
+What if instead, you could step out of the comparison game entirely? In 2 minutes. Automatically.
 
 That's ValueBuilder Pro.
 
-Imagine walking into your next appointment with a comprehensive value report that proves you're not just the better choice - you're the only choice that makes financial sense.
+Imagine walking into your next appointment with a comprehensive value report that shows homeowners the transformation you're creating for their most valuable asset.
 
-Your report shows market comparables proving your pricing is competitive. Financial projections revealing how much homeowners save long-term. Risk analysis showing why cutting corners costs more. All presented in stunning visuals that scream professional credibility.
+This isn't about comparing you to other contractors. It's a complete paradigm shift. Your report reveals the revised value of their home after your work versus its current value. The financial impact of their investment. The long-term returns they'll realize. All presented with the professionalism and education that positions you as their trusted advisor.
 
-Homeowners see the full picture. Suddenly, you're not competing on price anymore. You're the trusted advisor who just showed them something no other contractor could.
+Homeowners see you differently now. You're not another bid to compare. You're the expert who educated them, made their decision frictionless, and showed them the true value of their investment. Most will go with the firm that advised them on the idea itself.
 
 The results? Our contractors close 3 to 5 times more deals. Not by dropping prices. By demonstrating undeniable value.
 
