@@ -81,9 +81,17 @@ const Index = () => {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">The Fundamental Shift</h2>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-muted-foreground mb-6">
               From reactive bidding to proactive value creation
             </p>
+            <div className="max-w-3xl mx-auto">
+              <p className="text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Scale at YOUR pace rather than being a victim or victor of the market. Solid business cases sell in ALL markets.
+              </p>
+              <p className="text-lg font-bold text-foreground mt-4">
+                Differentiate like a BOSS or get left behind by those that do!
+              </p>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
