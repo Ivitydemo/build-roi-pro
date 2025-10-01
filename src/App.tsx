@@ -19,6 +19,7 @@ import PartnerPortal from "./pages/PartnerPortal";
 import PartnerLeads from "./pages/PartnerLeads";
 import PartnerCommissions from "./pages/PartnerCommissions";
 import PartnerComparison from "./pages/PartnerComparison";
+import BusinessPlan from "./pages/BusinessPlan";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/partner-leads" element={<PartnerLeads />} />
           <Route path="/partner-commissions" element={<PartnerCommissions />} />
           <Route path="/partner-comparison" element={<PartnerComparison />} />
+          <Route path="/business-plan" element={<BusinessPlan />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
