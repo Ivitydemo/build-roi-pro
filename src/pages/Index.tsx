@@ -32,49 +32,76 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 pt-20 pb-24">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12 animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
+      {/* Video Hero Section */}
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+        {/* Video Background */}
+        <div className="absolute inset-0 bg-black">
+          <div className="relative w-full h-full">
+            {/* Placeholder for video - replace with actual video URL */}
+            <video 
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover opacity-40"
+            >
+              {/* Add your video source here */}
+              <source src="/hero-video.mp4" type="video/mp4" />
+            </video>
+            {/* Dark overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="container relative z-10 px-4 py-20">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-6 py-3 rounded-full text-sm font-medium border border-white/20 animate-fade-in">
               <Sparkles className="h-4 w-4" />
-              Transform How You Win Projects
+              Stop Losing to Price Objections • Start Winning with Value
             </div>
-            <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
-              Stop Competing on Price.
+            <h1 className="text-5xl md:text-7xl font-bold leading-tight text-white animate-fade-in-up">
+              They Don't See the Value?
               <br />
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-glow-pulse">
-                Lead with Value.
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+                Show Them the Numbers.
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-              The first platform that shows homeowners the complete financial picture—from before/after value to cash flow impact—so you close at premium pricing without competing.
+            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              2-minute ROI reports that prove $500K+ equity gains. Watch homeowners say "yes" when they see their financial future—not your price tag.
             </p>
-            <div className="flex gap-4 justify-center flex-wrap mb-12">
-              <Button size="lg" className="h-14 px-8 text-lg shadow-xl hover:shadow-2xl transition-all" onClick={() => navigate('/demo')}>
-                See Interactive Demo
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <Button size="lg" className="text-lg px-8 py-6 bg-white text-black hover:bg-white/90 shadow-2xl hover:shadow-white/20" onClick={() => navigate('/demo')}>
+                See Sample Report
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-lg" onClick={() => navigate('/builder-impact')}>
-                Calculate Your ROI
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-transparent text-white border-white/30 hover:bg-white/10 backdrop-blur-sm" onClick={() => navigate('/pricing')}>
+                View Pricing
               </Button>
             </div>
-          </div>
-
-          {/* Stats Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 animate-fade-in">
-            {[
-              { value: '3-5x', label: 'Higher Close Rate', icon: TrendingUp },
-              { value: 'Minimal', label: 'Competition', icon: Target },
-              { value: '60-75%', label: 'Win Rate', icon: BarChart3 },
-              { value: '2 min', label: 'To Generate', icon: Clock }
-            ].map((stat, idx) => (
-              <div key={idx} className="bg-card border rounded-xl p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
-                <stat.icon className="h-8 w-8 text-primary mx-auto mb-3" />
-                <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
+            
+            {/* Stats */}
+            <div className="grid md:grid-cols-3 gap-8 pt-12 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+              <div className="text-center backdrop-blur-sm bg-white/5 rounded-2xl p-6 border border-white/10">
+                <div className="text-4xl md:text-5xl font-bold text-white mb-2">2 Minutes</div>
+                <div className="text-white/70 text-sm md:text-base">From Address to Proposal</div>
               </div>
-            ))}
+              <div className="text-center backdrop-blur-sm bg-white/5 rounded-2xl p-6 border border-white/10">
+                <div className="text-4xl md:text-5xl font-bold text-white mb-2">3-5X</div>
+                <div className="text-white/70 text-sm md:text-base">Higher Close Rate</div>
+              </div>
+              <div className="text-center backdrop-blur-sm bg-white/5 rounded-2xl p-6 border border-white/10">
+                <div className="text-4xl md:text-5xl font-bold text-white mb-2">$500K+</div>
+                <div className="text-white/70 text-sm md:text-base">Average ROI Proven</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex items-start justify-center p-2">
+            <div className="w-1 h-3 bg-white/50 rounded-full animate-pulse" />
           </div>
         </div>
       </section>
