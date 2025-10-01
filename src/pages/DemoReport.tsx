@@ -19,25 +19,25 @@ const DemoReport = () => {
     {
       name: 'Essential Remodel',
       investment: 125000,
-      afterValue: 1850000,
-      roi: 225000,
-      roiPercent: 180,
+      afterValue: { low: 1750000, expected: 1850000, best: 1950000 },
+      roi: { low: 125000, expected: 225000, best: 325000 },
+      roiPercent: { low: 100, expected: 180, best: 260 },
       monthly: { heloc: 1423, refinance: 289 }
     },
     {
       name: 'Complete Transformation',
       investment: 225000,
-      afterValue: 2100000,
-      roi: 500000,
-      roiPercent: 222,
+      afterValue: { low: 1950000, expected: 2100000, best: 2250000 },
+      roi: { low: 350000, expected: 500000, best: 650000 },
+      roiPercent: { low: 156, expected: 222, best: 289 },
       monthly: { heloc: 2562, refinance: 521 }
     },
     {
       name: 'Luxury Upgrade',
       investment: 350000,
-      afterValue: 2450000,
-      roi: 850000,
-      roiPercent: 243,
+      afterValue: { low: 2250000, expected: 2450000, best: 2650000 },
+      roi: { low: 650000, expected: 850000, best: 1050000 },
+      roiPercent: { low: 186, expected: 243, best: 300 },
       monthly: { heloc: 3986, refinance: 810 }
     }
   ];
@@ -142,12 +142,12 @@ const DemoReport = () => {
                     <div className="text-sm text-muted-foreground">Investment</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-success">{packages[1].roiPercent}%</div>
-                    <div className="text-sm text-muted-foreground">ROI</div>
+                    <div className="text-2xl font-bold text-success">{packages[1].roiPercent.expected}%</div>
+                    <div className="text-sm text-muted-foreground">Expected ROI</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">${packages[1].afterValue.toLocaleString()}</div>
-                    <div className="text-sm text-muted-foreground">After Value</div>
+                    <div className="text-2xl font-bold">${packages[1].afterValue.expected.toLocaleString()}</div>
+                    <div className="text-sm text-muted-foreground">Expected Value</div>
                   </div>
                 </div>
               </div>
@@ -176,8 +176,8 @@ const DemoReport = () => {
                     )}
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-success">+${pkg.roi.toLocaleString()}</div>
-                    <div className="text-sm text-muted-foreground">Equity Gain</div>
+                    <div className="text-3xl font-bold text-success">+${pkg.roi.expected.toLocaleString()}</div>
+                    <div className="text-sm text-muted-foreground">Expected Equity Gain</div>
                   </div>
                 </div>
                 <div className="grid md:grid-cols-4 gap-4 mb-4">
@@ -187,15 +187,54 @@ const DemoReport = () => {
                   </div>
                   <div className="bg-gradient-to-br from-success/10 to-success/5 border border-success/20 rounded-lg p-3">
                     <div className="text-xs font-semibold text-success mb-1">After Renovation Value</div>
-                    <div className="text-lg font-bold text-success">${pkg.afterValue.toLocaleString()}</div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Low:</span>
+                        <span className="text-sm font-bold text-success">${pkg.afterValue.low.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-success font-semibold">Expected:</span>
+                        <span className="text-base font-bold text-success">${pkg.afterValue.expected.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Best:</span>
+                        <span className="text-sm font-bold text-success">${pkg.afterValue.best.toLocaleString()}</span>
+                      </div>
+                    </div>
                   </div>
                   <div className="bg-background rounded-lg p-3">
                     <div className="text-xs text-muted-foreground mb-1">Return on Investment</div>
-                    <div className="text-lg font-bold text-success">{pkg.roiPercent}%</div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Low:</span>
+                        <span className="text-sm font-bold text-success">{pkg.roiPercent.low}%</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-success font-semibold">Expected:</span>
+                        <span className="text-base font-bold text-success">{pkg.roiPercent.expected}%</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Best:</span>
+                        <span className="text-sm font-bold text-success">{pkg.roiPercent.best}%</span>
+                      </div>
+                    </div>
                   </div>
                   <div className="bg-background rounded-lg p-3">
                     <div className="text-xs text-muted-foreground mb-1">New $/sqft</div>
-                    <div className="text-lg font-bold">${Math.round(pkg.afterValue / propertyData.sqft)}</div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Low:</span>
+                        <span className="text-sm font-bold">${Math.round(pkg.afterValue.low / propertyData.sqft)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-semibold">Expected:</span>
+                        <span className="text-base font-bold">${Math.round(pkg.afterValue.expected / propertyData.sqft)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Best:</span>
+                        <span className="text-sm font-bold">${Math.round(pkg.afterValue.best / propertyData.sqft)}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="border-t pt-4">
@@ -261,8 +300,8 @@ const DemoReport = () => {
                 <div className="flex items-baseline justify-between mb-3">
                   <h3 className="font-bold text-lg">{pkg.name}</h3>
                   <div className="text-right">
-                    <div className="text-sm text-muted-foreground">Target Value</div>
-                    <div className="text-xl font-bold text-success">${pkg.afterValue.toLocaleString()}</div>
+                    <div className="text-sm text-muted-foreground">Target Value (Expected)</div>
+                    <div className="text-xl font-bold text-success">${pkg.afterValue.expected.toLocaleString()}</div>
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
