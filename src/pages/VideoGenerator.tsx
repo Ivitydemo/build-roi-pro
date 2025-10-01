@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import BrowserNarration from "@/components/BrowserNarration";
 import { PitchVideoPlayer } from "@/components/PitchVideoPlayer";
 import scene01 from "@/assets/pitch-scenes/scene-01.jpg";
@@ -21,12 +19,7 @@ import scene12 from "@/assets/pitch-scenes/scene-12.jpg";
 
 const VideoGenerator = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [prompt, setPrompt] = useState(
-    "Emotional journey: Start with a frustrated contractor losing a deal, papers scattered. Transform to confident contractor presenting on tablet, client nodding with impressed smile. End with handshake and celebration. Professional, cinematic lighting, 4K quality showing before/after transformation."
-  );
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioUrl] = useState<string>("/path-to-pregenerated-audio.mp3"); // Will be set to actual audio
   
   // Define pitch scenes with pre-generated images
   const pitchScenes = [
@@ -81,70 +74,6 @@ Stop chasing bids. Start controlling your destiny. Get ValueBuilder Pro today an
 
 Visit ValueBuilderPro dot com and get started in minutes. Your next deal is waiting — close it like a pro.`;
 
-  // Helper to get audio duration from blob
-  const getAudioDuration = (blob: Blob): Promise<number> => {
-    return new Promise((resolve, reject) => {
-      const audio = new Audio();
-      audio.src = URL.createObjectURL(blob);
-      audio.addEventListener('loadedmetadata', () => {
-        URL.revokeObjectURL(audio.src);
-        resolve(audio.duration);
-      });
-      audio.addEventListener('error', reject);
-    });
-  };
-
-  const handleGenerate = async () => {
-    setIsGenerating(true);
-    
-    try {
-      toast({ title: "Generating", description: "Creating your pitch audio narration..." });
-      
-      const audioResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-narration`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ 
-            script: pitchScript,
-            voice: "nova"
-          }),
-        }
-      );
-
-      if (!audioResponse.ok) {
-        throw new Error("Failed to generate audio narration");
-      }
-
-      const audioData = await audioResponse.json();
-      
-      // Convert base64 to blob URL and store
-      const audioBlob = await fetch(`data:audio/mp3;base64,${audioData.audioContent}`).then(r => r.blob());
-      const audioBlobUrl = URL.createObjectURL(audioBlob);
-      setAudioUrl(audioBlobUrl);
-      
-      const audioDuration = await getAudioDuration(audioBlob);
-      console.log("Audio duration:", audioDuration, "seconds");
-      
-      setIsGenerating(false);
-      
-      toast({ 
-        title: "Complete!", 
-        description: "Your pitch video is ready to play!" 
-      });
-    } catch (error) {
-      console.error("Error generating video:", error);
-      setIsGenerating(false);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate video.",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -160,99 +89,37 @@ Visit ValueBuilderPro dot com and get started in minutes. Your next deal is wait
 
         <div className="max-w-4xl mx-auto">
           <div className="mb-8 p-6 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20">
-            <h1 className="text-4xl font-bold mb-2">Generate Your Pitch Video</h1>
+            <h1 className="text-4xl font-bold mb-2">See ValueBuilder Pro in Action</h1>
             <p className="text-muted-foreground mb-4">
-              Create a compelling video pitch that makes prospects feel the transformation
+              Watch how top contractors transform price objections into closed deals
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div className="p-3 bg-background/50 rounded">
-                <div className="font-semibold text-primary mb-1">🎯 Hook</div>
-                <div className="text-muted-foreground">Start with their pain</div>
+                <div className="font-semibold text-primary mb-1">🎯 The Problem</div>
+                <div className="text-muted-foreground">Losing to cheaper bids</div>
               </div>
               <div className="p-3 bg-background/50 rounded">
-                <div className="font-semibold text-primary mb-1">💡 Solution</div>
-                <div className="text-muted-foreground">Show transformation</div>
+                <div className="font-semibold text-primary mb-1">💡 The Solution</div>
+                <div className="text-muted-foreground">Value-based selling</div>
               </div>
               <div className="p-3 bg-background/50 rounded">
-                <div className="font-semibold text-primary mb-1">✅ Proof</div>
+                <div className="font-semibold text-primary mb-1">✅ The Results</div>
                 <div className="text-muted-foreground">3-5x higher close rates</div>
               </div>
             </div>
           </div>
 
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Video Description
-              </label>
-              <Textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                rows={6}
-                placeholder="Describe the video you want to generate..."
-                className="w-full"
-              />
-            </div>
-
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || !prompt}
-              size="lg"
-              className="w-full"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating Audio...
-                </>
-              ) : (
-                "Generate Complete Pitch Video"
-              )}
-            </Button>
-
-            <div className="mt-8 p-6 bg-card rounded-lg border border-primary/20 shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">🎙️ AI Voice Narration</h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                Generate professional voiceover using OpenAI's text-to-speech. Requires OpenAI API key.
-              </p>
+            <div className="p-6 bg-card rounded-lg border border-primary/20 shadow-lg">
+              <h2 className="text-2xl font-bold mb-4">Complete Pitch Video</h2>
+              <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                <p className="text-sm">
+                  ✨ <strong>Professional pitch video with AI narration</strong> - See exactly how ValueBuilder Pro transforms the contractor-client conversation
+                </p>
+              </div>
+              
               <BrowserNarration script={pitchScript} />
             </div>
-
-
-            {audioUrl && (
-              <div className="mt-8">
-                <h2 className="text-2xl font-bold mb-4">Your Complete Pitch Video</h2>
-                <div className="mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
-                  <p className="text-sm">
-                    ✨ <strong>Professional pitch video with narration ready!</strong> AI-generated scenes perfectly synced with your voice narration.
-                  </p>
-                </div>
-                
-                <PitchVideoPlayer scenes={pitchScenes} audioUrl={audioUrl} />
-
-                <div className="mt-4 flex gap-4">
-                  <Button
-                    onClick={() => {
-                      const a = document.createElement('a');
-                      a.href = audioUrl;
-                      a.download = 'pitch-narration.mp3';
-                      a.click();
-                    }}
-                    variant="outline"
-                  >
-                    Download Audio
-                  </Button>
-                  <Button 
-                    onClick={() => { 
-                      setAudioUrl(null); 
-                    }} 
-                    variant="outline"
-                  >
-                    Generate Another
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -168,6 +168,46 @@ const DemoReport = () => {
           </CardContent>
         </Card>
 
+        {/* Market Comparables - Moved up for context */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Home className="h-6 w-6 text-primary" />
+              Recent Comparable Sales
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-6">
+              Recent sales of similar properties in your area support the projected after-renovation values shown below. All sales within the last 90 days.
+            </p>
+            <div className="space-y-3">
+              {comparables.map((comp, idx) => (
+                <div key={idx} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="font-semibold text-lg">{comp.address}</div>
+                      <div className="text-sm text-muted-foreground">{comp.distance} miles away • {comp.sqft.toLocaleString()} sq ft</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold">${comp.price.toLocaleString()}</div>
+                      <div className="text-sm text-muted-foreground">${comp.priceSqft}/sqft</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground mb-1">Average Comparable Price</div>
+                <div className="text-3xl font-bold text-primary">${Math.round(comparables.reduce((sum, c) => sum + c.priceSqft, 0) / comparables.length)}/sqft</div>
+                <div className="text-sm text-muted-foreground mt-2">
+                  Target after remodel: $385-$434/sqft (well-supported by market data)
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Remodel Package Scenarios */}
         <Card className="mb-8">
           <CardHeader>
@@ -404,46 +444,6 @@ const DemoReport = () => {
               <p className="text-muted-foreground">
                 We show you the complete math because we believe informed clients make the best decisions. Whether the ROI is positive or not, you deserve to know the true financial impact. Many homeowners use a HELOC for construction, then refinance into the improved value after completion for better long-term rates.
               </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Market Comparables */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Home className="h-6 w-6 text-primary" />
-              Recent Comparable Sales
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-6">
-              Recent sales of similar properties in your area support the projected after-renovation values. All sales within the last 90 days.
-            </p>
-            <div className="space-y-3">
-              {comparables.map((comp, idx) => (
-                <div key={idx} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="font-semibold text-lg">{comp.address}</div>
-                      <div className="text-sm text-muted-foreground">{comp.distance} miles away • {comp.sqft.toLocaleString()} sq ft</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">${comp.price.toLocaleString()}</div>
-                      <div className="text-sm text-muted-foreground">${comp.priceSqft}/sqft</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 bg-primary/5 border border-primary/20 rounded-lg p-4">
-              <div className="text-center">
-                <div className="text-sm text-muted-foreground mb-1">Average Comparable Price</div>
-                <div className="text-3xl font-bold text-primary">${Math.round(comparables.reduce((sum, c) => sum + c.priceSqft, 0) / comparables.length)}/sqft</div>
-                <div className="text-sm text-muted-foreground mt-2">
-                  Your target after remodel: $385-$434/sqft (well-supported by market data)
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>
