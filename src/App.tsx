@@ -32,6 +32,8 @@ const App = () => (
           <Route path="/demo" element={<DemoSelection />} />
           <Route path="/demo/package" element={<DemoReport />} />
           <Route path="/demo/itemized" element={<DemoReportItemized />} />
+          {/* Redirect old URL */}
+          <Route path="/demo-itemized" element={<DemoReportItemized />} />
           <Route path="/builder-impact" element={<BuilderImpact />} />
           <Route path="/crm-integrations" element={<CRMIntegrations />} />
           <Route path="/pricing" element={<Pricing />} />
