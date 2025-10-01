@@ -111,14 +111,14 @@ Visit ValueBuilderPro dot com and get started in minutes. Your next deal is wait
 
           <div className="space-y-6">
             <div className="p-6 bg-card rounded-lg border border-primary/20 shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">Complete Pitch Video</h2>
+              <h2 className="text-2xl font-bold mb-4">Watch How Top Contractors Win More Deals</h2>
               <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
                 <p className="text-sm">
                   ✨ <strong>Professional pitch video with AI narration</strong> - See exactly how ValueBuilder Pro transforms the contractor-client conversation
                 </p>
               </div>
               
-              <BrowserNarration script={pitchScript} />
+              <PitchVideoPlayer scenes={pitchScenes} audioUrl={audioUrl} />
             </div>
           </div>
         </div>
