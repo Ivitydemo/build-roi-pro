@@ -55,25 +55,25 @@ const Index = () => {
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-6 py-3 rounded-full text-sm font-medium border border-white/20 animate-fade-in">
               <Sparkles className="h-4 w-4" />
-              Stop Losing to Price Objections • Start Winning with Value
+              "We're going with someone cheaper" • Never hear it again
             </div>
             <h1 className="text-5xl md:text-7xl font-bold leading-tight text-white animate-fade-in-up">
-              They Don't See the Value?
+              Stop Losing Deals You
               <br />
               <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                Show Them the Numbers.
+                Deserve to Win
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              2-minute ROI reports that prove $500K+ equity gains. Watch homeowners say "yes" when they see their financial future—not your price tag.
+              You're not too expensive. You just haven't shown them why you're worth it. Generate 2-minute ROI reports that prove $500K+ equity gains and watch price objections vanish.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <Button size="lg" className="text-lg px-8 py-6 bg-white text-black hover:bg-white/90 shadow-2xl hover:shadow-white/20" onClick={() => navigate('/demo')}>
-                See Sample Report
+                See What You've Been Missing
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-transparent text-white border-white/30 hover:bg-white/10 backdrop-blur-sm" onClick={() => navigate('/pricing')}>
-                View Pricing
+                Start Winning Today
               </Button>
             </div>
             
@@ -107,16 +107,16 @@ const Index = () => {
       <section className="container mx-auto px-4 py-24 bg-gradient-to-br from-card/50 to-muted/20 rounded-3xl my-12 border">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">The Fundamental Shift</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">The Game Has Changed</h2>
             <p className="text-xl text-muted-foreground mb-6">
-              From reactive bidding to proactive value creation
+              Are you still playing the old game while your competitors have moved on?
             </p>
             <div className="max-w-3xl mx-auto">
               <p className="text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Scale at YOUR pace rather than being a victim or victor of the market. Solid business cases sell in ALL markets.
+                Every day you wait is another deal lost to contractors who prove their value instead of defending their price.
               </p>
               <p className="text-lg font-bold text-foreground mt-4">
-                Differentiate like a BOSS or get left behind by those that do!
+                The question isn't IF you'll make this shift. It's WHEN—and how much money you'll lose before you do.
               </p>
             </div>
           </div>
@@ -134,11 +134,11 @@ const Index = () => {
                 </div>
                 <ul className="space-y-4">
                   {[
-                    'Wait for RFPs and compete with 5+ contractors',
-                    'Race to the bottom on price',
-                    'Deal with uneducated buyers',
-                    'Beg for work you may never get',
-                    'Close 15-25% if you\'re lucky'
+                    'Wait for RFPs and compete with 5+ contractors (exhausting)',
+                    'Race to the bottom on price (soul-crushing)',
+                    'Deal with uneducated buyers who only see cost',
+                    'Beg for work you may never get (demoralizing)',
+                    'Close 15-25% if you\'re lucky (barely profitable)'
                   ].map((item, idx) => (
                     <li key={idx} className="flex gap-3 items-start">
                       <div className="mt-1 h-2 w-2 rounded-full bg-destructive flex-shrink-0" />
@@ -161,11 +161,11 @@ const Index = () => {
                 </div>
                 <ul className="space-y-4">
                   {[
-                    'YOU bring the opportunity with data',
-                    'Educate homeowners on investment value',
-                    'Position as trusted financial advisor',
-                    'Create budgets based on YOUR capacity',
-                    'Close 60-75% when you own the narrative'
+                    'YOU bring the opportunity with undeniable data',
+                    'Educate homeowners before they talk to anyone else',
+                    'Position as the trusted financial advisor (not vendor)',
+                    'Work only on projects that fit YOUR schedule',
+                    'Close 60-75% because YOU own the entire narrative'
                   ].map((item, idx) => (
                     <li key={idx} className="flex gap-3 items-start">
                       <CheckCircle className="mt-1 h-5 w-5 text-primary flex-shrink-0" />
