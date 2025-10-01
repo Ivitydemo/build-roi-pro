@@ -6,6 +6,18 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
 import BrowserNarration from "@/components/BrowserNarration";
 import { PitchVideoPlayer } from "@/components/PitchVideoPlayer";
+import scene01 from "@/assets/pitch-scenes/scene-01.jpg";
+import scene02 from "@/assets/pitch-scenes/scene-02.jpg";
+import scene03 from "@/assets/pitch-scenes/scene-03.jpg";
+import scene04 from "@/assets/pitch-scenes/scene-04.jpg";
+import scene05 from "@/assets/pitch-scenes/scene-05.jpg";
+import scene06 from "@/assets/pitch-scenes/scene-06.jpg";
+import scene07 from "@/assets/pitch-scenes/scene-07.jpg";
+import scene08 from "@/assets/pitch-scenes/scene-08.jpg";
+import scene09 from "@/assets/pitch-scenes/scene-09.jpg";
+import scene10 from "@/assets/pitch-scenes/scene-10.jpg";
+import scene11 from "@/assets/pitch-scenes/scene-11.jpg";
+import scene12 from "@/assets/pitch-scenes/scene-12.jpg";
 
 const VideoGenerator = () => {
   const navigate = useNavigate();
@@ -14,60 +26,22 @@ const VideoGenerator = () => {
     "Emotional journey: Start with a frustrated contractor losing a deal, papers scattered. Transform to confident contractor presenting on tablet, client nodding with impressed smile. End with handshake and celebration. Professional, cinematic lighting, 4K quality showing before/after transformation."
   );
   const [isGenerating, setIsGenerating] = useState(false);
-  const [scenes, setScenes] = useState<any[] | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [isGeneratingScenes, setIsGeneratingScenes] = useState(false);
   
-  // Define pitch scenes with timing
+  // Define pitch scenes with pre-generated images
   const pitchScenes = [
-    {
-      duration: 15,
-      prompt: "Professional contractor sitting at desk, frustrated expression, scattered papers and calculator, rejected quote document visible, dramatic lighting, photorealistic, 4K quality"
-    },
-    {
-      duration: 12,
-      prompt: "Close-up of homeowner comparing multiple contractor quotes on kitchen table, calculator and pen, confused expression, overhead lighting, photorealistic"
-    },
-    {
-      duration: 18,
-      prompt: "Split screen comparison: left side showing cheap contractor with poor work quality, right side showing professional contractor with quality materials, dramatic contrast, photorealistic"
-    },
-    {
-      duration: 15,
-      prompt: "Contractor responding to bid request on laptop, clock showing late hours, stack of bid requests, tired expression, home office setting, cinematic lighting"
-    },
-    {
-      duration: 20,
-      prompt: "Confident contractor presenting ValueBuilder Pro report on tablet to interested homeowner couple in their living room, nodding with impressed smiles, modern home interior, professional lighting"
-    },
-    {
-      duration: 15,
-      prompt: "Tablet screen showing ValueBuilder Pro interface with home value comparison before and after renovation, graphs and charts, clean modern UI design, close-up shot"
-    },
-    {
-      duration: 18,
-      prompt: "Homeowner couple looking at detailed value report, pointing at financial impact section, engaged and educated expressions, comfortable home setting, warm lighting"
-    },
-    {
-      duration: 12,
-      prompt: "Contractor shaking hands with happy homeowner clients, signed contract visible on table, celebration mood, professional attire, bright daylight through windows"
-    },
-    {
-      duration: 15,
-      prompt: "Graph showing 3-5x increase in closed deals, upward trending arrow, professional business chart with ValueBuilder Pro branding, clean corporate aesthetic"
-    },
-    {
-      duration: 18,
-      prompt: "Contractor working confidently in different market conditions - sunny day, rainy day, showing adaptability and success, split timeline view, cinematic quality"
-    },
-    {
-      duration: 12,
-      prompt: "ValueBuilder Pro CRM dashboard on computer screen showing automated workflow, synced customer data, clean interface, professional workspace background"
-    },
-    {
-      duration: 17,
-      prompt: "Successful contractor team in modern office, growth charts on wall, confident poses, celebrating success, professional business environment, bright lighting"
-    }
+    { duration: 15, imageUrl: scene01, prompt: "Professional contractor at desk" },
+    { duration: 12, imageUrl: scene02, prompt: "Homeowner comparing quotes" },
+    { duration: 18, imageUrl: scene03, prompt: "Quality comparison" },
+    { duration: 15, imageUrl: scene04, prompt: "Late night bid work" },
+    { duration: 20, imageUrl: scene05, prompt: "Presenting ValueBuilder Pro" },
+    { duration: 15, imageUrl: scene06, prompt: "ValueBuilder interface" },
+    { duration: 18, imageUrl: scene07, prompt: "Reviewing value report" },
+    { duration: 12, imageUrl: scene08, prompt: "Successful deal closing" },
+    { duration: 15, imageUrl: scene09, prompt: "Growth metrics" },
+    { duration: 18, imageUrl: scene10, prompt: "All-weather success" },
+    { duration: 12, imageUrl: scene11, prompt: "CRM automation" },
+    { duration: 17, imageUrl: scene12, prompt: "Team celebration" }
   ];
 
   // AI-optimized pitch script using PAS framework + emotional storytelling
@@ -122,11 +96,9 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
 
   const handleGenerate = async () => {
     setIsGenerating(true);
-    setScenes(null);
     
     try {
-      // Step 1: Generate audio first to get duration
-      toast({ title: "Step 1/2", description: "Generating voice narration..." });
+      toast({ title: "Generating", description: "Creating your pitch audio narration..." });
       
       const audioResponse = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-narration`,
@@ -155,37 +127,13 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
       setAudioUrl(audioBlobUrl);
       
       const audioDuration = await getAudioDuration(audioBlob);
-      
       console.log("Audio duration:", audioDuration, "seconds");
       
-      // Step 2: Generate scene images
-      setIsGeneratingScenes(true);
-      toast({ title: "Step 2/2", description: "Generating scene images for your pitch..." });
-      
-      const scenesResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-pitch-scenes`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ scenes: pitchScenes }),
-        }
-      );
-
-      if (!scenesResponse.ok) {
-        throw new Error("Failed to generate scene images");
-      }
-
-      const scenesData = await scenesResponse.json();
-      setScenes(scenesData.scenes);
-      setIsGeneratingScenes(false);
       setIsGenerating(false);
       
       toast({ 
         title: "Complete!", 
-        description: "Your pitch video with narration is ready to play!" 
+        description: "Your pitch video is ready to play!" 
       });
     } catch (error) {
       console.error("Error generating video:", error);
@@ -248,14 +196,14 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
 
             <Button
               onClick={handleGenerate}
-              disabled={isGenerating || isGeneratingScenes || !prompt}
+              disabled={isGenerating || !prompt}
               size="lg"
               className="w-full"
             >
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isGeneratingScenes ? "Generating Scene Images..." : "Generating Audio..."}
+                  Generating Audio...
                 </>
               ) : (
                 "Generate Complete Pitch Video"
@@ -271,7 +219,7 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
             </div>
 
 
-            {scenes && audioUrl && (
+            {audioUrl && (
               <div className="mt-8">
                 <h2 className="text-2xl font-bold mb-4">Your Complete Pitch Video</h2>
                 <div className="mb-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
@@ -280,7 +228,7 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
                   </p>
                 </div>
                 
-                <PitchVideoPlayer scenes={scenes} audioUrl={audioUrl} />
+                <PitchVideoPlayer scenes={pitchScenes} audioUrl={audioUrl} />
 
                 <div className="mt-4 flex gap-4">
                   <Button
@@ -296,7 +244,6 @@ ValueBuilder Pro. Stop losing on price. Start winning on value. Own your market.
                   </Button>
                   <Button 
                     onClick={() => { 
-                      setScenes(null); 
                       setAudioUrl(null); 
                     }} 
                     variant="outline"
