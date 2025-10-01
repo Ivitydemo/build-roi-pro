@@ -32,7 +32,9 @@ const VideoGenerator = () => {
       const data = await response.json();
       
       if (data.status === "succeeded") {
-        setVideoUrl(data.output?.[0] || data.output);
+        const out = data.output;
+        const url = typeof out === "string" ? out : out?.url ?? out?.[0]?.url ?? out?.[0];
+        if (url) setVideoUrl(url as string);
         setIsGenerating(false);
         toast({
           title: "Video generated!",
@@ -78,7 +80,32 @@ const VideoGenerator = () => {
       );
 
       const data = await response.json();
-      
+
+      if (!response.ok) {
+        const msg = data?.error as string | undefined;
+        if (response.status === 429) {
+          toast({
+            title: "Rate limited",
+            description: "Replicate free tier limit hit. Please wait a few seconds or add a payment method to your Replicate account.",
+            variant: "destructive",
+          });
+          setIsGenerating(false);
+          return;
+        }
+        if (response.status === 422) {
+          toast({
+            title: "Model access error",
+            description: msg || "The selected video model isn't available. Please try again.",
+            variant: "destructive",
+          });
+          setIsGenerating(false);
+          return;
+        }
+        toast({ title: "Error", description: msg || "Failed to start video generation.", variant: "destructive" });
+        setIsGenerating(false);
+        return;
+      }
+
       if (data.id) {
         setPredictionId(data.id);
         toast({
@@ -86,6 +113,16 @@ const VideoGenerator = () => {
           description: "This may take a few minutes.",
         });
         checkStatus(data.id);
+      } else if (data.output) {
+        const out = data.output;
+        const url = typeof out === "string" ? out : out?.url ?? out?.[0]?.url ?? out?.[0];
+        if (url) {
+          setVideoUrl(url as string);
+          setIsGenerating(false);
+          toast({ title: "Video generated!", description: "Your pitch video is ready." });
+        } else {
+          throw new Error("No output URL found");
+        }
       } else {
         throw new Error("No prediction ID returned");
       }

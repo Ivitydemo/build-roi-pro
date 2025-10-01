@@ -46,27 +46,28 @@ serve(async (req) => {
 
     console.log("Generating video with prompt:", body.prompt)
     
-    // Using minimax/video-01 for text-to-video generation
-    const output = await replicate.predictions.create({
-      version: "9cabfafb3c50eee951db99e3bb9e72e0f6c6b6b3c50eee951db99e3bb9e72e0f",
+    // Using minimax/video-01 for text-to-video generation (no version needed)
+    const prediction = await replicate.predictions.create({
+      // Use the model identifier to avoid version issues
+      model: "minimax/video-01",
       input: {
         prompt: body.prompt,
-        negative_prompt: "low quality, worst quality, deformed, distorted"
-      }
+        negative_prompt: "low quality, worst quality, deformed, distorted",
+      },
     })
 
-    console.log("Generation response:", output)
-    return new Response(JSON.stringify(output), {
+    console.log("Generation response:", prediction)
+    return new Response(JSON.stringify(prediction), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
     console.error("Error in generate-video function:", error)
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : "Unknown error" 
-    }), {
+    const status = (error as any)?.response?.status ?? 500
+    const message = (error as any)?.message ?? "Unknown error"
+    return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
+      status,
     })
   }
 })
