@@ -153,6 +153,270 @@ export type Database = {
           },
         ]
       }
+      partner_commissions: {
+        Row: {
+          commission_amount: number
+          commission_type: string
+          created_at: string
+          id: string
+          lead_id: string | null
+          notes: string | null
+          paid_at: string | null
+          partner_id: string
+          payment_method: string | null
+          payment_reference: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          commission_amount: number
+          commission_type: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          partner_id: string
+          payment_method?: string | null
+          payment_reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          commission_amount?: number
+          commission_type?: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          partner_id?: string
+          payment_method?: string | null
+          payment_reference?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_commissions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "partner_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_commissions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_leads: {
+        Row: {
+          builder_id: string | null
+          commission_amount: number | null
+          commission_paid: boolean | null
+          commission_paid_at: string | null
+          conversion_value: number | null
+          converted_at: string | null
+          created_at: string
+          estimated_project_value: number | null
+          homeowner_email: string | null
+          homeowner_name: string | null
+          homeowner_phone: string | null
+          id: string
+          lead_source: string
+          lead_type: string
+          notes: string | null
+          partner_id: string
+          property_address: string | null
+          property_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          builder_id?: string | null
+          commission_amount?: number | null
+          commission_paid?: boolean | null
+          commission_paid_at?: string | null
+          conversion_value?: number | null
+          converted_at?: string | null
+          created_at?: string
+          estimated_project_value?: number | null
+          homeowner_email?: string | null
+          homeowner_name?: string | null
+          homeowner_phone?: string | null
+          id?: string
+          lead_source: string
+          lead_type: string
+          notes?: string | null
+          partner_id: string
+          property_address?: string | null
+          property_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          builder_id?: string | null
+          commission_amount?: number | null
+          commission_paid?: boolean | null
+          commission_paid_at?: string | null
+          conversion_value?: number | null
+          converted_at?: string | null
+          created_at?: string
+          estimated_project_value?: number | null
+          homeowner_email?: string | null
+          homeowner_name?: string | null
+          homeowner_phone?: string | null
+          id?: string
+          lead_source?: string
+          lead_type?: string
+          notes?: string | null
+          partner_id?: string
+          property_address?: string | null
+          property_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_leads_builder_id_fkey"
+            columns: ["builder_id"]
+            isOneToOne: false
+            referencedRelation: "builder_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_leads_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_leads_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_tiers: {
+        Row: {
+          co_marketing: boolean
+          conversion_fee_percentage: number
+          created_at: string
+          exclusive_territory: boolean
+          id: string
+          lead_fee_flat: number
+          min_monthly_leads: number
+          priority_support: boolean
+          tier_level: number
+          tier_name: string
+          updated_at: string
+        }
+        Insert: {
+          co_marketing?: boolean
+          conversion_fee_percentage: number
+          created_at?: string
+          exclusive_territory?: boolean
+          id?: string
+          lead_fee_flat?: number
+          min_monthly_leads?: number
+          priority_support?: boolean
+          tier_level: number
+          tier_name: string
+          updated_at?: string
+        }
+        Update: {
+          co_marketing?: boolean
+          conversion_fee_percentage?: number
+          created_at?: string
+          exclusive_territory?: boolean
+          id?: string
+          lead_fee_flat?: number
+          min_monthly_leads?: number
+          priority_support?: boolean
+          tier_level?: number
+          tier_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      partners: {
+        Row: {
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          conversion_rate: number | null
+          created_at: string
+          id: string
+          lifetime_value: number | null
+          partner_type: string
+          quality_score: number | null
+          service_areas: string[] | null
+          specialties: string[] | null
+          status: string
+          tier_id: string | null
+          total_conversions: number | null
+          total_leads_sent: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          conversion_rate?: number | null
+          created_at?: string
+          id?: string
+          lifetime_value?: number | null
+          partner_type: string
+          quality_score?: number | null
+          service_areas?: string[] | null
+          specialties?: string[] | null
+          status?: string
+          tier_id?: string | null
+          total_conversions?: number | null
+          total_leads_sent?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          conversion_rate?: number | null
+          created_at?: string
+          id?: string
+          lifetime_value?: number | null
+          partner_type?: string
+          quality_score?: number | null
+          service_areas?: string[] | null
+          specialties?: string[] | null
+          status?: string
+          tier_id?: string | null
+          total_conversions?: number | null
+          total_leads_sent?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partners_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "partner_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       photo_library: {
         Row: {
           builder_id: string

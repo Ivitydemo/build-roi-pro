@@ -15,6 +15,9 @@ import BuilderImpact from "./pages/BuilderImpact";
 import CRMIntegrations from "./pages/CRMIntegrations";
 import Pricing from "./pages/Pricing";
 import VideoGenerator from "./pages/VideoGenerator";
+import PartnerPortal from "./pages/PartnerPortal";
+import PartnerLeads from "./pages/PartnerLeads";
+import PartnerCommissions from "./pages/PartnerCommissions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +43,9 @@ const App = () => (
           <Route path="/crm-integrations" element={<CRMIntegrations />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/video-generator" element={<VideoGenerator />} />
+          <Route path="/partner-portal" element={<PartnerPortal />} />
+          <Route path="/partner-leads" element={<PartnerLeads />} />
+          <Route path="/partner-commissions" element={<PartnerCommissions />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
