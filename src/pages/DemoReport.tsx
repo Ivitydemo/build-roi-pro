@@ -166,7 +166,7 @@ const DemoReport = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {packages.map((pkg, idx) => (
-              <div key={idx} className={`border-2 rounded-xl p-6 ${idx === 1 ? 'border-primary bg-primary/5' : 'border-border'}`}>
+              <div key={idx} className={`border-2 rounded-xl p-6 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] cursor-pointer ${idx === 1 ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-2xl font-bold mb-1">{pkg.name}</h3>
