@@ -258,7 +258,13 @@ const DemoReport = () => {
             </p>
             {packages.map((pkg, idx) => (
               <div key={idx} className="mb-6 last:mb-0">
-                <h3 className="font-bold text-lg mb-3">{pkg.name}</h3>
+                <div className="flex items-baseline justify-between mb-3">
+                  <h3 className="font-bold text-lg">{pkg.name}</h3>
+                  <div className="text-right">
+                    <div className="text-sm text-muted-foreground">Target Value</div>
+                    <div className="text-xl font-bold text-success">${pkg.afterValue.toLocaleString()}</div>
+                  </div>
+                </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="border rounded-lg p-4 bg-card">
                     <div className="flex items-start justify-between mb-3">
@@ -268,13 +274,7 @@ const DemoReport = () => {
                       </div>
                       <DollarSign className="h-5 w-5 text-primary" />
                     </div>
-                    <div className="flex items-baseline gap-3 mb-2">
-                      <div className="text-3xl font-bold text-primary">${pkg.monthly.heloc.toLocaleString()}/mo</div>
-                      <div className="text-right flex-1">
-                        <div className="text-xs text-muted-foreground">→ reaches</div>
-                        <div className="text-lg font-bold text-success">${pkg.afterValue.toLocaleString()}</div>
-                      </div>
-                    </div>
+                    <div className="text-3xl font-bold text-primary mb-2">${pkg.monthly.heloc.toLocaleString()}/mo</div>
                     <div className="text-sm text-muted-foreground space-y-1">
                       <div>• 10-year term</div>
                       <div>• Interest-only available</div>
@@ -290,13 +290,7 @@ const DemoReport = () => {
                       </div>
                       <Home className="h-5 w-5 text-primary" />
                     </div>
-                    <div className="flex items-baseline gap-3 mb-2">
-                      <div className="text-3xl font-bold text-primary">+${pkg.monthly.refinance.toLocaleString()}/mo</div>
-                      <div className="text-right flex-1">
-                        <div className="text-xs text-muted-foreground">→ reaches</div>
-                        <div className="text-lg font-bold text-success">${pkg.afterValue.toLocaleString()}</div>
-                      </div>
-                    </div>
+                    <div className="text-3xl font-bold text-primary mb-2">+${pkg.monthly.refinance.toLocaleString()}/mo</div>
                     <div className="text-sm text-muted-foreground space-y-1">
                       <div>• Increase to mortgage payment</div>
                       <div>• Lower overall rate vs HELOC</div>
