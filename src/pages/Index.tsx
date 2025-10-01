@@ -19,14 +19,17 @@ const Index = () => {
           <p className="text-xl text-muted-foreground mb-8">
             Generate professional remodel ROI proposals in minutes. Show clients exactly how much equity they'll gain.
           </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate('/auth')}>
-              Get Started Free
+          <div className="flex gap-4 justify-center flex-wrap">
+            <Button size="lg" onClick={() => navigate('/demo')}>
+              Try Interactive Demo
             </Button>
             <Button size="lg" variant="outline" onClick={() => navigate('/auth')}>
               Sign In
             </Button>
           </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            See how reports are customized for each client →
+          </p>
         </div>
       </section>
 
