@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Setup from "./pages/Setup";
 import DemoReport from "./pages/DemoReport";
 import BuilderImpact from "./pages/BuilderImpact";
+import CRMIntegrations from "./pages/CRMIntegrations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/setup" element={<Setup />} />
           <Route path="/demo" element={<DemoReport />} />
           <Route path="/builder-impact" element={<BuilderImpact />} />
+          <Route path="/crm-integrations" element={<CRMIntegrations />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
