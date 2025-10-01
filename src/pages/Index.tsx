@@ -68,28 +68,28 @@ const Index = () => {
               You're not too expensive. You just haven't shown them why you're worth it. Generate 2-minute ROI reports that prove $500K+ equity gains and watch price objections vanish.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <Button size="lg" className="text-lg px-8 py-6 bg-white text-black hover:bg-white/90 shadow-2xl hover:shadow-white/20" onClick={() => navigate('/demo')}>
+              <Button size="lg" className="text-lg px-8 py-6 bg-white text-black hover:bg-gray-100 shadow-2xl" onClick={() => navigate('/demo')}>
                 See What You've Been Missing
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-transparent text-white border-white/30 hover:bg-white/10 backdrop-blur-sm" onClick={() => navigate('/pricing')}>
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-white/10 text-white border-2 border-white hover:bg-white hover:text-black backdrop-blur-sm transition-all" onClick={() => navigate('/pricing')}>
                 Start Winning Today
               </Button>
             </div>
             
             {/* Stats */}
             <div className="grid md:grid-cols-3 gap-8 pt-12 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-              <div className="text-center backdrop-blur-sm bg-white/5 rounded-2xl p-6 border border-white/10">
+              <div className="text-center backdrop-blur-sm bg-white/10 rounded-2xl p-6 border-2 border-white/20">
                 <div className="text-4xl md:text-5xl font-bold text-white mb-2">2 Minutes</div>
-                <div className="text-white/70 text-sm md:text-base">From Address to Proposal</div>
+                <div className="text-white/90 text-sm md:text-base font-medium">From Address to Proposal</div>
               </div>
-              <div className="text-center backdrop-blur-sm bg-white/5 rounded-2xl p-6 border border-white/10">
+              <div className="text-center backdrop-blur-sm bg-white/10 rounded-2xl p-6 border-2 border-white/20">
                 <div className="text-4xl md:text-5xl font-bold text-white mb-2">3-5X</div>
-                <div className="text-white/70 text-sm md:text-base">Higher Close Rate</div>
+                <div className="text-white/90 text-sm md:text-base font-medium">Higher Close Rate</div>
               </div>
-              <div className="text-center backdrop-blur-sm bg-white/5 rounded-2xl p-6 border border-white/10">
+              <div className="text-center backdrop-blur-sm bg-white/10 rounded-2xl p-6 border-2 border-white/20">
                 <div className="text-4xl md:text-5xl font-bold text-white mb-2">$500K+</div>
-                <div className="text-white/70 text-sm md:text-base">Average ROI Proven</div>
+                <div className="text-white/90 text-sm md:text-base font-medium">Average ROI Proven</div>
               </div>
             </div>
           </div>
