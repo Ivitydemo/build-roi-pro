@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Building2, TrendingUp, Clock, CheckCircle, Sparkles, DollarSign, Users, Target, ArrowRight, BarChart3, Shield } from 'lucide-react';
+import { Building2, TrendingUp, Clock, CheckCircle, Sparkles, DollarSign, Users, Target, ArrowRight, BarChart3, Shield, Webhook } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -179,7 +179,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-4 gap-8">
             {[
               {
                 icon: Clock,
@@ -190,6 +190,11 @@ const Index = () => {
                 icon: DollarSign,
                 title: 'Complete Financial Picture',
                 description: 'Show before/after value, monthly cash flow impact, equity gain, and multiple financing scenarios.'
+              },
+              {
+                icon: Webhook,
+                title: 'Auto-Sync to Your CRM',
+                description: 'Automatically send leads to Buildertrend, CoConstruct, HubSpot, or any CRM via Zapier integration.'
               },
               {
                 icon: Shield,
@@ -228,6 +233,7 @@ const Index = () => {
               { icon: DollarSign, text: 'HELOC and refinance calculators' },
               { icon: Users, text: 'Before/after photo library' },
               { icon: Target, text: 'Custom remodel packages' },
+              { icon: Webhook, text: 'CRM integrations (Buildertrend, HubSpot, more)' },
               { icon: CheckCircle, text: 'Branded PDF reports' },
               { icon: BarChart3, text: 'Excel spreadsheet exports' },
               { icon: Sparkles, text: 'Email delivery system' },
@@ -240,6 +246,90 @@ const Index = () => {
                 <span className="text-lg font-medium">{feature.text}</span>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CRM Integration Showcase */}
+      <section className="container mx-auto px-4 py-24">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <Webhook className="h-4 w-4" />
+              Seamless Integration
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Works With Your Existing CRM</h2>
+            <p className="text-xl text-muted-foreground">
+              Automatically send every lead to your favorite tools
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-br from-card to-muted/20 border-2 rounded-3xl p-8 md:p-12">
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
+              <div>
+                <h3 className="text-2xl font-bold mb-6">Supported CRMs</h3>
+                <div className="space-y-3">
+                  {[
+                    'Buildertrend',
+                    'CoConstruct', 
+                    'BuilderPrime',
+                    'HubSpot',
+                    'Salesforce',
+                    'JobNimbus',
+                    'ServiceTitan',
+                    '+ Any CRM via Zapier'
+                  ].map((crm, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-3 bg-background rounded-lg">
+                      <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                      <span className="font-medium">{crm}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold mb-6">Auto-Sync Every Report</h3>
+                <div className="space-y-6">
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                      1
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-1">Generate Report</h4>
+                      <p className="text-sm text-muted-foreground">Create your professional ROI analysis</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                      2
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-1">Instant CRM Sync</h4>
+                      <p className="text-sm text-muted-foreground">Lead data automatically sent to your CRM</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                      3
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-1">Follow Up & Close</h4>
+                      <p className="text-sm text-muted-foreground">Your CRM has all the data to nurture the lead</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 p-6 bg-primary/5 border border-primary/20 rounded-xl">
+                  <p className="text-sm font-medium mb-2">Data Sent to Your CRM:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Property address & details</li>
+                    <li>• Homeowner contact info</li>
+                    <li>• Project value & package details</li>
+                    <li>• Report link & ROI analysis</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
