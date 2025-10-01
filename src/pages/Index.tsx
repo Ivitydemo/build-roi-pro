@@ -21,6 +21,9 @@ const Index = () => {
               <Button variant="ghost" onClick={() => navigate('/demo')}>
                 Demo
               </Button>
+              <Button variant="ghost" onClick={() => navigate('/pricing')}>
+                Pricing
+              </Button>
               <Button onClick={() => navigate('/auth')}>
                 Get Started
               </Button>
@@ -376,6 +379,9 @@ const Index = () => {
               <span className="text-sm">© 2025 ValueBuilder Pro</span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
+              <button onClick={() => navigate('/pricing')} className="hover:text-primary transition-colors">
+                Pricing
+              </button>
               <button onClick={() => navigate('/auth')} className="hover:text-primary transition-colors">
                 Sign In
               </button>

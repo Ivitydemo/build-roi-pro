@@ -1,363 +1,423 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Download, FileText, TrendingUp } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Building2, Download, Mail, TrendingUp, DollarSign, Home, BarChart3, Calculator, ImageIcon, Share2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const DemoReport = () => {
-  const { toast } = useToast();
-  const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+
+  const propertyData = {
     address: '1810 Ivy Crest Drive',
     city: 'Brentwood',
     state: 'TN',
-    sqft: '4843',
-    currentValue: '1600000'
-  });
-  const [showPreview, setShowPreview] = useState(false);
-
-  const handleGenerate = () => {
-    setShowPreview(true);
-    toast({
-      title: 'Sample Report Generated',
-      description: 'This is a demo showing how reports are customized for each client'
-    });
+    sqft: 4843,
+    currentValue: 1600000,
+    pricePerSqft: 330
   };
 
-  const conservativeROI = 101000;
-  const targetROI = 231000;
-  const premiumROI = 378000;
-  const investment = 169000;
-  const monthlyHELOC = 1924;
-  const refinanceIncrease = 312;
+  const packages = [
+    {
+      name: 'Essential Remodel',
+      investment: 125000,
+      afterValue: 1850000,
+      roi: 225000,
+      roiPercent: 180,
+      monthly: { heloc: 1423, refinance: 289 }
+    },
+    {
+      name: 'Complete Transformation',
+      investment: 225000,
+      afterValue: 2100000,
+      roi: 500000,
+      roiPercent: 222,
+      monthly: { heloc: 2562, refinance: 521 }
+    },
+    {
+      name: 'Luxury Upgrade',
+      investment: 350000,
+      afterValue: 2450000,
+      roi: 850000,
+      roiPercent: 243,
+      monthly: { heloc: 3986, refinance: 810 }
+    }
+  ];
+
+  const comparables = [
+    { address: '1825 Mallory Lane', price: 2150000, sqft: 5200, priceSqft: 413, distance: 0.3 },
+    { address: '205 Carriage House Ln', price: 1950000, sqft: 4950, priceSqft: 394, distance: 0.5 },
+    { address: '9301 Anson Way', price: 2250000, sqft: 5400, priceSqft: 417, distance: 0.7 },
+    { address: '308 Radnor Ct', price: 1875000, sqft: 4700, priceSqft: 399, distance: 0.8 }
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <Button variant="ghost" onClick={() => window.location.href = '/'}>
-            ← Back to Home
-          </Button>
-          <div className="flex items-center gap-3 mt-4">
-            <Building2 className="h-10 w-10 text-primary" />
-            <div>
-              <h1 className="text-3xl font-bold">Interactive Demo Report</h1>
-              <p className="text-muted-foreground">See how to CREATE client budgets instead of waiting to bid</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      {/* Navigation */}
+      <nav className="border-b bg-card/50 backdrop-blur-lg sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" onClick={() => navigate('/')}>
+                ← Back
+              </Button>
+              <div className="flex items-center gap-2">
+                <Building2 className="h-8 w-8 text-primary" />
+                <span className="text-xl font-bold">Sample Deliverable</span>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Download PDF
+              </Button>
+              <Button variant="outline" size="sm">
+                <Mail className="h-4 w-4 mr-2" />
+                Email Client
+              </Button>
             </div>
           </div>
-          
-          {/* Advisory Positioning Banner */}
-          <Card className="mt-6 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30">
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="h-6 w-6 text-primary" />
+        </div>
+      </nav>
+
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Header Section */}
+        <Card className="mb-8 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <div className="text-sm text-muted-foreground mb-2">INVESTMENT OPPORTUNITY ANALYSIS</div>
+                <h1 className="text-4xl font-bold mb-2">{propertyData.address}</h1>
+                <p className="text-xl text-muted-foreground">{propertyData.city}, {propertyData.state}</p>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-muted-foreground">Prepared By</div>
+                <div className="font-bold text-lg">Premier Builders Co.</div>
+                <div className="text-sm text-muted-foreground">License #123456</div>
+              </div>
+            </div>
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="bg-card rounded-lg p-4">
+                <div className="text-sm text-muted-foreground mb-1">Current Value</div>
+                <div className="text-2xl font-bold">${propertyData.currentValue.toLocaleString()}</div>
+              </div>
+              <div className="bg-card rounded-lg p-4">
+                <div className="text-sm text-muted-foreground mb-1">Square Footage</div>
+                <div className="text-2xl font-bold">{propertyData.sqft.toLocaleString()} sq ft</div>
+              </div>
+              <div className="bg-card rounded-lg p-4">
+                <div className="text-sm text-muted-foreground mb-1">Current $/sqft</div>
+                <div className="text-2xl font-bold">${propertyData.pricePerSqft}</div>
+              </div>
+              <div className="bg-card rounded-lg p-4">
+                <div className="text-sm text-muted-foreground mb-1">Report Date</div>
+                <div className="text-2xl font-bold">Jan 15, 2025</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Executive Summary */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-6 w-6 text-primary" />
+              Executive Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-lg text-muted-foreground mb-4">
+              Based on current market conditions in Brentwood, TN and recent comparable sales, your property has significant untapped equity potential. This analysis presents three strategic remodel scenarios designed to maximize your return on investment while maintaining quality and market competitiveness.
+            </p>
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-6">
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground mb-2">RECOMMENDED SCENARIO</div>
+                <div className="text-4xl font-bold text-primary mb-2">$500,000</div>
+                <div className="text-lg text-muted-foreground mb-4">Projected Equity Gain</div>
+                <div className="grid md:grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold">${packages[1].investment.toLocaleString()}</div>
+                    <div className="text-sm text-muted-foreground">Investment</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-success">{packages[1].roiPercent}%</div>
+                    <div className="text-sm text-muted-foreground">ROI</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold">${packages[1].afterValue.toLocaleString()}</div>
+                    <div className="text-sm text-muted-foreground">After Value</div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg mb-2">You're Not Bidding. You're Advising.</h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    When YOU bring this analysis to a homeowner, you're the trusted advisor showing them an investment opportunity they didn't know existed. You're not competing with other contractors - you created the opportunity.
-                  </p>
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-primary font-bold">60-75%</span>
-                      <span className="text-muted-foreground">close rate (vs 15-25% when bidding)</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Remodel Package Scenarios */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-6 w-6 text-primary" />
+              Three Strategic Scenarios
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {packages.map((pkg, idx) => (
+              <div key={idx} className={`border-2 rounded-xl p-6 ${idx === 1 ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-1">{pkg.name}</h3>
+                    {idx === 1 && (
+                      <span className="inline-block bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
+                        RECOMMENDED
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-success">+${pkg.roi.toLocaleString()}</div>
+                    <div className="text-sm text-muted-foreground">Equity Gain</div>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-4 gap-4 mb-4">
+                  <div className="bg-background rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground mb-1">Investment</div>
+                    <div className="text-lg font-bold">${pkg.investment.toLocaleString()}</div>
+                  </div>
+                  <div className="bg-background rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground mb-1">After Value</div>
+                    <div className="text-lg font-bold">${pkg.afterValue.toLocaleString()}</div>
+                  </div>
+                  <div className="bg-background rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground mb-1">ROI</div>
+                    <div className="text-lg font-bold text-success">{pkg.roiPercent}%</div>
+                  </div>
+                  <div className="bg-background rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground mb-1">New $/sqft</div>
+                    <div className="text-lg font-bold">${Math.round(pkg.afterValue / propertyData.sqft)}</div>
+                  </div>
+                </div>
+                <div className="border-t pt-4">
+                  <div className="text-sm font-semibold mb-2">Included Features:</div>
+                  <div className="grid md:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                    {idx === 0 && (
+                      <>
+                        <div>• Kitchen renovation</div>
+                        <div>• Primary bath update</div>
+                        <div>• Fresh paint throughout</div>
+                        <div>• New flooring</div>
+                        <div>• Updated fixtures & lighting</div>
+                        <div>• Landscaping refresh</div>
+                      </>
+                    )}
+                    {idx === 1 && (
+                      <>
+                        <div>• Complete kitchen remodel</div>
+                        <div>• All bathroom updates</div>
+                        <div>• Hardwood flooring upgrade</div>
+                        <div>• Designer lighting package</div>
+                        <div>• Outdoor living space</div>
+                        <div>• Premium landscaping</div>
+                        <div>• Smart home integration</div>
+                        <div>• Energy efficiency upgrades</div>
+                      </>
+                    )}
+                    {idx === 2 && (
+                      <>
+                        <div>• Chef\'s kitchen w/ premium appliances</div>
+                        <div>• Spa-quality bathrooms</div>
+                        <div>• Wide-plank hardwood floors</div>
+                        <div>• Custom millwork & built-ins</div>
+                        <div>• Outdoor kitchen & pool area</div>
+                        <div>• Professional landscaping design</div>
+                        <div>• Home automation system</div>
+                        <div>• Wine cellar or bonus room</div>
+                        <div>• Premium finishes throughout</div>
+                        <div>• Architectural enhancements</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Financing Options */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calculator className="h-6 w-6 text-primary" />
+              Financing Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-6">
+              Multiple financing options available to fund your remodel investment. All scenarios assume current market rates.
+            </p>
+            {packages.map((pkg, idx) => (
+              <div key={idx} className="mb-6 last:mb-0">
+                <h3 className="font-bold text-lg mb-3">{pkg.name}</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="border rounded-lg p-4 bg-card">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <div className="font-semibold mb-1">HELOC Option</div>
+                        <div className="text-xs text-muted-foreground">Home Equity Line of Credit @ 8.5%</div>
+                      </div>
+                      <DollarSign className="h-5 w-5 text-primary" />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-primary font-bold">$0</span>
-                      <span className="text-muted-foreground">competitors</span>
+                    <div className="text-3xl font-bold text-primary mb-2">${pkg.monthly.heloc.toLocaleString()}/mo</div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div>• 10-year term</div>
+                      <div>• Interest-only available</div>
+                      <div>• Tax-deductible interest*</div>
+                      <div>• Total cost: ${(pkg.monthly.heloc * 120).toLocaleString()}</div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-primary font-bold">100%</span>
-                      <span className="text-muted-foreground">premium pricing</span>
+                  </div>
+                  <div className="border rounded-lg p-4 bg-card">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <div className="font-semibold mb-1">Cash-Out Refinance</div>
+                        <div className="text-xs text-muted-foreground">30-year fixed @ 7.25%</div>
+                      </div>
+                      <Home className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="text-3xl font-bold text-primary mb-2">+${pkg.monthly.refinance.toLocaleString()}/mo</div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div>• Increase to mortgage payment</div>
+                      <div>• Lower overall rate vs HELOC</div>
+                      <div>• Single payment convenience</div>
+                      <div>• Long-term fixed rate security</div>
                     </div>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            ))}
+            <div className="bg-muted/50 rounded-lg p-4 mt-6 text-sm">
+              <p className="font-semibold mb-2">💡 Smart Financing Tip:</p>
+              <p className="text-muted-foreground">
+                Many homeowners use a HELOC for construction, then refinance into the improved value after completion for better long-term rates and to unlock additional equity.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Input Form */}
-          <Card className="h-fit">
-            <CardHeader>
-              <CardTitle>Property Information</CardTitle>
-              <CardDescription>
-                Enter basic details - the system will automatically pull market data and calculate ROI
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Property Address</Label>
-                <Input 
-                  value={formData.address}
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
-                  placeholder="123 Main Street"
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>City</Label>
-                  <Input 
-                    value={formData.city}
-                    onChange={(e) => setFormData({...formData, city: e.target.value})}
-                  />
+        {/* Market Comparables */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Home className="h-6 w-6 text-primary" />
+              Recent Comparable Sales
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-6">
+              Recent sales of similar properties in your area support the projected after-renovation values. All sales within the last 90 days.
+            </p>
+            <div className="space-y-3">
+              {comparables.map((comp, idx) => (
+                <div key={idx} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="font-semibold text-lg">{comp.address}</div>
+                      <div className="text-sm text-muted-foreground">{comp.distance} miles away • {comp.sqft.toLocaleString()} sq ft</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold">${comp.price.toLocaleString()}</div>
+                      <div className="text-sm text-muted-foreground">${comp.priceSqft}/sqft</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>State</Label>
-                  <Input 
-                    value={formData.state}
-                    onChange={(e) => setFormData({...formData, state: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Square Footage</Label>
-                  <Input 
-                    type="number"
-                    value={formData.sqft}
-                    onChange={(e) => setFormData({...formData, sqft: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Current Value</Label>
-                  <Input 
-                    type="number"
-                    value={formData.currentValue}
-                    onChange={(e) => setFormData({...formData, currentValue: e.target.value})}
-                  />
+              ))}
+            </div>
+            <div className="mt-6 bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground mb-1">Average Comparable Price</div>
+                <div className="text-3xl font-bold text-primary">${Math.round(comparables.reduce((sum, c) => sum + c.priceSqft, 0) / comparables.length)}/sqft</div>
+                <div className="text-sm text-muted-foreground mt-2">
+                  Your target after remodel: $385-$434/sqft (well-supported by market data)
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
 
-              <Button className="w-full" size="lg" onClick={handleGenerate}>
-                <FileText className="mr-2 h-5 w-5" />
-                Generate Sample Report
+        {/* Project Photos Showcase */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="h-6 w-6 text-primary" />
+              Our Recent Transformations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-6">
+              Examples of our work on similar homes in your area. Your project will receive the same attention to detail and quality craftsmanship.
+            </p>
+            <div className="grid md:grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map((item) => (
+                <div key={item} className="space-y-2">
+                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+                    <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <div className="text-sm">
+                    <div className="font-semibold">Project {item} - {['Kitchen', 'Primary Bath', 'Outdoor Living', 'Full Renovation'][item - 1]}</div>
+                    <div className="text-muted-foreground">Brentwood, TN • Completed 2024</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Next Steps & CTA */}
+        <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
+          <CardContent className="pt-6">
+            <h2 className="text-3xl font-bold mb-4 text-center">Next Steps</h2>
+            <p className="text-lg text-muted-foreground text-center mb-6">
+              Ready to unlock your home\'s full potential? Let\'s schedule a consultation to discuss your vision and timeline.
+            </p>
+            <div className="grid md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-card rounded-lg p-4 text-center">
+                <div className="text-3xl font-bold text-primary mb-2">1</div>
+                <div className="font-semibold mb-1">Schedule Consultation</div>
+                <div className="text-sm text-muted-foreground">Review options & answer questions</div>
+              </div>
+              <div className="bg-card rounded-lg p-4 text-center">
+                <div className="text-3xl font-bold text-primary mb-2">2</div>
+                <div className="font-semibold mb-1">Finalize Design & Budget</div>
+                <div className="text-sm text-muted-foreground">Customize to your preferences</div>
+              </div>
+              <div className="bg-card rounded-lg p-4 text-center">
+                <div className="text-3xl font-bold text-primary mb-2">3</div>
+                <div className="font-semibold mb-1">Begin Construction</div>
+                <div className="text-sm text-muted-foreground">Professional project management</div>
+              </div>
+            </div>
+            <div className="text-center">
+              <Button size="lg" className="text-lg px-8">
+                Schedule Your Consultation
               </Button>
+              <p className="text-sm text-muted-foreground mt-4">
+                Premier Builders Co. • (615) 555-1234 • contact@premierbuilders.com
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-              <div className="bg-accent/50 p-4 rounded-lg text-sm">
-                <p className="font-semibold mb-2">✨ Fully Customized Output:</p>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Your company branding & logo</li>
-                  <li>• Live market comparable sales</li>
-                  <li>• Your remodel packages & pricing</li>
-                  <li>• Your before/after project photos</li>
-                  <li>• Current HELOC & refinance rates</li>
-                  <li>• Professional PDF + Excel export</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Preview Panel */}
-          <div className="space-y-6">
-            {showPreview && (
-              <>
-                <Card className="border-2 border-primary/20">
-                  <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10">
-                    <div className="flex items-center justify-between">
-                      <CardTitle>Sample Report Preview</CardTitle>
-                      <span className="text-xs bg-primary text-primary-foreground px-3 py-1 rounded-full">
-                        CUSTOMIZED FOR EACH CLIENT
-                      </span>
-                    </div>
-                    <CardDescription>
-                      This shows what your clients receive - fully branded with your company info
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    {/* Sample Report Content */}
-                    <div className="space-y-6">
-                      {/* Executive Summary */}
-                      <div className="relative">
-                        <div className="absolute top-2 right-2 text-xs text-muted-foreground opacity-50 rotate-[-15deg]">
-                          SAMPLE
-                        </div>
-                        <div className="bg-card border rounded-lg p-4">
-                          <h3 className="font-bold text-lg mb-3">Investment Summary</h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-sm text-muted-foreground">Property</p>
-                              <p className="font-semibold">{formData.address}</p>
-                              <p className="text-sm">{formData.city}, {formData.state}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm text-muted-foreground">Current Value</p>
-                              <p className="font-semibold text-xl">
-                                ${parseInt(formData.currentValue).toLocaleString()}
-                              </p>
-                              <p className="text-sm">${Math.round(parseInt(formData.currentValue) / parseInt(formData.sqft))}/sqft</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* ROI Scenarios - Partially Visible */}
-                      <div className="relative overflow-hidden">
-                        <div className="bg-gradient-to-b from-transparent via-background/50 to-background absolute inset-0 z-10 flex items-end justify-center pb-4">
-                          <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
-                            🔒 Full Analysis Available in Your Branded Report
-                          </div>
-                        </div>
-                        <div className="bg-card border rounded-lg p-4 blur-[2px]">
-                          <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                            <TrendingUp className="h-5 w-5 text-success" />
-                            ROI Analysis - 3 Scenarios
-                          </h3>
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-center p-3 bg-success/10 rounded">
-                              <div>
-                                <p className="font-semibold">Conservative Scenario</p>
-                                <p className="text-sm text-muted-foreground">Target: $355/sqft</p>
-                              </div>
-                              <p className="text-2xl font-bold text-success">+${conservativeROI.toLocaleString()}</p>
-                            </div>
-                            <div className="flex justify-between items-center p-3 bg-primary/10 rounded">
-                              <div>
-                                <p className="font-semibold">Target Scenario</p>
-                                <p className="text-sm text-muted-foreground">Target: $385/sqft</p>
-                              </div>
-                              <p className="text-2xl font-bold text-primary">+${targetROI.toLocaleString()}</p>
-                            </div>
-                            <div className="flex justify-between items-center p-3 bg-accent/20 rounded">
-                              <div>
-                                <p className="font-semibold">Premium Scenario</p>
-                                <p className="text-sm text-muted-foreground">Target: $425/sqft</p>
-                              </div>
-                              <p className="text-2xl font-bold">+${premiumROI.toLocaleString()}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Financing Options - Teaser */}
-                      <div className="relative">
-                        <div className="bg-card border rounded-lg p-4 opacity-60">
-                          <h3 className="font-bold text-lg mb-3">Financing Options</h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="p-3 bg-muted/50 rounded">
-                              <p className="text-sm text-muted-foreground mb-1">HELOC (10 years)</p>
-                              <p className="text-xl font-bold">${monthlyHELOC}/month</p>
-                            </div>
-                            <div className="p-3 bg-muted/50 rounded">
-                              <p className="text-sm text-muted-foreground mb-1">Refinance Impact</p>
-                              <p className="text-xl font-bold">+${refinanceIncrease}/month</p>
-                            </div>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Includes detailed payment schedules and break-even analysis
-                          </p>
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" />
-                      </div>
-
-                      {/* Comparable Sales - Hidden */}
-                      <div className="bg-muted/30 border-2 border-dashed rounded-lg p-6 text-center">
-                        <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                        <p className="font-semibold mb-2">Market Comparable Sales</p>
-                        <p className="text-sm text-muted-foreground">
-                          Full report includes 5-8 recent comparable sales with photos, prices, and detailed analysis
-                        </p>
-                      </div>
-
-                      {/* Before/After Photos - Placeholder */}
-                      <div className="bg-muted/30 border-2 border-dashed rounded-lg p-6 text-center">
-                        <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                        <p className="font-semibold mb-2">Your Project Photos</p>
-                        <p className="text-sm text-muted-foreground">
-                          Showcase your best before/after transformations from your photo library
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="mt-6 pt-6 border-t space-y-3">
-                      <Button className="w-full" size="lg" variant="outline" disabled>
-                        <Download className="mr-2 h-4 w-4" />
-                        Download Full PDF Report
-                      </Button>
-                      <p className="text-xs text-center text-muted-foreground">
-                        Sample preview only - Full reports include 8-12 pages with complete analysis, your branding, and professional formatting
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Value Proposition */}
-                <Card className="bg-gradient-to-br from-success/10 to-primary/10 border-success/20">
-                  <CardHeader>
-                    <CardTitle>Why This Changes Everything</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-card rounded-lg p-4 border">
-                      <p className="font-bold text-lg mb-2">You Own the Narrative</p>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        When you bring THIS to a homeowner, you're not one of five contractors bidding. You're the expert who showed them a $231,000 equity opportunity they didn't know existed.
-                      </p>
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="bg-primary/20 text-primary px-2 py-1 rounded font-semibold">Result:</span>
-                        <span>No price shopping. No negotiation. Just trust.</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 text-sm">
-                      <div className="flex gap-3">
-                        <div className="text-success text-xl">✓</div>
-                        <div>
-                          <p className="font-semibold">Educated Buyers Don't Cheap Out</p>
-                          <p className="text-muted-foreground">They understand it's an investment with 148% ROI, not an expense</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <div className="text-success text-xl">✓</div>
-                        <div>
-                          <p className="font-semibold">You Control Your Pipeline</p>
-                          <p className="text-muted-foreground">Generate opportunities based on YOUR capacity, not market timing</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <div className="text-success text-xl">✓</div>
-                        <div>
-                          <p className="font-semibold">Premium Pricing Justified</p>
-                          <p className="text-muted-foreground">When they see $231K gain, your $169K price feels like a steal</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <div className="text-success text-xl">✓</div>
-                        <div>
-                          <p className="font-semibold">Fully Customized = Credibility</p>
-                          <p className="text-muted-foreground">Your branding + their specific property = instant trust</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-primary/10 rounded-lg p-4 border border-primary/30 mt-4">
-                      <p className="font-bold text-center mb-2">The Math is Simple</p>
-                      <p className="text-sm text-center text-muted-foreground">
-                        15% close rate (bidding) → 60% close rate (advisory) = <span className="text-primary font-bold">4x more revenue</span> from the same leads
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
-            )}
-
-            {!showPreview && (
-              <Card className="border-2 border-dashed h-full flex items-center justify-center">
-                <CardContent className="text-center py-12">
-                  <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    Enter property details and generate a sample report to see the customization in action
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+        {/* Footer Disclaimer */}
+        <div className="mt-8 text-xs text-muted-foreground text-center space-y-2">
+          <p>
+            *This analysis is provided for informational purposes and represents projected values based on current market conditions. Actual results may vary.
+          </p>
+          <p>
+            Financing options subject to credit approval and current market rates. Consult with your financial advisor and tax professional.
+          </p>
+          <p className="font-semibold">
+            Premier Builders Co. • License #123456 • Bonded & Insured • BBB A+ Rated
+          </p>
         </div>
       </div>
     </div>
