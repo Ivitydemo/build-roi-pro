@@ -23,7 +23,9 @@ You know you're worth more. But how do you prove it when homeowners only see dol
 
 Here's the brutal truth: 73% of contractors lose deals not because they're too expensive, but because they can't demonstrate their value. You're competing with a number on a page... and numbers lie.
 
-But here's what the top contractors know: Your biggest obstacle isn't opportunity. It's delivery capacity. When you can prove value instantly, you control when you scale. Not the market. You do.
+And here's the real trap: You're responding to bids. Huge time investments. Lower odds of closing. Razor-thin margins. You're at the mercy of whoever's shopping around for the lowest price.
+
+But here's what the top contractors know: Your biggest obstacle isn't opportunity. It's delivery capacity. When you can prove value instantly, you control your destiny. You're not responding to bids anymore. You're creating demand. Not the market. You do.
 
 What if instead, you could show your prospects exactly why you're worth every penny? In 2 minutes. Automatically.
 
@@ -44,6 +46,8 @@ You're not a victim of the market. You're not even a victor in the market. You o
 Every report syncs directly to your CRM. No data entry. No missed follow-ups. Just smooth workflows that turn prospects into contracts, automatically.
 
 Here's what this really means: Scale at will. Higher margins. Unshakeable confidence. And the freedom to grow your business on your terms, regardless of what the economy is doing.
+
+Stop chasing bids. Start controlling your destiny.
 
 Right now, while your competitors are racing to the bottom on price, you can rise above with value. The choice is yours.
 
