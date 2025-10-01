@@ -258,13 +258,7 @@ const DemoReport = () => {
             </p>
             {packages.map((pkg, idx) => (
               <div key={idx} className="mb-6 last:mb-0">
-                <div className="flex items-baseline justify-between mb-3">
-                  <h3 className="font-bold text-lg">{pkg.name}</h3>
-                  <div className="text-right">
-                    <div className="text-sm text-muted-foreground">Target Value</div>
-                    <div className="text-xl font-bold text-success">${pkg.afterValue.toLocaleString()}</div>
-                  </div>
-                </div>
+                <h3 className="font-bold text-lg mb-3">{pkg.name}</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="border rounded-lg p-4 bg-card">
                     <div className="flex items-start justify-between mb-3">
