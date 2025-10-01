@@ -15,7 +15,13 @@ const BuilderImpact = () => {
     interestedLeadsPercent: 40, // What % of leads express genuine interest
   });
 
-  const [scenario, setScenario] = useState<'inquiries' | 'proactive'>('inquiries');
+  const [scenario, setScenario] = useState<'inquiries' | 'proactive' | null>(null);
+  const [scenarioSelected, setScenarioSelected] = useState(false);
+
+  const handleScenarioSelect = (selectedScenario: 'inquiries' | 'proactive') => {
+    setScenario(selectedScenario);
+    setScenarioSelected(true);
+  };
 
   // Current scenario calculations
   const currentEstimates = Math.round(inputs.monthlyLeads * 12 * (inputs.currentCloseRate / 100));
@@ -59,6 +65,114 @@ const BuilderImpact = () => {
             </div>
           </div>
         </div>
+
+        {!scenarioSelected ? (
+          /* Scenario Selection Screen */
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-2 border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-2xl text-center">First Question: How Will You Use This?</CardTitle>
+                <CardDescription className="text-center text-base">
+                  Different approaches yield different close rates. Choose the strategy that fits your sales model.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Responding to Inquiries */}
+                  <Card 
+                    className="cursor-pointer hover:border-primary transition-all hover:shadow-lg"
+                    onClick={() => handleScenarioSelect('inquiries')}
+                  >
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Users className="h-5 w-5 text-primary" />
+                        Responding to Inquiries
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        You use this platform to respond to leads who <span className="font-semibold">already expressed interest</span> - they called, emailed, or filled out a form.
+                      </p>
+                      <div className="bg-success/10 border border-success/20 rounded-lg p-3">
+                        <p className="text-sm font-semibold text-success mb-1">Expected Close Rate: 65%</p>
+                        <p className="text-xs text-muted-foreground">
+                          These are warm leads who already want info. Your analysis answers their questions and positions you as the expert.
+                        </p>
+                      </div>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <p><span className="font-semibold text-foreground">Best for:</span></p>
+                        <ul className="space-y-1 ml-4">
+                          <li>• Builders with consistent inbound lead flow</li>
+                          <li>• Reactive sales model (waiting for inquiries)</li>
+                          <li>• Want to close MORE of existing warm leads</li>
+                        </ul>
+                      </div>
+                      <Button className="w-full" onClick={() => handleScenarioSelect('inquiries')}>
+                        Select This Approach
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Proactive Advisory */}
+                  <Card 
+                    className="cursor-pointer hover:border-primary transition-all hover:shadow-lg"
+                    onClick={() => handleScenarioSelect('proactive')}
+                  >
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-primary" />
+                        Proactive Advisory
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        You <span className="font-semibold">proactively reach out</span> to your entire lead database with unsolicited (but valuable) property analysis.
+                      </p>
+                      <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
+                        <p className="text-sm font-semibold text-warning mb-1">Expected Close Rate: 35%</p>
+                        <p className="text-xs text-muted-foreground">
+                          Lower than warm inquiries, but you're creating demand instead of waiting. You reach MORE people.
+                        </p>
+                      </div>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <p><span className="font-semibold text-foreground">Best for:</span></p>
+                        <ul className="space-y-1 ml-4">
+                          <li>• Builders wanting to activate cold pipeline</li>
+                          <li>• Proactive sales approach (outbound)</li>
+                          <li>• Generate demand vs waiting for it</li>
+                        </ul>
+                      </div>
+                      <Button className="w-full" onClick={() => handleScenarioSelect('proactive')}>
+                        Select This Approach
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="bg-muted/50 rounded-lg p-4 text-sm">
+                  <p className="font-semibold mb-2">📊 Why Different Close Rates?</p>
+                  <p className="text-muted-foreground">
+                    <span className="font-semibold">Warm inquiries (65%):</span> They already want info. You're just educating them on value vs bidding on price.
+                  </p>
+                  <p className="text-muted-foreground mt-2">
+                    <span className="font-semibold">Proactive outreach (35%):</span> They didn't ask yet, so conversion is lower. But you reach 3-5X more people, creating net more deals.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          /* Input Form & Results - Only shown after scenario selection */
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <div className="bg-card border rounded-lg px-4 py-2">
+                <p className="text-sm text-muted-foreground">Selected Strategy:</p>
+                <p className="font-bold">{scenario === 'inquiries' ? 'Responding to Inquiries (65% close rate)' : 'Proactive Advisory (35% close rate)'}</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setScenarioSelected(false)}>
+                Change Strategy
+              </Button>
+            </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Input Card */}
@@ -130,31 +244,6 @@ const BuilderImpact = () => {
 
           {/* Results Card */}
           <div className="space-y-6">
-            {/* Scenario Selector */}
-            <Card>
-              <CardContent className="pt-6">
-                <Label className="mb-3 block font-semibold">Choose Your Scenario:</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant={scenario === 'inquiries' ? 'default' : 'outline'}
-                    onClick={() => setScenario('inquiries')}
-                    className="h-auto py-4 flex flex-col items-start gap-1"
-                  >
-                    <span className="font-semibold">Responding to Inquiries</span>
-                    <span className="text-xs opacity-80">Warm leads who asked questions</span>
-                  </Button>
-                  <Button
-                    variant={scenario === 'proactive' ? 'default' : 'outline'}
-                    onClick={() => setScenario('proactive')}
-                    className="h-auto py-4 flex flex-col items-start gap-1"
-                  >
-                    <span className="font-semibold">Proactive Advisory</span>
-                    <span className="text-xs opacity-80">Reaching out to educate all leads</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
             <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5">
               <CardHeader>
                 <CardTitle className="text-2xl">
@@ -310,6 +399,8 @@ const BuilderImpact = () => {
             </Card>
           </div>
         </div>
+          </div>
+        )}
       </div>
     </div>
   );
