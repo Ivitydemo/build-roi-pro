@@ -338,7 +338,7 @@ const DemoReport = () => {
                       <div className="mt-4 pt-4 border-t">
                         {isPositiveROI ? (
                           <p className="text-sm text-muted-foreground">
-                            <span className="font-semibold text-success">Home Run Deal:</span> This scenario adds ${valueAdd.toLocaleString()} in value while you invest ${pkg.investment.toLocaleString()}, resulting in a net gain of ${netBenefit.toLocaleString()}. You improve your home AND build equity.
+                            <span className="font-semibold text-success">Positive Return:</span> This scenario adds ${valueAdd.toLocaleString()} in value while you invest ${pkg.investment.toLocaleString()}, resulting in a net gain of ${netBenefit.toLocaleString()}. You improve your home and build equity.
                           </p>
                         ) : (
                           <p className="text-sm text-muted-foreground">
