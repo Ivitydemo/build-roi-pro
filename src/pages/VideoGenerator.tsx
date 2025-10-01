@@ -49,9 +49,9 @@ const VideoGenerator = () => {
 
 You know you're worth more. But how do you prove it when homeowners only see dollar signs?
 
-Here's the truth: most builders think the challenge is winning enough work. But the real constraint? Delivery capability — doing the right jobs, at the right margin, with predictable outcomes. When you shift the conversation to delivery and results, price stops being the headline.
+Here's the truth: you're constantly toggling. Do I have enough work? Do I have enough capacity? Grow your team for demand, then demand slips — now you risk losing the great talent and subs you worked so hard to secure. It's whack-a-mole on a tightrope.
 
-And here's what changes everything: with the right narrative, you're not responding to bids — you're creating the demand and the budget. You set the scope. You define the priorities. You control the timeline. You're not fighting to win work — you're proving you can deliver the best outcome, fast and confidently.
+What if you could remove project demand as an obstacle entirely? Stop the back-and-forth. Focus where true value lives: delivery.
 
 What if you could make that shift in 2 minutes, automatically?
 
