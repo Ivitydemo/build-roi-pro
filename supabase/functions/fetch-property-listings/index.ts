@@ -38,7 +38,7 @@ serve(async (req) => {
 
       properties = [
         {
-          location: { address: { line: '1234 Taramore Dr', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
+          location: { address: { line: '1825 Mallory Lane', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
           sold_date: dateWithinDays(45),
           price: 1350000,
           beds: 5,
@@ -51,7 +51,7 @@ serve(async (req) => {
           primary_photo: { href: 'https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=1600&q=80' }
         },
         {
-          location: { address: { line: '1456 Taramore Ln', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
+          location: { address: { line: '205 Carriage House Ln', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
           sold_date: dateWithinDays(72),
           price: 1495000,
           beds: 5,
@@ -64,7 +64,7 @@ serve(async (req) => {
           primary_photo: { href: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1600&q=80' }
         },
         {
-          location: { address: { line: '1688 Hamilton Chase', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
+          location: { address: { line: '9301 Anson Way', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
           sold_date: dateWithinDays(30),
           price: 1280000,
           beds: 4,
@@ -77,7 +77,7 @@ serve(async (req) => {
           primary_photo: { href: 'https://images.unsplash.com/photo-1505692794403-34d4982fd1bd?auto=format&fit=crop&w=1600&q=80' }
         },
         {
-          location: { address: { line: '1702 Taramore Ct', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
+          location: { address: { line: '308 Radnor Ct', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
           sold_date: dateWithinDays(95),
           price: 1420000,
           beds: 5,
@@ -88,19 +88,6 @@ serve(async (req) => {
             { href: 'https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=1600&q=80' },
           ],
           primary_photo: { href: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=80' }
-        },
-        {
-          location: { address: { line: '1805 Taramore Ln', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
-          sold_date: dateWithinDays(20),
-          price: 1390000,
-          beds: 4,
-          baths: 4,
-          photos: [
-            { href: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=80' },
-            { href: 'https://images.unsplash.com/photo-1505691723518-36a5ac3b2bba?auto=format&fit=crop&w=1600&q=80' },
-            { href: 'https://images.unsplash.com/photo-1493666438817-866a91353ca9?auto=format&fit=crop&w=1600&q=80' },
-          ],
-          primary_photo: { href: 'https://images.unsplash.com/photo-1493666438817-866a91353ca9?auto=format&fit=crop&w=1600&q=80' }
         }
       ];
     } else {
