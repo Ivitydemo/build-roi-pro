@@ -71,8 +71,27 @@ serve(async (req) => {
     
     if (listingsResponse.ok) {
       const listingsData = await listingsResponse.json();
-      console.log('Properties found:', listingsData?.properties?.length || 0);
+      console.log('Raw properties found:', listingsData?.properties?.length || 0);
       properties = listingsData?.properties || [];
+      
+      // If searching by subdivision, filter to only properties that actually match
+      if (searchType === 'subdivision' && searchParams.subdivisionName) {
+        const subdivisionLower = searchParams.subdivisionName.toLowerCase();
+        const originalCount = properties.length;
+        
+        properties = properties.filter((prop: any) => {
+          // Check if subdivision name appears in the listing data
+          const listingJson = JSON.stringify(prop).toLowerCase();
+          const communityName = prop.community?.name?.toLowerCase() || '';
+          const description = prop.description?.name?.toLowerCase() || '';
+          
+          // Match if subdivision name appears in community name or property data
+          return communityName.includes(subdivisionLower) || 
+                 listingJson.includes(subdivisionLower);
+        });
+        
+        console.log(`Filtered from ${originalCount} to ${properties.length} properties matching "${searchParams.subdivisionName}"`);
+      }
     } else {
       console.error('API error:', listingsResponse.status, await listingsResponse.text());
       throw new Error(`API request failed with status ${listingsResponse.status}`);
