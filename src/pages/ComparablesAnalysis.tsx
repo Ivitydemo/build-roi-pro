@@ -19,7 +19,10 @@ const ComparablesAnalysis = () => {
   const [analyzing, setAnalyzing] = useState(false);
 
   const comparableAddresses = [
-    '1810 Ivy Crest, Brentwood, TN'  // Just search once - will auto-detect Taramore subdivision
+    '1825 Mallory Lane, Brentwood, TN',
+    '205 Carriage House Ln, Brentwood, TN',
+    '9301 Anson Way, Brentwood, TN',
+    '308 Radnor Ct, Brentwood, TN'
   ];
 
   useEffect(() => {
@@ -84,15 +87,13 @@ const ComparablesAnalysis = () => {
           if (campaignError) throw campaignError;
           createdCampaigns.push(campaign);
 
-          // Fetch listings for this address - search by subdivision
+          // Fetch listings for this address
           const { data, error } = await supabase.functions.invoke('fetch-property-listings', {
             body: {
               searchType: 'address',
-              searchParams: { 
-                address,
-                findSubdivision: true  // Automatically detect and search the subdivision
-              },
-              campaignId: campaign.id
+              searchParams: { address },
+              campaignId: campaign.id,
+              useMock: true  // Use mock data for now
             }
           });
 
