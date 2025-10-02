@@ -48,7 +48,7 @@ const ComparablesAnalysis = () => {
     }
   };
 
-  const searchAllComparables = async () => {
+  const fetchAndAnalyzeAll = async () => {
     if (!builderId) {
       toast({
         title: 'Profile required',
@@ -60,14 +60,15 @@ const ComparablesAnalysis = () => {
 
     setLoading(true);
     const createdCampaigns: any[] = [];
+    const fetchedProperties: any[] = [];
 
     try {
+      // STEP 1: Fetch all properties
       toast({
-        title: 'Fetching comparables...',
+        title: 'Step 1/2: Fetching comparables...',
         description: `Searching for ${comparableAddresses.length} properties`
       });
 
-      // Search each comparable address
       for (const address of comparableAddresses) {
         try {
           // Create campaign for this address
@@ -116,17 +117,70 @@ const ComparablesAnalysis = () => {
       setCampaigns(createdCampaigns);
 
       // Load all properties from all campaigns
+      const { data: properties, error: loadError } = await supabase
+        .from('targeted_properties')
+        .select('*')
+        .in('campaign_id', createdCampaigns.map(c => c.id))
+        .order('created_at', { ascending: false });
+
+      if (loadError) throw loadError;
+      
+      const props = properties || [];
+      setAllProperties(props);
+      fetchedProperties.push(...props);
+
+      if (fetchedProperties.length === 0) {
+        toast({
+          title: 'No properties found',
+          description: 'Could not find listings for the comparable addresses',
+          variant: 'destructive'
+        });
+        setLoading(false);
+        return;
+      }
+
+      // STEP 2: Analyze all properties automatically
+      toast({
+        title: 'Step 2/2: Analyzing properties...',
+        description: `Running AI analysis on ${fetchedProperties.length} properties`
+      });
+
+      let analyzed = 0;
+      for (const property of fetchedProperties) {
+        if (property.analysis_status !== 'pending') continue;
+
+        toast({
+          title: `Analyzing ${analyzed + 1}/${fetchedProperties.length}`,
+          description: property.address
+        });
+
+        const { error } = await supabase.functions.invoke('analyze-targeted-properties', {
+          body: { propertyId: property.id }
+        });
+
+        if (error) {
+          console.error(`Error analyzing ${property.address}:`, error);
+        } else {
+          analyzed++;
+        }
+
+        // Wait between analyses to avoid rate limits
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+
+      // Reload properties to get updated analysis
       await loadAllProperties(createdCampaigns.map(c => c.id));
 
       toast({
-        title: 'All comparables fetched!',
-        description: 'Ready to analyze photos'
+        title: 'Complete! 🎉',
+        description: `Successfully fetched and analyzed ${analyzed} properties`,
+        duration: 5000
       });
 
     } catch (error) {
-      console.error('Error searching comparables:', error);
+      console.error('Error in fetch and analyze:', error);
       toast({
-        title: 'Search failed',
+        title: 'Process failed',
         description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive'
       });
@@ -147,57 +201,6 @@ const ComparablesAnalysis = () => {
       setAllProperties(data || []);
     } catch (error) {
       console.error('Error loading properties:', error);
-    }
-  };
-
-  const analyzeAllProperties = async () => {
-    if (allProperties.length === 0) return;
-
-    setAnalyzing(true);
-    let analyzed = 0;
-
-    try {
-      for (const property of allProperties) {
-        if (property.analysis_status !== 'pending') continue;
-
-        toast({
-          title: `Analyzing ${analyzed + 1}/${allProperties.length}`,
-          description: property.address
-        });
-
-        const { error } = await supabase.functions.invoke('analyze-targeted-properties', {
-          body: { propertyId: property.id }
-        });
-
-        if (error) {
-          console.error(`Error analyzing ${property.address}:`, error);
-        } else {
-          analyzed++;
-        }
-
-        // Wait between analyses to avoid rate limits
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
-
-      toast({
-        title: 'Analysis complete!',
-        description: `Successfully analyzed ${analyzed} properties`
-      });
-
-      // Reload properties to get updated analysis
-      if (campaigns.length > 0) {
-        await loadAllProperties(campaigns.map(c => c.id));
-      }
-
-    } catch (error) {
-      console.error('Error analyzing properties:', error);
-      toast({
-        title: 'Analysis failed',
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive'
-      });
-    } finally {
-      setAnalyzing(false);
     }
   };
 
@@ -245,12 +248,12 @@ const ComparablesAnalysis = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              This will search for the actual listings at all comparable addresses, 
-              download real photos, and run AI analysis to identify materials and value drivers.
+              Click the button below to automatically fetch all comparable listings, 
+              download real photos, and run AI analysis. This will take approximately 5-7 minutes.
             </p>
 
             <div className="bg-muted/50 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">Addresses to Analyze:</h3>
+              <h3 className="font-semibold mb-2">Properties to Analyze:</h3>
               <ul className="space-y-1 text-sm">
                 {comparableAddresses.map((addr, idx) => (
                   <li key={idx}>• {addr}</li>
@@ -258,52 +261,45 @@ const ComparablesAnalysis = () => {
               </ul>
             </div>
 
+            {loading && (
+              <div className="bg-primary/5 rounded-lg p-4 text-sm">
+                <p className="font-medium mb-2">Progress:</p>
+                <p className="text-muted-foreground">
+                  Please wait while we fetch listings and analyze photos. 
+                  You'll see updates as each property is processed.
+                </p>
+              </div>
+            )}
+
             <div className="flex gap-4">
               <Button 
-                onClick={searchAllComparables} 
+                onClick={fetchAndAnalyzeAll} 
                 disabled={loading || !builderId}
                 size="lg"
+                className="text-base px-8"
               >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Fetching Properties...
+                    Processing...
                   </>
                 ) : (
                   <>
                     <Search className="mr-2 h-5 w-5" />
-                    Fetch All Comparables
+                    Fetch & Analyze All Comparables
                   </>
                 )}
               </Button>
 
               {allProperties.length > 0 && (
-                <>
-                  <Button 
-                    onClick={analyzeAllProperties}
-                    disabled={analyzing}
-                    variant="outline"
-                    size="lg"
-                  >
-                    {analyzing ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Analyzing...
-                      </>
-                    ) : (
-                      'Run AI Analysis'
-                    )}
-                  </Button>
-
-                  <Button 
-                    onClick={exportAnalysisData}
-                    variant="outline"
-                    size="lg"
-                  >
-                    <Download className="mr-2 h-5 w-5" />
-                    Export Data
-                  </Button>
-                </>
+                <Button 
+                  onClick={exportAnalysisData}
+                  variant="outline"
+                  size="lg"
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Export Data
+                </Button>
               )}
             </div>
           </CardContent>
