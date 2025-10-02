@@ -40,8 +40,13 @@ serve(async (req) => {
       };
 
       // Fetch SOLD property listings for comparables analysis
-      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=20`;
-      console.log('Fetching sold properties from:', listingsUrl);
+      // Filter for recent sales (last 90-180 days) in Taramore subdivision
+      const soldDateMin = new Date();
+      soldDateMin.setDate(soldDateMin.getDate() - 180); // 6 months ago
+      const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
+      
+      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=20&sold_date_min=${soldDateMinStr}`;
+      console.log('Fetching recently sold properties from Taramore from:', listingsUrl);
       
       const listingsResponse = await fetch(listingsUrl, options);
       
@@ -60,7 +65,11 @@ serve(async (req) => {
       // Search by radius around a location
       const { address, radiusMiles } = searchParams;
       
-      const options = {
+      const soldDateMin2 = new Date();
+      soldDateMin2.setDate(soldDateMin2.getDate() - 180); // 6 months ago
+      const soldDateMinStr2 = soldDateMin2.toISOString().split('T')[0];
+      
+      const options2 = {
         method: 'GET',
         headers: {
           'X-RapidAPI-Key': RAPIDAPI_KEY,
@@ -68,26 +77,30 @@ serve(async (req) => {
         }
       };
 
-      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(address)}&limit=50`;
-      console.log('Fetching sold properties from:', listingsUrl);
+      const listingsUrl2 = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(address)}&limit=50&sold_date_min=${soldDateMinStr2}`;
+      console.log('Fetching recently sold properties from:', listingsUrl2);
       
-      const listingsResponse = await fetch(listingsUrl, options);
+      const listingsResponse2 = await fetch(listingsUrl2, options2);
       
-      if (!listingsResponse.ok) {
-        const errorText = await listingsResponse.text();
-        console.error('Listings API error:', listingsResponse.status, errorText);
-        throw new Error(`Realtor API error: ${listingsResponse.status}`);
+      if (!listingsResponse2.ok) {
+        const errorText = await listingsResponse2.text();
+        console.error('Listings API error:', listingsResponse2.status, errorText);
+        throw new Error(`Realtor API error: ${listingsResponse2.status}`);
       }
 
-      const listingsData = await listingsResponse.json();
-      properties = listingsData?.properties || [];
+      const listingsData2 = await listingsResponse2.json();
+      properties = listingsData2?.properties || [];
       
     } else if (searchType === 'subdivision') {
-      // Search by subdivision/neighborhood
+      // Search by subdivision/neighborhood - Taramore specifically
       const { subdivisionName, city, state } = searchParams;
       const location = `${subdivisionName}, ${city}, ${state}`;
       
-      const options = {
+      const soldDateMin3 = new Date();
+      soldDateMin3.setDate(soldDateMin3.getDate() - 180); // 6 months ago
+      const soldDateMinStr3 = soldDateMin3.toISOString().split('T')[0];
+      
+      const options3 = {
         method: 'GET',
         headers: {
           'X-RapidAPI-Key': RAPIDAPI_KEY,
@@ -95,19 +108,19 @@ serve(async (req) => {
         }
       };
 
-      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=50`;
-      console.log('Fetching sold properties from:', listingsUrl);
+      const listingsUrl3 = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=50&sold_date_min=${soldDateMinStr3}`;
+      console.log('Fetching recently sold properties from Taramore from:', listingsUrl3);
       
-      const listingsResponse = await fetch(listingsUrl, options);
+      const listingsResponse3 = await fetch(listingsUrl3, options3);
       
-      if (!listingsResponse.ok) {
-        const errorText = await listingsResponse.text();
-        console.error('Listings API error:', listingsResponse.status, errorText);
-        throw new Error(`Realtor API error: ${listingsResponse.status}`);
+      if (!listingsResponse3.ok) {
+        const errorText = await listingsResponse3.text();
+        console.error('Listings API error:', listingsResponse3.status, errorText);
+        throw new Error(`Realtor API error: ${listingsResponse3.status}`);
       }
 
-      const listingsData = await listingsResponse.json();
-      properties = listingsData?.properties || [];
+      const listingsData3 = await listingsResponse3.json();
+      properties = listingsData3?.properties || [];
     }
 
     // Process and store properties
@@ -132,8 +145,9 @@ serve(async (req) => {
         photoUrls.unshift(property.primary_photo.href);
       }
 
-      // Only insert properties with photos
-      if (photoUrls.length > 0) {
+      // Only insert properties with photos (we need interior photos for analysis)
+      // Minimum 3 photos to ensure we have interior shots, not just exterior
+      if (photoUrls.length >= 3) {
         const targetedProperty = {
           campaign_id: campaignId,
           address: address.line || 'Unknown Address',
@@ -149,7 +163,7 @@ serve(async (req) => {
       }
     }
 
-    console.log('Processed properties with photos:', processedProperties.length);
+    console.log('Processed properties with 3+ photos:', processedProperties.length);
 
     // Insert all properties into the database
     if (processedProperties.length > 0) {
