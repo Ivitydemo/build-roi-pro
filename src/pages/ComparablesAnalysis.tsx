@@ -19,10 +19,7 @@ const ComparablesAnalysis = () => {
   const [analyzing, setAnalyzing] = useState(false);
 
   const comparableAddresses = [
-    '1825 Mallory Lane, Brentwood, TN',
-    '205 Carriage House Ln, Brentwood, TN',
-    '9301 Anson Way, Brentwood, TN',
-    '308 Radnor Ct, Brentwood, TN'
+    '1810 Ivy Crest, Brentwood, TN'  // Just search once - will auto-detect Taramore subdivision
   ];
 
   useEffect(() => {

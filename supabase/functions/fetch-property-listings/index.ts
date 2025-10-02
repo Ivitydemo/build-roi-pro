@@ -166,12 +166,12 @@ serve(async (req) => {
         };
 
         // Fetch SOLD property listings for comparables analysis
-        // Filter for recent sales (last 6 months)
+        // Filter for recent sales (last 90 days)
         const soldDateMin = new Date();
-        soldDateMin.setDate(soldDateMin.getDate() - 180); // 6 months ago
+        soldDateMin.setDate(soldDateMin.getDate() - 90); // 90 days ago (not 180)
         const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
         
-        const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=50&sold_date_min=${soldDateMinStr}`;
+        const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=15&sold_date_min=${soldDateMinStr}`;
         console.log('Fetching comps near:', location);
         
         const listingsResponse = await fetch(listingsUrl, options);
@@ -192,7 +192,7 @@ serve(async (req) => {
         const { address, radiusMiles } = searchParams;
         
         const soldDateMin2 = new Date();
-        soldDateMin2.setDate(soldDateMin2.getDate() - 180); // 6 months ago
+        soldDateMin2.setDate(soldDateMin2.getDate() - 90); // 90 days
         const soldDateMinStr2 = soldDateMin2.toISOString().split('T')[0];
         
         const options2 = {
@@ -203,7 +203,7 @@ serve(async (req) => {
           } as Record<string, string>
         };
 
-        const listingsUrl2 = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(address)}&limit=50&sold_date_min=${soldDateMinStr2}`;
+        const listingsUrl2 = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(address)}&limit=15&sold_date_min=${soldDateMinStr2}`;
         console.log('Fetching recently sold properties from:', listingsUrl2);
         
         const listingsResponse2 = await fetch(listingsUrl2, options2);
@@ -223,7 +223,7 @@ serve(async (req) => {
         const location = `${subdivisionName}, ${city}, ${state}`;
         
         const soldDateMin3 = new Date();
-        soldDateMin3.setDate(soldDateMin3.getDate() - 180); // 6 months ago
+        soldDateMin3.setDate(soldDateMin3.getDate() - 90); // 90 days
         const soldDateMinStr3 = soldDateMin3.toISOString().split('T')[0];
         
         const options3 = {
@@ -234,7 +234,7 @@ serve(async (req) => {
           } as Record<string, string>
         };
 
-        const listingsUrl3 = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=50&sold_date_min=${soldDateMinStr3}`;
+        const listingsUrl3 = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=15&sold_date_min=${soldDateMinStr3}`;
         console.log('Fetching recently sold properties from Taramore from:', listingsUrl3);
         
         const listingsResponse3 = await fetch(listingsUrl3, options3);
