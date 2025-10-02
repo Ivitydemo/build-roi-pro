@@ -211,8 +211,10 @@ serve(async (req) => {
       const location = property.location || {};
       const address = location.address || {};
       
-      // Extract photo URLs from the new API format
+      // Extract photo URLs - try multiple possible formats
       const photoUrls: string[] = [];
+      
+      // Try photos array
       if (property.photos && Array.isArray(property.photos)) {
         property.photos.forEach((photo: any) => {
           if (photo.href) {
@@ -221,14 +223,20 @@ serve(async (req) => {
         });
       }
       
-      // Also add primary photo if available
+      // Try primary_photo
       if (property.primary_photo?.href && !photoUrls.includes(property.primary_photo.href)) {
         photoUrls.unshift(property.primary_photo.href);
       }
+      
+      // Try thumbnail (some APIs use this)
+      if (property.thumbnail && !photoUrls.includes(property.thumbnail)) {
+        photoUrls.push(property.thumbnail);
+      }
 
-      // Only insert properties with photos (we need interior photos for analysis)
-      // Minimum 3 photos to ensure we have interior shots, not just exterior
-      if (photoUrls.length >= 3) {
+      console.log(`Property ${address.line}: found ${photoUrls.length} photos`);
+
+      // Only insert properties with at least 1 photo
+      if (photoUrls.length >= 1) {
         const targetedProperty = {
           campaign_id: campaignId,
           address: address.line || 'Unknown Address',
@@ -244,7 +252,7 @@ serve(async (req) => {
       }
     }
 
-    console.log('Processed properties with 3+ photos:', processedProperties.length);
+    console.log('Processed properties with photos:', processedProperties.length);
 
     // Insert all properties into the database
     if (processedProperties.length > 0) {
