@@ -35,24 +35,28 @@ serve(async (req) => {
         method: 'GET',
         headers: {
           'X-RapidAPI-Key': RAPIDAPI_KEY,
-          'X-RapidAPI-Host': 'realtor.p.rapidapi.com'
+          'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
         }
       };
 
-      // First, get property listings
-      const listingsUrl = `https://realtor.p.rapidapi.com/properties/v3/list?location=${encodeURIComponent(location)}&limit=20&offset=0&sort=relevance&status=for_sale`;
+      // Try to fetch property listings with the new API
+      const listingsUrl = `https://realtor16.p.rapidapi.com/properties/search?location=${encodeURIComponent(location)}&limit=20&status=for_sale`;
       console.log('Fetching listings from:', listingsUrl);
       
       const listingsResponse = await fetch(listingsUrl, options);
+      const responseText = await listingsResponse.text();
+      
       if (!listingsResponse.ok) {
-        console.error('Listings API error:', listingsResponse.status, await listingsResponse.text());
-        throw new Error(`Realtor API error: ${listingsResponse.status}`);
+        console.error('Listings API error:', listingsResponse.status, responseText);
+        throw new Error(`Realtor API error: ${listingsResponse.status} - ${responseText}`);
       }
 
-      const listingsData = await listingsResponse.json();
-      console.log('Listings response received, properties count:', listingsData?.data?.home_search?.results?.length || 0);
+      console.log('API Response:', responseText);
+      const listingsData = JSON.parse(responseText);
+      console.log('Parsed data structure:', Object.keys(listingsData));
 
-      properties = listingsData?.data?.home_search?.results || [];
+      // The API response structure may vary, try to extract properties
+      properties = listingsData?.properties || listingsData?.results || listingsData?.data || [];
       
     } else if (searchType === 'radius') {
       // Search by radius around a location
@@ -62,23 +66,23 @@ serve(async (req) => {
         method: 'GET',
         headers: {
           'X-RapidAPI-Key': RAPIDAPI_KEY,
-          'X-RapidAPI-Host': 'realtor.p.rapidapi.com'
+          'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
         }
       };
 
-      const listingsUrl = `https://realtor.p.rapidapi.com/properties/v3/list?location=${encodeURIComponent(address)}&limit=50&offset=0&radius=${radiusMiles}&sort=relevance&status=for_sale`;
+      const listingsUrl = `https://realtor16.p.rapidapi.com/properties/search?location=${encodeURIComponent(address)}&limit=50&radius=${radiusMiles}&status=for_sale`;
       console.log('Fetching listings from:', listingsUrl);
       
       const listingsResponse = await fetch(listingsUrl, options);
+      const responseText = await listingsResponse.text();
+      
       if (!listingsResponse.ok) {
-        console.error('Listings API error:', listingsResponse.status, await listingsResponse.text());
+        console.error('Listings API error:', listingsResponse.status, responseText);
         throw new Error(`Realtor API error: ${listingsResponse.status}`);
       }
 
-      const listingsData = await listingsResponse.json();
-      console.log('Listings response received, properties count:', listingsData?.data?.home_search?.results?.length || 0);
-
-      properties = listingsData?.data?.home_search?.results || [];
+      const listingsData = JSON.parse(responseText);
+      properties = listingsData?.properties || listingsData?.results || listingsData?.data || [];
       
     } else if (searchType === 'subdivision') {
       // Search by subdivision/neighborhood
@@ -89,23 +93,23 @@ serve(async (req) => {
         method: 'GET',
         headers: {
           'X-RapidAPI-Key': RAPIDAPI_KEY,
-          'X-RapidAPI-Host': 'realtor.p.rapidapi.com'
+          'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
         }
       };
 
-      const listingsUrl = `https://realtor.p.rapidapi.com/properties/v3/list?location=${encodeURIComponent(location)}&limit=50&offset=0&sort=relevance&status=for_sale`;
+      const listingsUrl = `https://realtor16.p.rapidapi.com/properties/search?location=${encodeURIComponent(location)}&limit=50&status=for_sale`;
       console.log('Fetching listings from:', listingsUrl);
       
       const listingsResponse = await fetch(listingsUrl, options);
+      const responseText = await listingsResponse.text();
+      
       if (!listingsResponse.ok) {
-        console.error('Listings API error:', listingsResponse.status, await listingsResponse.text());
+        console.error('Listings API error:', listingsResponse.status, responseText);
         throw new Error(`Realtor API error: ${listingsResponse.status}`);
       }
 
-      const listingsData = await listingsResponse.json();
-      console.log('Listings response received, properties count:', listingsData?.data?.home_search?.results?.length || 0);
-
-      properties = listingsData?.data?.home_search?.results || [];
+      const listingsData = JSON.parse(responseText);
+      properties = listingsData?.properties || listingsData?.results || listingsData?.data || [];
     }
 
     // Process and store properties
