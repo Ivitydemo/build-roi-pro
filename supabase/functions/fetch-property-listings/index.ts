@@ -42,84 +42,110 @@ serve(async (req) => {
       } as Record<string, string>
     };
 
-    // Calculate sold date minimum based on time period
-    const timePeriodDays = parseInt(searchParams.timePeriod || '180');
-    const soldDateMin = new Date();
-    soldDateMin.setDate(soldDateMin.getDate() - timePeriodDays);
-    const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
-    
-    // Build API URL
-    let apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&sold_date_min=${soldDateMinStr}&limit=50`;
-    
-    // Add radius for radius searches
-    if (searchParams.radius) {
-      apiUrl += `&radius=${searchParams.radius}`;
-    }
-    
-    console.log('Fetching from:', apiUrl);
-    
-    const listingsResponse = await fetch(apiUrl, options);
-    
-    if (listingsResponse.ok) {
-      const listingsData = await listingsResponse.json();
-      console.log('Raw properties found:', listingsData?.properties?.length || 0);
-      properties = listingsData?.properties || [];
-      
-      // No post-filtering needed for radius searches - API handles it
-    } else {
-      console.error('API error:', listingsResponse.status, await listingsResponse.text());
-      throw new Error(`API request failed with status ${listingsResponse.status}`);
-    }
+    // Attempt to fetch enough sold comps with automatic fallbacks
+    // Goal: target 4 comps, minimum 3
+    const desiredTarget = 4;
+    const desiredMinimum = 3;
 
-    // Process and store properties
-    const processedProperties = [];
-    
-    for (const property of properties) {
-      const location = property.location || {};
-      const address = location.address || {};
-      
-      // Extract photo URLs - try multiple possible formats
-      const photoUrls: string[] = [];
-      
-      // Try photos array
-      if (property.photos && Array.isArray(property.photos)) {
-        property.photos.forEach((photo: any) => {
-          if (photo.href) {
-            photoUrls.push(photo.href);
+    const baseRadius = parseFloat(String(searchParams.radius ?? '1'));
+    const uniqueRadii = Array.from(new Set([
+      baseRadius,
+      1,
+      2,
+      3,
+      5,
+    ].filter((r) => !isNaN(r) && r > 0))).sort((a, b) => a - b);
+
+    const basePeriod = parseInt(String(searchParams.timePeriod ?? '180'));
+    const uniquePeriods = Array.from(new Set([
+      basePeriod,
+      365,
+    ])).sort((a, b) => a - b);
+
+    const attemptDetails: Array<{ radius: number; period: number; rawCount: number; withPhotos: number }> = [];
+
+    // We'll dedupe properties across attempts using an address key
+    const seenKeys = new Set<string>();
+    const processedProperties: any[] = [];
+
+    for (const period of uniquePeriods) {
+      const soldDateMin = new Date();
+      soldDateMin.setDate(soldDateMin.getDate() - period);
+      const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
+
+      for (const r of uniqueRadii) {
+        let apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&sold_date_min=${soldDateMinStr}&limit=100&radius=${r}`;
+        console.log('Fetching from:', apiUrl);
+
+        const listingsResponse = await fetch(apiUrl, options);
+        if (!listingsResponse.ok) {
+          console.error('API error:', listingsResponse.status, await listingsResponse.text());
+          continue; // try next attempt
+        }
+
+        const listingsData = await listingsResponse.json();
+        const currentProps: any[] = listingsData?.properties || [];
+        console.log('Raw properties found:', currentProps.length);
+
+        let withPhotosCount = 0;
+
+        for (const property of currentProps) {
+          const loc = property.location || {};
+          const addr = loc.address || {};
+
+          // Build a natural dedupe key
+          const key = `${addr.line ?? ''}|${addr.postal_code ?? ''}`;
+          if (seenKeys.has(key)) continue;
+
+          // Extract photo URLs
+          const photoUrls: string[] = [];
+          if (property.photos && Array.isArray(property.photos)) {
+            for (const photo of property.photos) {
+              if (photo?.href) photoUrls.push(photo.href);
+            }
           }
-        });
-      }
-      
-      // Try primary_photo
-      if (property.primary_photo?.href && !photoUrls.includes(property.primary_photo.href)) {
-        photoUrls.unshift(property.primary_photo.href);
-      }
-      
-      // Try thumbnail (some APIs use this)
-      if (property.thumbnail && !photoUrls.includes(property.thumbnail)) {
-        photoUrls.push(property.thumbnail);
+          if (property.primary_photo?.href && !photoUrls.includes(property.primary_photo.href)) {
+            photoUrls.unshift(property.primary_photo.href);
+          }
+          if (property.thumbnail && !photoUrls.includes(property.thumbnail)) {
+            photoUrls.push(property.thumbnail);
+          }
+
+          if (photoUrls.length >= 1) {
+            withPhotosCount++;
+            const targetedProperty = {
+              campaign_id: campaignId,
+              address: addr.line || 'Unknown Address',
+              city: addr.city || null,
+              state: addr.state_code || null,
+              zip_code: addr.postal_code || null,
+              listing_data: property,
+              photo_urls: photoUrls,
+              analysis_status: 'pending'
+            };
+            processedProperties.push(targetedProperty);
+            seenKeys.add(key);
+          }
+
+          // Stop early if we hit the target
+          if (processedProperties.length >= desiredTarget) break;
+        }
+
+        attemptDetails.push({ radius: r, period, rawCount: currentProps.length, withPhotos: withPhotosCount });
+
+        // If we already have the minimum, we can stop trying larger searches
+        if (processedProperties.length >= desiredMinimum) {
+          break;
+        }
       }
 
-      console.log(`Property ${address.line}: found ${photoUrls.length} photos`);
-
-      // Only insert properties with at least 1 photo
-      if (photoUrls.length >= 1) {
-        const targetedProperty = {
-          campaign_id: campaignId,
-          address: address.line || 'Unknown Address',
-          city: address.city || null,
-          state: address.state_code || null,
-          zip_code: address.postal_code || null,
-          listing_data: property,
-          photo_urls: photoUrls,
-          analysis_status: 'pending'
-        };
-
-        processedProperties.push(targetedProperty);
+      if (processedProperties.length >= desiredMinimum) {
+        break;
       }
     }
 
     console.log('Processed properties with photos:', processedProperties.length);
+
 
     // Insert all properties into the database
     if (processedProperties.length > 0) {

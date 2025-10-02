@@ -138,20 +138,32 @@ const ComparablesAnalysis = () => {
       setAllProperties(props);
       fetchedProperties.push(...props);
 
-      if (fetchedProperties.length === 0) {
+      if (props.length === 0) {
         toast({
           title: 'No properties found',
-          description: 'No sold properties found in this area. Try expanding the radius.',
+          description: 'No sold properties found nearby. Try increasing the radius or time period.',
           variant: 'destructive'
         });
         setLoading(false);
         return;
       }
 
-      toast({
-        title: 'Properties loaded',
-        description: `Found ${fetchedProperties.length} properties. Select at least 3 comps to analyze.`
-      });
+      // Auto-suggest comps: target 4, minimum 3
+      const preselectCount = Math.min(4, props.length);
+      if (preselectCount >= 3) {
+        const suggested = props.slice(0, preselectCount).map((p: any) => p.id);
+        setSelectedPropertyIds(new Set(suggested));
+        toast({
+          title: 'Suggested comps preselected',
+          description: `Preselected ${preselectCount} comps. Adjust as needed and click Analyze.`
+        });
+      } else {
+        toast({
+          title: 'Not enough comps',
+          description: `Only ${props.length} found. Try increasing radius or time period.`,
+          variant: 'destructive'
+        });
+      }
 
     } catch (error) {
       console.error('Error in fetch and analyze:', error);
