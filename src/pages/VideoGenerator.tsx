@@ -22,7 +22,7 @@ import scene12 from "@/assets/pitch-scenes/scene-12.jpg";
 
 const VideoGenerator = () => {
   const navigate = useNavigate();
-  const [audioUrl, setAudioUrl] = useState<string>("");
+  const [audioUrl, setAudioUrl] = useState<string>("/pitch-narration.mp3");
   const [campaignType, setCampaignType] = useState<'renovation' | 'new_home'>('renovation');
   
   useEffect(() => {
@@ -84,37 +84,9 @@ const VideoGenerator = () => {
 
           <div className="space-y-6">
             <div className="p-6 bg-card rounded-lg border border-primary/20 shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">Generate Video Narration</h2>
-              
-              <div className="space-y-4 mb-6">
-                <div className="space-y-2">
-                  <Label>Video Purpose</Label>
-                  <Select value={campaignType} onValueChange={(value: any) => setCampaignType(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="renovation">Renovation Value Pitch (Contractors)</SelectItem>
-                      <SelectItem value="new_home">New Home Value Pitch (Builders/Agents)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-sm text-muted-foreground">
-                    {campaignType === 'renovation' 
-                      ? 'Show homeowners how renovations increase property value'
-                      : 'Demonstrate why new construction is worth the premium'}
-                  </p>
-                </div>
-              </div>
-
-              <BrowserNarration script={pitchScript} onAudioGenerated={setAudioUrl} />
+              <h2 className="text-2xl font-bold mb-4">Watch How Top Contractors Win More Deals</h2>
+              <PitchVideoPlayer scenes={pitchScenes} audioUrl={audioUrl} />
             </div>
-
-            {audioUrl && (
-              <div className="p-6 bg-card rounded-lg border border-primary/20 shadow-lg">
-                <h2 className="text-2xl font-bold mb-4">Watch How Top Contractors Win More Deals</h2>
-                <PitchVideoPlayer scenes={pitchScenes} audioUrl={audioUrl} />
-              </div>
-            )}
           </div>
         </div>
       </div>
