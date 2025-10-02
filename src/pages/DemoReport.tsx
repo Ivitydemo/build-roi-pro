@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Download, Mail, TrendingUp, DollarSign, Home, BarChart3, Calculator, ImageIcon, Share2 } from 'lucide-react';
+import { Building2, Download, Mail, TrendingUp, DollarSign, Home, BarChart3, Calculator, ImageIcon, Share2, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ComparableWithAnalysis } from '@/components/ComparableWithAnalysis';
 
 const DemoReport = () => {
   const navigate = useNavigate();
@@ -44,10 +45,82 @@ const DemoReport = () => {
   ];
 
   const comparables = [
-    { address: '1825 Mallory Lane', price: 2150000, sqft: 5200, priceSqft: 413, distance: 0.3 },
-    { address: '205 Carriage House Ln', price: 1950000, sqft: 4950, priceSqft: 394, distance: 0.5 },
-    { address: '9301 Anson Way', price: 2250000, sqft: 5400, priceSqft: 417, distance: 0.7 },
-    { address: '308 Radnor Ct', price: 1875000, sqft: 4700, priceSqft: 399, distance: 0.8 }
+    { 
+      address: '1825 Mallory Lane', 
+      price: 2150000, 
+      sqft: 5200, 
+      priceSqft: 413, 
+      distance: 0.3,
+      analysis: {
+        quality: 'Premium' as const,
+        renovationStatus: 'Fully Renovated' as const,
+        materials: ['Quartzite countertops', 'Custom cabinetry', 'Wide-plank oak flooring', 'Wolf appliances'],
+        valueDrivers: [
+          'High-end stone countertops add $30-45/sqft value',
+          'Custom cabinetry vs. stock adds $20-30/sqft',
+          'Premium appliances increase buyer appeal and price point',
+          'Wide-plank hardwood flooring commands premium pricing'
+        ],
+        estimatedImpact: 350000
+      }
+    },
+    { 
+      address: '205 Carriage House Ln', 
+      price: 1950000, 
+      sqft: 4950, 
+      priceSqft: 394, 
+      distance: 0.5,
+      analysis: {
+        quality: 'Premium' as const,
+        renovationStatus: 'Fully Renovated' as const,
+        materials: ['Quartz countertops', 'Shaker cabinetry', 'Engineered hardwood', 'KitchenAid appliances'],
+        valueDrivers: [
+          'Quartz countertops provide modern appeal at $25-35/sqft premium',
+          'Quality shaker cabinets add timeless value',
+          'Engineered hardwood offers durability and aesthetic appeal',
+          'Mid-range appliances meet buyer expectations in this price range'
+        ],
+        estimatedImpact: 280000
+      }
+    },
+    { 
+      address: '9301 Anson Way', 
+      price: 2250000, 
+      sqft: 5400, 
+      priceSqft: 417, 
+      distance: 0.7,
+      analysis: {
+        quality: 'Luxury' as const,
+        renovationStatus: 'Fully Renovated' as const,
+        materials: ['Exotic stone countertops', 'Inset custom cabinetry', 'Walnut flooring', 'Sub-Zero/Wolf suite'],
+        valueDrivers: [
+          'Exotic stone like marble or granite adds $40-60/sqft to value',
+          'Inset cabinetry is the highest-end construction, adding significant value',
+          'Walnut flooring commands top-tier pricing ($50+/sqft premium)',
+          'Sub-Zero/Wolf appliance suite signals luxury positioning'
+        ],
+        estimatedImpact: 450000
+      }
+    },
+    { 
+      address: '308 Radnor Ct', 
+      price: 1875000, 
+      sqft: 4700, 
+      priceSqft: 399, 
+      distance: 0.8,
+      analysis: {
+        quality: 'Premium' as const,
+        renovationStatus: 'Fully Renovated' as const,
+        materials: ['Quartz countertops', 'Semi-custom cabinets', 'Oak flooring', 'Bosch appliances'],
+        valueDrivers: [
+          'Quality quartz provides durability and modern aesthetics',
+          'Semi-custom cabinets balance cost and customization',
+          'Classic oak flooring appeals to broad buyer base',
+          'European appliances add perceived quality'
+        ],
+        estimatedImpact: 300000
+      }
+    }
   ];
 
   return (
@@ -173,35 +246,63 @@ const DemoReport = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Home className="h-6 w-6 text-primary" />
-              Recent Comparable Sales
+              Recent Comparable Sales with AI Analysis
             </CardTitle>
+            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span>Our AI analyzed listing photos to identify exactly what drives higher prices</span>
+            </div>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-6">
-              Recent sales of similar properties in your area support the projected after-renovation values shown below. All sales within the last 90 days.
+              Recent sales of similar properties in your area. All sales within the last 90 days. <strong className="text-foreground">AI photo analysis reveals specific materials and upgrades that command premium pricing.</strong>
             </p>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {comparables.map((comp, idx) => (
-                <div key={idx} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="font-semibold text-lg">{comp.address}</div>
-                      <div className="text-sm text-muted-foreground">{comp.distance} miles away • {comp.sqft.toLocaleString()} sq ft</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold">${comp.price.toLocaleString()}</div>
-                      <div className="text-sm text-muted-foreground">${comp.priceSqft}/sqft</div>
-                    </div>
-                  </div>
-                </div>
+                <ComparableWithAnalysis
+                  key={idx}
+                  address={comp.address}
+                  price={comp.price}
+                  sqft={comp.sqft}
+                  priceSqft={comp.priceSqft}
+                  distance={comp.distance}
+                  analysis={comp.analysis}
+                />
               ))}
             </div>
-            <div className="mt-6 bg-primary/5 border border-primary/20 rounded-lg p-4">
-              <div className="text-center">
+            <div className="mt-6 bg-primary/5 border border-primary/20 rounded-lg p-6">
+              <div className="text-center mb-4">
                 <div className="text-sm text-muted-foreground mb-1">Average Comparable Price</div>
                 <div className="text-3xl font-bold text-primary">${Math.round(comparables.reduce((sum, c) => sum + c.priceSqft, 0) / comparables.length)}/sqft</div>
                 <div className="text-sm text-muted-foreground mt-2">
                   Target after remodel: $385-$434/sqft (well-supported by market data)
+                </div>
+              </div>
+              <div className="border-t pt-4 mt-4">
+                <div className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  Key Value Drivers Across All Comparables:
+                </div>
+                <div className="grid md:grid-cols-2 gap-3 text-sm">
+                  <div className="bg-background rounded p-3">
+                    <div className="font-medium mb-1">Premium Countertops</div>
+                    <div className="text-muted-foreground text-xs">Quartz/Quartzite adds $25-60/sqft depending on quality</div>
+                  </div>
+                  <div className="bg-background rounded p-3">
+                    <div className="font-medium mb-1">Custom Cabinetry</div>
+                    <div className="text-muted-foreground text-xs">Upgraded cabinets add $20-40/sqft in value</div>
+                  </div>
+                  <div className="bg-background rounded p-3">
+                    <div className="font-medium mb-1">Quality Flooring</div>
+                    <div className="text-muted-foreground text-xs">Wide-plank hardwood/engineered adds $15-50/sqft</div>
+                  </div>
+                  <div className="bg-background rounded p-3">
+                    <div className="font-medium mb-1">Premium Appliances</div>
+                    <div className="text-muted-foreground text-xs">High-end brands signal luxury positioning</div>
+                  </div>
+                </div>
+                <div className="mt-4 text-xs text-center text-muted-foreground">
+                  💡 These insights show exactly where to invest for maximum ROI
                 </div>
               </div>
             </div>
