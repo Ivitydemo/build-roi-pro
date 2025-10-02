@@ -48,9 +48,59 @@ serve(async (req) => {
       throw new Error('No photos to analyze');
     }
 
+    // Check if we have limited photos and should use price-based assumptions
+    const hasLimitedPhotos = photoUrls.length < 3;
+    const listingData = property.listing_data || {};
+    const price = listingData.price || 0;
+    const beds = listingData.beds || 0;
+    const baths = listingData.baths || 0;
+    
+    let assumeStandardFinishes = false;
+    let priceAnalysis = '';
+    
+    if (hasLimitedPhotos && price > 0) {
+      // Get other properties in the same campaign to calculate average price
+      const { data: campaignProperties } = await supabase
+        .from('targeted_properties')
+        .select('listing_data')
+        .eq('campaign_id', property.campaign_id)
+        .neq('id', propertyId);
+      
+      if (campaignProperties && campaignProperties.length > 0) {
+        const prices = campaignProperties
+          .map(p => p.listing_data?.price)
+          .filter(p => p && p > 0);
+        
+        if (prices.length > 0) {
+          const avgPrice = prices.reduce((sum, p) => sum + p, 0) / prices.length;
+          const priceRatio = price / avgPrice;
+          
+          if (priceRatio < 1.15) {
+            // Price is within 15% of average - assume standard finishes
+            assumeStandardFinishes = true;
+            priceAnalysis = `Limited photos available (${photoUrls.length}). Price ($${price.toLocaleString()}) is ${((priceRatio - 1) * 100).toFixed(1)}% vs area average ($${avgPrice.toLocaleString()}). Assuming standard finishes.`;
+            console.log('Assuming standard finishes due to normal pricing');
+          } else {
+            priceAnalysis = `Limited photos available (${photoUrls.length}). Price ($${price.toLocaleString()}) is ${((priceRatio - 1) * 100).toFixed(1)}% above area average ($${avgPrice.toLocaleString()}). Likely has premium upgrades despite limited photos.`;
+            console.log('Price suggests upgrades despite limited photos');
+          }
+        }
+      }
+    }
+
     // Analyze up to 10 photos from the property
     const photosToAnalyze = photoUrls.slice(0, 10);
     const analyses: any[] = [];
+    
+    // If we're assuming standard finishes, add that to analyses
+    if (assumeStandardFinishes) {
+      analyses.push({
+        photo_url: 'price-based-analysis',
+        analysis: priceAnalysis + '\n\nBased on price analysis, this property likely has:\n- Standard builder-grade materials\n- Basic finishes throughout\n- No significant premium upgrades\n- Average renovation quality for the area',
+        timestamp: new Date().toISOString(),
+        is_price_based: true
+      });
+    }
 
     for (const photoUrl of photosToAnalyze) {
       try {
@@ -120,10 +170,20 @@ Provide detailed, specific observations about materials and finishes that affect
     // Compile the analysis summary
     const summary = {
       total_photos_analyzed: analyses.length,
+      limited_photos: hasLimitedPhotos,
+      price_based_assumption: assumeStandardFinishes,
+      price_analysis: priceAnalysis || null,
+      property_details: {
+        price: price,
+        beds: beds,
+        baths: baths
+      },
       analyses: analyses,
-      overall_assessment: analyses.length > 0 ? 
-        'Analysis completed. Review individual photo analyses for details.' :
-        'No successful analyses',
+      overall_assessment: assumeStandardFinishes ? 
+        'Limited photos - standard finishes assumed based on pricing' :
+        (analyses.length > 0 ? 
+          'Analysis completed. Review individual photo analyses for details.' :
+          'No successful analyses'),
       analyzed_at: new Date().toISOString()
     };
 
