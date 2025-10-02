@@ -82,10 +82,10 @@ const ComparablesAnalysis = () => {
       };
       const campaignName = `Within ${radius}mi of ${subjectAddress}`;
 
-      // STEP 1: Fetch properties
+      // STEP 1: Fetch properties with photos
       toast({
-        title: 'Step 1/2: Fetching comparables...',
-        description: campaignName
+        title: 'Searching for comparable properties...',
+        description: 'Finding recently sold homes with interior photos for analysis'
       });
 
       // Create campaign
@@ -119,8 +119,8 @@ const ComparablesAnalysis = () => {
       }
 
       toast({
-        title: `Found properties`,
-        description: `${data.propertiesFound} listings with photos`
+        title: `Found ${data.propertiesFound} comparable properties`,
+        description: 'Properties include interior photos for renovation analysis'
       });
 
       setCampaigns(createdCampaigns);
@@ -154,12 +154,12 @@ const ComparablesAnalysis = () => {
         const suggested = props.slice(0, preselectCount).map((p: any) => p.id);
         setSelectedPropertyIds(new Set(suggested));
         toast({
-          title: 'Suggested comps preselected',
-          description: `Preselected ${preselectCount} comps. Adjust as needed and click Analyze.`
+          title: 'Properties Selected',
+          description: `${preselectCount} properties selected. Click "Analyze" to examine interior photos and identify renovations.`
         });
       } else {
         toast({
-          title: 'Not enough comps',
+          title: 'Need More Properties',
           description: `Only ${props.length} found. Try increasing radius or time period.`,
           variant: 'destructive'
         });
@@ -217,8 +217,8 @@ const ComparablesAnalysis = () => {
     setAnalyzing(true);
     try {
       toast({
-        title: 'Analyzing selected properties...',
-        description: `Processing ${selectedPropertyIds.size} properties`
+        title: 'Starting Photo & Renovation Analysis',
+        description: `AI will examine interior photos from ${selectedPropertyIds.size} properties to identify materials, renovations, and value drivers`
       });
 
       let analyzed = 0;
@@ -231,8 +231,8 @@ const ComparablesAnalysis = () => {
         }
 
         toast({
-          title: `Analyzing ${analyzed + 1}/${selectedProps.length}`,
-          description: property.address
+          title: `Analyzing Property ${analyzed + 1}/${selectedProps.length}`,
+          description: `Examining kitchen, bathroom, and interior photos for ${property.address}`
         });
 
         const { error } = await supabase.functions.invoke('analyze-targeted-properties', {
@@ -252,8 +252,8 @@ const ComparablesAnalysis = () => {
       await loadAllProperties(campaigns.map(c => c.id));
 
       toast({
-        title: 'Analysis complete! 🎉',
-        description: `Successfully analyzed ${analyzed} properties`,
+        title: 'Photo Analysis Complete! 🎉',
+        description: `Successfully analyzed ${analyzed} properties. Review renovation details and value drivers below.`,
         duration: 5000
       });
     } catch (error) {
@@ -309,11 +309,14 @@ const ComparablesAnalysis = () => {
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>1. Enter Subject Property</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              1. Search for Comparable Properties
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <p className="text-muted-foreground">
-              Enter the address of the subject property to find nearby sold comparables.
+              Find recently sold properties with interior photos. AI will analyze kitchens, bathrooms, and other renovations to identify what drives value in your market.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -382,11 +385,11 @@ const ComparablesAnalysis = () => {
           <>
             <Card className="mb-8">
               <CardHeader>
-                <CardTitle>2. Select Comparables ({selectedPropertyIds.size} selected, minimum 3)</CardTitle>
+                <CardTitle>2. Select Properties for Photo Analysis ({selectedPropertyIds.size} selected, minimum 3)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
-                  Review the properties found and select at least 3 comparable properties for detailed analysis.
+                  Select at least 3 properties with good interior photos. AI will examine photos to identify renovation quality, materials used, and specific features that command premium pricing.
                 </p>
                 
                 <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">
@@ -440,7 +443,7 @@ const ComparablesAnalysis = () => {
                       </>
                     ) : (
                       <>
-                        Analyze {selectedPropertyIds.size} Selected Properties
+                        Analyze Photos & Identify Renovations ({selectedPropertyIds.size} properties)
                       </>
                     )}
                   </Button>
@@ -463,7 +466,7 @@ const ComparablesAnalysis = () => {
             {selectedPropertyIds.size >= 3 && (
               <Card>
                 <CardHeader>
-                  <CardTitle>3. Analysis Results</CardTitle>
+                  <CardTitle>3. Photo Analysis & Renovation Insights</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
