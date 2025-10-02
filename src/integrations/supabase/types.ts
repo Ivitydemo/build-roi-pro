@@ -567,6 +567,45 @@ export type Database = {
           },
         ]
       }
+      property_search_campaigns: {
+        Row: {
+          analyzed_properties: number | null
+          builder_id: string
+          campaign_name: string
+          created_at: string
+          id: string
+          search_parameters: Json
+          search_type: string
+          status: string
+          total_properties: number | null
+          updated_at: string
+        }
+        Insert: {
+          analyzed_properties?: number | null
+          builder_id: string
+          campaign_name: string
+          created_at?: string
+          id?: string
+          search_parameters: Json
+          search_type: string
+          status?: string
+          total_properties?: number | null
+          updated_at?: string
+        }
+        Update: {
+          analyzed_properties?: number | null
+          builder_id?: string
+          campaign_name?: string
+          created_at?: string
+          id?: string
+          search_parameters?: Json
+          search_type?: string
+          status?: string
+          total_properties?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       remodel_packages: {
         Row: {
           base_price: number
@@ -667,6 +706,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      targeted_properties: {
+        Row: {
+          address: string
+          analysis_status: string
+          analysis_summary: Json | null
+          campaign_id: string
+          city: string | null
+          created_at: string
+          id: string
+          listing_data: Json | null
+          photo_urls: string[] | null
+          state: string | null
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          address: string
+          analysis_status?: string
+          analysis_summary?: Json | null
+          campaign_id: string
+          city?: string | null
+          created_at?: string
+          id?: string
+          listing_data?: Json | null
+          photo_urls?: string[] | null
+          state?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string
+          analysis_status?: string
+          analysis_summary?: Json | null
+          campaign_id?: string
+          city?: string | null
+          created_at?: string
+          id?: string
+          listing_data?: Json | null
+          photo_urls?: string[] | null
+          state?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, FileText, Image, Package, Settings, LogOut, PlusCircle, Webhook, Sparkles } from 'lucide-react';
+import { Building2, FileText, Image, Package, Settings, LogOut, PlusCircle, Webhook, Sparkles, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PropertyPhotoAnalysis } from '@/components/PropertyPhotoAnalysis';
 
@@ -223,6 +223,16 @@ const Dashboard = () => {
                 View Reports
               </CardTitle>
               <CardDescription>Browse all generated proposals</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/property-campaigns')}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Property Campaigns
+              </CardTitle>
+              <CardDescription>Auto-fetch & analyze listing photos</CardDescription>
             </CardHeader>
           </Card>
         </div>
