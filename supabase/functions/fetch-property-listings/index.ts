@@ -111,6 +111,36 @@ serve(async (req) => {
       // Live API mode
       const apiKey = RAPIDAPI_KEY as string;
 
+      // Helper: fetch sold listings with widening date window
+      const fetchSoldWithFallback = async (loc: string) => {
+        const options = {
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Key': apiKey,
+            'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
+          } as Record<string, string>
+        };
+        const dayWindows = [90, 180, 365];
+        for (const days of dayWindows) {
+          const d = new Date();
+          d.setDate(d.getDate() - days);
+          const soldDateMinStr = d.toISOString().split('T')[0];
+          const url = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(loc)}&limit=15&sold_date_min=${soldDateMinStr}`;
+          console.log(`Trying sold search for ${loc} over last ${days} days`);
+          const resp = await fetch(url, options);
+          if (resp.ok) {
+            const data = await resp.json();
+            const count = data?.properties?.length || 0;
+            console.log(`Properties found for ${loc} (${days}d):`, count);
+            if (count > 0) return data.properties;
+          } else {
+            const t = await resp.text();
+            console.error('Listings API error:', resp.status, t);
+          }
+        }
+        return [] as any[];
+      };
+
       // If searching by address and want subdivision comps, first get the subdivision name
       if (searchType === 'address' && searchParams.findSubdivision) {
         console.log('Looking up subdivision for address:', searchParams.address);
@@ -157,35 +187,20 @@ serve(async (req) => {
         // Search for properties by address or zip
         const location = searchType === 'address' ? searchParams.address : searchParams.zipCode;
         
-        const options = {
-          method: 'GET',
-          headers: {
-            'X-RapidAPI-Key': apiKey,
-            'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
-          } as Record<string, string>
-        };
+        // Try progressively wider windows; if none and it's an address, fallback to city/state
+        let results = await fetchSoldWithFallback(location);
 
-        // Fetch SOLD property listings for comparables analysis
-        // Filter for recent sales (last 90 days)
-        const soldDateMin = new Date();
-        soldDateMin.setDate(soldDateMin.getDate() - 90); // 90 days ago (not 180)
-        const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
-        
-        const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=15&sold_date_min=${soldDateMinStr}`;
-        console.log('Fetching comps near:', location);
-        
-        const listingsResponse = await fetch(listingsUrl, options);
-        
-        if (!listingsResponse.ok) {
-          const errorText = await listingsResponse.text();
-          console.error('Listings API error:', listingsResponse.status, errorText);
-          throw new Error(`Realtor API error: ${listingsResponse.status} - ${errorText}`);
+        if ((!results || results.length === 0) && searchType === 'address' && typeof location === 'string') {
+          const parts = location.split(',').map((s: string) => s.trim());
+          if (parts.length >= 2) {
+            const cityState = `${parts[parts.length - 2]}, ${parts[parts.length - 1]}`;
+            console.log('Fallback to city/state:', cityState);
+            results = await fetchSoldWithFallback(cityState);
+          }
         }
 
-        const listingsData = await listingsResponse.json();
-        console.log('Properties found:', listingsData?.properties?.length || 0);
-
-        properties = listingsData?.properties || [];
+        console.log('Final properties count after fallbacks:', results?.length || 0);
+        properties = results || [];
         
       } else if (searchType === 'radius') {
         // Search by radius around a location
@@ -222,31 +237,8 @@ serve(async (req) => {
         const { subdivisionName, city, state } = searchParams;
         const location = `${subdivisionName}, ${city}, ${state}`;
         
-        const soldDateMin3 = new Date();
-        soldDateMin3.setDate(soldDateMin3.getDate() - 90); // 90 days
-        const soldDateMinStr3 = soldDateMin3.toISOString().split('T')[0];
-        
-        const options3 = {
-          method: 'GET',
-          headers: {
-            'X-RapidAPI-Key': apiKey,
-            'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
-          } as Record<string, string>
-        };
-
-        const listingsUrl3 = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=15&sold_date_min=${soldDateMinStr3}`;
-        console.log('Fetching recently sold properties from Taramore from:', listingsUrl3);
-        
-        const listingsResponse3 = await fetch(listingsUrl3, options3);
-        
-        if (!listingsResponse3.ok) {
-          const errorText = await listingsResponse3.text();
-          console.error('Listings API error:', listingsResponse3.status, errorText);
-          throw new Error(`Realtor API error: ${listingsResponse3.status}`);
-        }
-
-        const listingsData3 = await listingsResponse3.json();
-        properties = listingsData3?.properties || [];
+        const results3 = await fetchSoldWithFallback(location);
+        properties = results3 || [];
       }
     }
 
