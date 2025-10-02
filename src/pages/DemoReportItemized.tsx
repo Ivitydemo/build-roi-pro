@@ -119,6 +119,7 @@ const DemoReportItemized = () => {
       analysis: {
         quality: 'Premium' as const,
         renovationStatus: 'Fully Renovated' as const,
+        renovatedAreas: ['Kitchen', 'All Bathrooms (3)', 'Flooring Throughout', 'Lighting', 'Paint'],
         materials: ['Quartzite countertops', 'Custom cabinetry', 'Wide-plank oak flooring', 'Wolf appliances'],
         valueDrivers: [
           'High-end stone countertops add $30-45/sqft value',
@@ -136,12 +137,13 @@ const DemoReportItemized = () => {
       distance: 0.5,
       analysis: {
         quality: 'Premium' as const,
-        renovationStatus: 'Fully Renovated' as const,
+        renovationStatus: 'Partially Updated' as const,
+        renovatedAreas: ['Kitchen', 'Master Bath', 'Main Floor Flooring'],
         materials: ['Quartz countertops', 'Shaker cabinetry', 'Engineered hardwood', 'KitchenAid appliances'],
         valueDrivers: [
           'Quartz countertops provide modern appeal at $25-35/sqft premium',
           'Quality shaker cabinets add timeless value',
-          'Engineered hardwood offers durability and aesthetic appeal'
+          'Strategic focus on high-impact areas maximizes ROI'
         ],
         estimatedImpact: 280000
       }
@@ -155,6 +157,7 @@ const DemoReportItemized = () => {
       analysis: {
         quality: 'Luxury' as const,
         renovationStatus: 'Fully Renovated' as const,
+        renovatedAreas: ['Kitchen', 'All Bathrooms (4)', 'Flooring Throughout', 'Lighting', 'Paint', 'Fixtures'],
         materials: ['Exotic stone countertops', 'Inset custom cabinetry', 'Walnut flooring', 'Sub-Zero/Wolf suite'],
         valueDrivers: [
           'Exotic stone like marble adds $40-60/sqft to value',
@@ -172,12 +175,13 @@ const DemoReportItemized = () => {
       distance: 0.8,
       analysis: {
         quality: 'Premium' as const,
-        renovationStatus: 'Fully Renovated' as const,
+        renovationStatus: 'Partially Updated' as const,
+        renovatedAreas: ['Kitchen', 'Master & Guest Baths', 'Paint & Lighting'],
         materials: ['Quartz countertops', 'Semi-custom cabinets', 'Oak flooring', 'Bosch appliances'],
         valueDrivers: [
           'Quality quartz provides durability and modern aesthetics',
           'Semi-custom cabinets balance cost and customization',
-          'Classic oak flooring appeals to broad buyer base'
+          'Strategic bathroom updates increase perceived value'
         ],
         estimatedImpact: 300000
       }
@@ -252,16 +256,15 @@ const DemoReportItemized = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Home className="h-6 w-6 text-primary" />
-              Market Comparables with AI Analysis
+              Market Comparables Analysis
             </CardTitle>
-            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span>AI photo analysis reveals exactly what drives higher prices per square foot</span>
+            <div className="text-sm text-muted-foreground mt-2">
+              Recent sales within 0.8 miles • Analysis shows exactly what drives higher pricing
             </div>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-6">
-              Recent sales of similar properties. <strong className="text-foreground">AI analysis shows specific materials and upgrades that justify premium pricing.</strong>
+              All sales within the last 90 days. <strong className="text-foreground">Analysis reveals specific materials, renovation scope, and value drivers that justify premium pricing.</strong>
             </p>
             <div className="space-y-4">
               {comparables.map((comp, idx) => (

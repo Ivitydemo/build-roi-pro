@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Sparkles, TrendingUp, CheckCircle } from 'lucide-react';
+import { TrendingUp, CheckCircle, Home } from 'lucide-react';
 
 interface ComparableWithAnalysisProps {
   address: string;
@@ -11,9 +11,11 @@ interface ComparableWithAnalysisProps {
   analysis?: {
     quality: 'Budget' | 'Standard' | 'Premium' | 'Luxury';
     renovationStatus: 'Original' | 'Partially Updated' | 'Fully Renovated';
+    renovatedAreas?: string[]; // e.g., ['Kitchen', 'Master Bath', 'Flooring']
     materials: string[];
     valueDrivers: string[];
     estimatedImpact?: number;
+    photoUrl?: string; // Optional property photo
   };
 }
 
@@ -55,11 +57,6 @@ export const ComparableWithAnalysis = ({
 
       {analysis && (
         <div className="space-y-3 mt-4 pt-4 border-t">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold">AI Analysis - Value Drivers</span>
-          </div>
-
           <div className="flex flex-wrap gap-2 mb-3">
             <Badge className={`${qualityColor[analysis.quality]} border`}>
               {analysis.quality} Quality
@@ -69,11 +66,23 @@ export const ComparableWithAnalysis = ({
             </Badge>
           </div>
 
+          {analysis.renovatedAreas && analysis.renovatedAreas.length > 0 && (
+            <div className="text-sm bg-muted/50 rounded-md p-3">
+              <div className="font-medium mb-1 flex items-center gap-1">
+                <Home className="h-3 w-3 text-primary" />
+                Renovated Areas:
+              </div>
+              <div className="text-muted-foreground">
+                {analysis.renovatedAreas.join(', ')}
+              </div>
+            </div>
+          )}
+
           {analysis.materials.length > 0 && (
             <div className="text-sm">
               <div className="font-medium mb-1 flex items-center gap-1">
                 <CheckCircle className="h-3 w-3 text-green-600" />
-                Materials Identified:
+                Key Materials:
               </div>
               <div className="text-muted-foreground pl-4">
                 {analysis.materials.join(' • ')}
@@ -85,7 +94,7 @@ export const ComparableWithAnalysis = ({
             <div className="text-sm">
               <div className="font-medium mb-1 flex items-center gap-1">
                 <TrendingUp className="h-3 w-3 text-primary" />
-                What Drives Higher Value:
+                Value Drivers:
               </div>
               <ul className="text-muted-foreground pl-4 space-y-1">
                 {analysis.valueDrivers.map((driver, idx) => (
@@ -97,9 +106,9 @@ export const ComparableWithAnalysis = ({
 
           {analysis.estimatedImpact && (
             <div className="bg-primary/5 rounded-md p-2 text-sm">
-              <span className="font-medium">Value Impact:</span>{' '}
+              <span className="font-medium">Renovation Value Impact:</span>{' '}
               <span className="text-primary font-semibold">
-                +${analysis.estimatedImpact.toLocaleString()} vs. non-renovated
+                +${analysis.estimatedImpact.toLocaleString()} vs. non-renovated comparable
               </span>
             </div>
           )}
