@@ -90,6 +90,16 @@ serve(async (req) => {
           primary_photo: { href: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=80' }
         }
       ];
+
+      // Filter to only the searched address in mock mode
+      const searchStreet = (searchType === 'address' && searchParams?.address)
+        ? String(searchParams.address).split(',')[0].trim().toLowerCase()
+        : null;
+      if (searchStreet) {
+        properties = properties.filter((p: any) => (
+          (p.location?.address?.line || '').trim().toLowerCase() === searchStreet
+        ));
+      }
     } else {
       // Live API mode - simplified
       const apiKey = RAPIDAPI_KEY as string;
