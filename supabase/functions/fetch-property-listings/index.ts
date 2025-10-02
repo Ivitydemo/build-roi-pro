@@ -108,8 +108,8 @@ serve(async (req) => {
       const apiKey = RAPIDAPI_KEY as string;
 
       if (searchType === 'address' || searchType === 'zip_code') {
-        // For Taramore comps, always search the subdivision instead of the specific address
-        const location = 'Taramore, Brentwood, TN';
+        // Search for properties by address or zip
+        const location = searchType === 'address' ? searchParams.address : searchParams.zipCode;
         
         const options = {
           method: 'GET',
@@ -119,13 +119,14 @@ serve(async (req) => {
           } as Record<string, string>
         };
 
-        // Fetch SOLD property listings for comparables analysis in Taramore
+        // Fetch SOLD property listings for comparables analysis
+        // Filter for recent sales (last 6 months)
         const soldDateMin = new Date();
         soldDateMin.setDate(soldDateMin.getDate() - 180); // 6 months ago
         const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
         
         const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=50&sold_date_min=${soldDateMinStr}`;
-        console.log('Fetching Taramore comps from:', listingsUrl);
+        console.log('Fetching comps near:', location);
         
         const listingsResponse = await fetch(listingsUrl, options);
         
