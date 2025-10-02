@@ -39,24 +39,22 @@ serve(async (req) => {
         }
       };
 
-      // Try to fetch property listings with the new API
+      // Fetch property listings with the new API
       const listingsUrl = `https://realtor16.p.rapidapi.com/properties/search?location=${encodeURIComponent(location)}&limit=20&status=for_sale`;
       console.log('Fetching listings from:', listingsUrl);
       
       const listingsResponse = await fetch(listingsUrl, options);
-      const responseText = await listingsResponse.text();
       
       if (!listingsResponse.ok) {
-        console.error('Listings API error:', listingsResponse.status, responseText);
-        throw new Error(`Realtor API error: ${listingsResponse.status} - ${responseText}`);
+        const errorText = await listingsResponse.text();
+        console.error('Listings API error:', listingsResponse.status, errorText);
+        throw new Error(`Realtor API error: ${listingsResponse.status} - ${errorText}`);
       }
 
-      console.log('API Response:', responseText);
-      const listingsData = JSON.parse(responseText);
-      console.log('Parsed data structure:', Object.keys(listingsData));
+      const listingsData = await listingsResponse.json();
+      console.log('Properties found:', listingsData?.properties?.length || 0);
 
-      // The API response structure may vary, try to extract properties
-      properties = listingsData?.properties || listingsData?.results || listingsData?.data || [];
+      properties = listingsData?.properties || [];
       
     } else if (searchType === 'radius') {
       // Search by radius around a location
@@ -74,15 +72,15 @@ serve(async (req) => {
       console.log('Fetching listings from:', listingsUrl);
       
       const listingsResponse = await fetch(listingsUrl, options);
-      const responseText = await listingsResponse.text();
       
       if (!listingsResponse.ok) {
-        console.error('Listings API error:', listingsResponse.status, responseText);
+        const errorText = await listingsResponse.text();
+        console.error('Listings API error:', listingsResponse.status, errorText);
         throw new Error(`Realtor API error: ${listingsResponse.status}`);
       }
 
-      const listingsData = JSON.parse(responseText);
-      properties = listingsData?.properties || listingsData?.results || listingsData?.data || [];
+      const listingsData = await listingsResponse.json();
+      properties = listingsData?.properties || [];
       
     } else if (searchType === 'subdivision') {
       // Search by subdivision/neighborhood
@@ -101,15 +99,15 @@ serve(async (req) => {
       console.log('Fetching listings from:', listingsUrl);
       
       const listingsResponse = await fetch(listingsUrl, options);
-      const responseText = await listingsResponse.text();
       
       if (!listingsResponse.ok) {
-        console.error('Listings API error:', listingsResponse.status, responseText);
+        const errorText = await listingsResponse.text();
+        console.error('Listings API error:', listingsResponse.status, errorText);
         throw new Error(`Realtor API error: ${listingsResponse.status}`);
       }
 
-      const listingsData = JSON.parse(responseText);
-      properties = listingsData?.properties || listingsData?.results || listingsData?.data || [];
+      const listingsData = await listingsResponse.json();
+      properties = listingsData?.properties || [];
     }
 
     // Process and store properties
@@ -119,14 +117,19 @@ serve(async (req) => {
       const location = property.location || {};
       const address = location.address || {};
       
-      // Extract photo URLs
+      // Extract photo URLs from the new API format
       const photoUrls: string[] = [];
-      if (property.photos) {
+      if (property.photos && Array.isArray(property.photos)) {
         property.photos.forEach((photo: any) => {
           if (photo.href) {
             photoUrls.push(photo.href);
           }
         });
+      }
+      
+      // Also add primary photo if available
+      if (property.primary_photo?.href && !photoUrls.includes(property.primary_photo.href)) {
+        photoUrls.unshift(property.primary_photo.href);
       }
 
       // Only insert properties with photos
