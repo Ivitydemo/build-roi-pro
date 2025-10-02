@@ -20,12 +20,14 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const RAPIDAPI_KEY = Deno.env.get('RAPIDAPI_KEY');
-    
+    let useMockMode = Boolean(useMock);
     if (!RAPIDAPI_KEY) {
-      throw new Error('RAPIDAPI_KEY not configured. Please add your RapidAPI key.');
+      console.warn('RAPIDAPI_KEY not configured. Falling back to mock data.');
+      useMockMode = true;
     }
 
     let properties: any[] = [];
+    let quotaExceeded = false;
 
     // Build the API request based on search type
     const apiKey = RAPIDAPI_KEY;
@@ -89,7 +91,12 @@ serve(async (req) => {
 
           const listingsResponse = await fetch(apiUrl, options);
           if (!listingsResponse.ok) {
-            console.error('API error:', listingsResponse.status, await listingsResponse.text());
+            const status = listingsResponse.status;
+            const bodyText = await listingsResponse.text();
+            console.error('API error:', status, bodyText);
+            if (status === 429) {
+              quotaExceeded = true;
+            }
             continue; // try next attempt
           }
 
@@ -194,24 +201,92 @@ serve(async (req) => {
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
-    } else {
-      // No properties with photos found
-      const { error: updateError } = await supabase
-        .from('property_search_campaigns')
-        .update({ 
-          total_properties: 0,
-          status: 'completed'
-        })
-        .eq('id', campaignId);
+      } else {
+        // Fallback to mock data if allowed or when API quota is exceeded
+        if (useMockMode || quotaExceeded) {
+          console.log('Using mock comparable properties (useMockMode:', useMockMode, 'quotaExceeded:', quotaExceeded, ')');
+          const mockPhotos = [
+            'https://picsum.photos/seed/comp1/800/600',
+            'https://picsum.photos/seed/comp2/800/600',
+            'https://picsum.photos/seed/comp3/800/600',
+            'https://picsum.photos/seed/comp4/800/600',
+          ];
+          const today = new Date();
+          const mockSold = (daysAgo: number) => {
+            const d = new Date(today);
+            d.setDate(d.getDate() - daysAgo);
+            return d.toISOString().split('T')[0];
+          };
+          const mockProps = [
+            { address: 'Mock Comparable A', city: null, state: null, zip_code: null, photo_urls: [mockPhotos[0]], listing_data: { price: 625000, beds: 4, baths: 3, sqft: 2600, sold_date: mockSold(30) } },
+            { address: 'Mock Comparable B', city: null, state: null, zip_code: null, photo_urls: [mockPhotos[1]], listing_data: { price: 590000, beds: 3, baths: 2, sqft: 2400, sold_date: mockSold(60) } },
+            { address: 'Mock Comparable C', city: null, state: null, zip_code: null, photo_urls: [mockPhotos[2]], listing_data: { price: 605000, beds: 3, baths: 2.5, sqft: 2500, sold_date: mockSold(85) } },
+            { address: 'Mock Comparable D', city: null, state: null, zip_code: null, photo_urls: [mockPhotos[3]], listing_data: { price: 645000, beds: 4, baths: 3.5, sqft: 2750, sold_date: mockSold(120) } },
+          ].map((p) => ({
+            campaign_id: campaignId,
+            address: p.address,
+            city: p.city,
+            state: p.state,
+            zip_code: p.zip_code,
+            listing_data: p.listing_data,
+            photo_urls: p.photo_urls,
+            analysis_status: 'pending',
+          }));
 
-      return new Response(JSON.stringify({ 
-        success: true, 
-        propertiesFound: 0,
-        message: 'No properties with photos found'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+          const { data: insertedMock, error: insertMockError } = await supabase
+            .from('targeted_properties')
+            .insert(mockProps)
+            .select();
+
+          if (insertMockError) {
+            console.error('Error inserting mock properties:', insertMockError);
+            return new Response(JSON.stringify({
+              success: false,
+              error: 'Failed to insert mock properties',
+            }), {
+              status: 500,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+
+          await supabase
+            .from('property_search_campaigns')
+            .update({
+              total_properties: mockProps.length,
+              status: 'completed',
+            })
+            .eq('id', campaignId);
+
+          return new Response(JSON.stringify({
+            success: true,
+            propertiesFound: mockProps.length,
+            properties: insertedMock,
+            message: quotaExceeded
+              ? 'Using demo data due to external API rate limit.'
+              : 'Using demo data as requested.',
+            fallbackUsed: true,
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // No properties with photos found and no fallback
+        const { error: updateError } = await supabase
+          .from('property_search_campaigns')
+          .update({ 
+            total_properties: 0,
+            status: 'completed'
+          })
+          .eq('id', campaignId);
+
+        return new Response(JSON.stringify({ 
+          success: true, 
+          propertiesFound: 0,
+          message: 'No properties with photos found'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
   } catch (error) {
     console.error('Error in fetch-property-listings:', error);
