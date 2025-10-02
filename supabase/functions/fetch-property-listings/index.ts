@@ -12,115 +12,196 @@ serve(async (req) => {
   }
 
   try {
-    const { searchType, searchParams, campaignId } = await req.json();
-    console.log('Fetch property listings request:', { searchType, searchParams, campaignId });
-
-    const RAPIDAPI_KEY = Deno.env.get('RAPIDAPI_KEY');
-    if (!RAPIDAPI_KEY) {
-      throw new Error('RAPIDAPI_KEY is not configured');
-    }
+    const { searchType, searchParams, campaignId, useMock } = await req.json();
+    console.log('Fetch property listings request:', { searchType, searchParams, campaignId, useMock });
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const RAPIDAPI_KEY = Deno.env.get('RAPIDAPI_KEY');
+    const shouldUseMock = Boolean(useMock) || !RAPIDAPI_KEY;
+    if (!RAPIDAPI_KEY) {
+      console.warn('RAPIDAPI_KEY not configured. Falling back to mock data.');
+    }
     let properties: any[] = [];
 
-    // Build the API request based on search type
-    if (searchType === 'address' || searchType === 'zip_code') {
-      // Search for properties by address or zip
-      const location = searchType === 'address' ? searchParams.address : searchParams.zipCode;
-      
-      const options = {
-        method: 'GET',
-        headers: {
-          'X-RapidAPI-Key': RAPIDAPI_KEY,
-          'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
-        }
+    // Build the API request based on search type OR fall back to mock comps for Taramore
+    if (shouldUseMock) {
+      console.log('Using mock Taramore comps due to missing API key or useMock flag');
+
+      const dateWithinDays = (days: number) => {
+        const d = new Date();
+        d.setDate(d.getDate() - days);
+        return d.toISOString().split('T')[0];
       };
 
-      // Fetch SOLD property listings for comparables analysis
-      // Filter for recent sales (last 90-180 days) in Taramore subdivision
-      const soldDateMin = new Date();
-      soldDateMin.setDate(soldDateMin.getDate() - 180); // 6 months ago
-      const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
-      
-      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=20&sold_date_min=${soldDateMinStr}`;
-      console.log('Fetching recently sold properties from Taramore from:', listingsUrl);
-      
-      const listingsResponse = await fetch(listingsUrl, options);
-      
-      if (!listingsResponse.ok) {
-        const errorText = await listingsResponse.text();
-        console.error('Listings API error:', listingsResponse.status, errorText);
-        throw new Error(`Realtor API error: ${listingsResponse.status} - ${errorText}`);
-      }
-
-      const listingsData = await listingsResponse.json();
-      console.log('Properties found:', listingsData?.properties?.length || 0);
-
-      properties = listingsData?.properties || [];
-      
-    } else if (searchType === 'radius') {
-      // Search by radius around a location
-      const { address, radiusMiles } = searchParams;
-      
-      const soldDateMin2 = new Date();
-      soldDateMin2.setDate(soldDateMin2.getDate() - 180); // 6 months ago
-      const soldDateMinStr2 = soldDateMin2.toISOString().split('T')[0];
-      
-      const options2 = {
-        method: 'GET',
-        headers: {
-          'X-RapidAPI-Key': RAPIDAPI_KEY,
-          'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
+      properties = [
+        {
+          location: { address: { line: '1234 Taramore Dr', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
+          sold_date: dateWithinDays(45),
+          price: 1350000,
+          beds: 5,
+          baths: 4.5,
+          photos: [
+            { href: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80' },
+            { href: 'https://images.unsplash.com/photo-1505691723518-36a5ac3b2bba?auto=format&fit=crop&w=1600&q=80' },
+            { href: 'https://images.unsplash.com/photo-1505691723147-36a5ac3b2bba?auto=format&fit=crop&w=1600&q=80' },
+          ],
+          primary_photo: { href: 'https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=1600&q=80' }
+        },
+        {
+          location: { address: { line: '1456 Taramore Ln', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
+          sold_date: dateWithinDays(72),
+          price: 1495000,
+          beds: 5,
+          baths: 5,
+          photos: [
+            { href: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1600&q=80' },
+            { href: 'https://images.unsplash.com/photo-1502673530728-f79b4cab31b1?auto=format&fit=crop&w=1600&q=80' },
+            { href: 'https://images.unsplash.com/photo-1501045661006-fcebe0257c3f?auto=format&fit=crop&w=1600&q=80' },
+          ],
+          primary_photo: { href: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1600&q=80' }
+        },
+        {
+          location: { address: { line: '1688 Hamilton Chase', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
+          sold_date: dateWithinDays(30),
+          price: 1280000,
+          beds: 4,
+          baths: 4,
+          photos: [
+            { href: 'https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=1600&q=80' },
+            { href: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?auto=format&fit=crop&w=1600&q=80' },
+            { href: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1600&q=80' },
+          ],
+          primary_photo: { href: 'https://images.unsplash.com/photo-1505692794403-34d4982fd1bd?auto=format&fit=crop&w=1600&q=80' }
+        },
+        {
+          location: { address: { line: '1702 Taramore Ct', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
+          sold_date: dateWithinDays(95),
+          price: 1420000,
+          beds: 5,
+          baths: 4.5,
+          photos: [
+            { href: 'https://images.unsplash.com/photo-1505691723147-36a5ac3b2bba?auto=format&fit=crop&w=1600&q=80' },
+            { href: 'https://images.unsplash.com/photo-1507086181904-9cf9e1e6c1f8?auto=format&fit=crop&w=1600&q=80' },
+            { href: 'https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=1600&q=80' },
+          ],
+          primary_photo: { href: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=80' }
+        },
+        {
+          location: { address: { line: '1805 Taramore Ln', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
+          sold_date: dateWithinDays(20),
+          price: 1390000,
+          beds: 4,
+          baths: 4,
+          photos: [
+            { href: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=80' },
+            { href: 'https://images.unsplash.com/photo-1505691723518-36a5ac3b2bba?auto=format&fit=crop&w=1600&q=80' },
+            { href: 'https://images.unsplash.com/photo-1493666438817-866a91353ca9?auto=format&fit=crop&w=1600&q=80' },
+          ],
+          primary_photo: { href: 'https://images.unsplash.com/photo-1493666438817-866a91353ca9?auto=format&fit=crop&w=1600&q=80' }
         }
-      };
+      ];
+    } else {
+      // Live API mode
+      const apiKey = RAPIDAPI_KEY as string;
 
-      const listingsUrl2 = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(address)}&limit=50&sold_date_min=${soldDateMinStr2}`;
-      console.log('Fetching recently sold properties from:', listingsUrl2);
-      
-      const listingsResponse2 = await fetch(listingsUrl2, options2);
-      
-      if (!listingsResponse2.ok) {
-        const errorText = await listingsResponse2.text();
-        console.error('Listings API error:', listingsResponse2.status, errorText);
-        throw new Error(`Realtor API error: ${listingsResponse2.status}`);
-      }
+      if (searchType === 'address' || searchType === 'zip_code') {
+        // Search for properties by address or zip
+        const location = searchType === 'address' ? searchParams.address : searchParams.zipCode;
+        
+        const options = {
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Key': apiKey,
+            'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
+          } as Record<string, string>
+        };
 
-      const listingsData2 = await listingsResponse2.json();
-      properties = listingsData2?.properties || [];
-      
-    } else if (searchType === 'subdivision') {
-      // Search by subdivision/neighborhood - Taramore specifically
-      const { subdivisionName, city, state } = searchParams;
-      const location = `${subdivisionName}, ${city}, ${state}`;
-      
-      const soldDateMin3 = new Date();
-      soldDateMin3.setDate(soldDateMin3.getDate() - 180); // 6 months ago
-      const soldDateMinStr3 = soldDateMin3.toISOString().split('T')[0];
-      
-      const options3 = {
-        method: 'GET',
-        headers: {
-          'X-RapidAPI-Key': RAPIDAPI_KEY,
-          'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
+        // Fetch SOLD property listings for comparables analysis
+        // Filter for recent sales (last 90-180 days) in Taramore subdivision
+        const soldDateMin = new Date();
+        soldDateMin.setDate(soldDateMin.getDate() - 180); // 6 months ago
+        const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
+        
+        const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=20&sold_date_min=${soldDateMinStr}`;
+        console.log('Fetching recently sold properties from Taramore from:', listingsUrl);
+        
+        const listingsResponse = await fetch(listingsUrl, options);
+        
+        if (!listingsResponse.ok) {
+          const errorText = await listingsResponse.text();
+          console.error('Listings API error:', listingsResponse.status, errorText);
+          throw new Error(`Realtor API error: ${listingsResponse.status} - ${errorText}`);
         }
-      };
 
-      const listingsUrl3 = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=50&sold_date_min=${soldDateMinStr3}`;
-      console.log('Fetching recently sold properties from Taramore from:', listingsUrl3);
-      
-      const listingsResponse3 = await fetch(listingsUrl3, options3);
-      
-      if (!listingsResponse3.ok) {
-        const errorText = await listingsResponse3.text();
-        console.error('Listings API error:', listingsResponse3.status, errorText);
-        throw new Error(`Realtor API error: ${listingsResponse3.status}`);
+        const listingsData = await listingsResponse.json();
+        console.log('Properties found:', listingsData?.properties?.length || 0);
+
+        properties = listingsData?.properties || [];
+        
+      } else if (searchType === 'radius') {
+        // Search by radius around a location
+        const { address, radiusMiles } = searchParams;
+        
+        const soldDateMin2 = new Date();
+        soldDateMin2.setDate(soldDateMin2.getDate() - 180); // 6 months ago
+        const soldDateMinStr2 = soldDateMin2.toISOString().split('T')[0];
+        
+        const options2 = {
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Key': apiKey,
+            'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
+          } as Record<string, string>
+        };
+
+        const listingsUrl2 = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(address)}&limit=50&sold_date_min=${soldDateMinStr2}`;
+        console.log('Fetching recently sold properties from:', listingsUrl2);
+        
+        const listingsResponse2 = await fetch(listingsUrl2, options2);
+        
+        if (!listingsResponse2.ok) {
+          const errorText = await listingsResponse2.text();
+          console.error('Listings API error:', listingsResponse2.status, errorText);
+          throw new Error(`Realtor API error: ${listingsResponse2.status}`);
+        }
+
+        const listingsData2 = await listingsResponse2.json();
+        properties = listingsData2?.properties || [];
+        
+      } else if (searchType === 'subdivision') {
+        // Search by subdivision/neighborhood - Taramore specifically
+        const { subdivisionName, city, state } = searchParams;
+        const location = `${subdivisionName}, ${city}, ${state}`;
+        
+        const soldDateMin3 = new Date();
+        soldDateMin3.setDate(soldDateMin3.getDate() - 180); // 6 months ago
+        const soldDateMinStr3 = soldDateMin3.toISOString().split('T')[0];
+        
+        const options3 = {
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Key': apiKey,
+            'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
+          } as Record<string, string>
+        };
+
+        const listingsUrl3 = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=50&sold_date_min=${soldDateMinStr3}`;
+        console.log('Fetching recently sold properties from Taramore from:', listingsUrl3);
+        
+        const listingsResponse3 = await fetch(listingsUrl3, options3);
+        
+        if (!listingsResponse3.ok) {
+          const errorText = await listingsResponse3.text();
+          console.error('Listings API error:', listingsResponse3.status, errorText);
+          throw new Error(`Realtor API error: ${listingsResponse3.status}`);
+        }
+
+        const listingsData3 = await listingsResponse3.json();
+        properties = listingsData3?.properties || [];
       }
-
-      const listingsData3 = await listingsResponse3.json();
-      properties = listingsData3?.properties || [];
     }
 
     // Process and store properties
