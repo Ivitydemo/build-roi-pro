@@ -79,15 +79,36 @@ serve(async (req) => {
         const subdivisionLower = searchParams.subdivisionName.toLowerCase();
         const originalCount = properties.length;
         
+        // Log sample property to see what data is available
+        if (properties.length > 0) {
+          console.log('Sample property community data:', {
+            community: properties[0].community,
+            neighborhood: properties[0].neighborhood,
+            location: properties[0].location,
+            description: properties[0].description
+          });
+        }
+        
         properties = properties.filter((prop: any) => {
-          // Check if subdivision name appears in the listing data
-          const listingJson = JSON.stringify(prop).toLowerCase();
+          // Check multiple possible fields for subdivision/community info
           const communityName = prop.community?.name?.toLowerCase() || '';
-          const description = prop.description?.name?.toLowerCase() || '';
+          const neighborhood = prop.neighborhood?.name?.toLowerCase() || '';
+          const subdivisionField = prop.subdivision?.toLowerCase() || '';
+          const description = prop.description?.text?.toLowerCase() || '';
+          const address = prop.location?.address?.neighborhood?.toLowerCase() || '';
           
-          // Match if subdivision name appears in community name or property data
-          return communityName.includes(subdivisionLower) || 
-                 listingJson.includes(subdivisionLower);
+          // Match if subdivision name appears in any of these fields
+          const matches = communityName.includes(subdivisionLower) || 
+                         neighborhood.includes(subdivisionLower) ||
+                         subdivisionField.includes(subdivisionLower) ||
+                         description.includes(subdivisionLower) ||
+                         address.includes(subdivisionLower);
+          
+          if (matches) {
+            console.log(`Found match in property at ${prop.location?.address?.line}`);
+          }
+          
+          return matches;
         });
         
         console.log(`Filtered from ${originalCount} to ${properties.length} properties matching "${searchParams.subdivisionName}"`);
