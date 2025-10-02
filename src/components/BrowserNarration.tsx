@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface BrowserNarrationProps {
   script: string;
+  onAudioGenerated?: (url: string) => void;
 }
 
 // Top OpenAI voices with excellent quality
@@ -20,7 +21,7 @@ const OPENAI_VOICES = [
   { id: 'shimmer', name: 'Shimmer - Energetic Female', description: 'Energetic and vibrant' },
 ];
 
-export default function BrowserNarration({ script }: BrowserNarrationProps) {
+export default function BrowserNarration({ script, onAudioGenerated }: BrowserNarrationProps) {
   const [voiceId, setVoiceId] = useState<string>('alloy'); // Default to Alloy
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -66,6 +67,7 @@ export default function BrowserNarration({ script }: BrowserNarrationProps) {
         const url = URL.createObjectURL(blob);
         
         setAudioUrl(url);
+        onAudioGenerated?.(url);
         
         toast({
           title: "Audio generated!",

@@ -19,7 +19,7 @@ import scene12 from "@/assets/pitch-scenes/scene-12.jpg";
 
 const VideoGenerator = () => {
   const navigate = useNavigate();
-  const [audioUrl] = useState<string>("/path-to-pregenerated-audio.mp3"); // Will be set to actual audio
+  const [audioUrl, setAudioUrl] = useState<string>("");
   
   useEffect(() => {
     document.title = "See ValueBuilder Pro in Action";
@@ -115,10 +115,19 @@ Visit ValueBuilderPro dot com and get started in minutes. Your next deal is wait
 
           <div className="space-y-6">
             <div className="p-6 bg-card rounded-lg border border-primary/20 shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">Watch How Top Contractors Win More Deals</h2>
-              
-              <PitchVideoPlayer scenes={pitchScenes} audioUrl={audioUrl} />
+              <h2 className="text-2xl font-bold mb-4">Generate Video Narration</h2>
+              <p className="text-muted-foreground mb-4">
+                First, generate the audio narration for the video pitch
+              </p>
+              <BrowserNarration script={pitchScript} onAudioGenerated={setAudioUrl} />
             </div>
+
+            {audioUrl && (
+              <div className="p-6 bg-card rounded-lg border border-primary/20 shadow-lg">
+                <h2 className="text-2xl font-bold mb-4">Watch How Top Contractors Win More Deals</h2>
+                <PitchVideoPlayer scenes={pitchScenes} audioUrl={audioUrl} />
+              </div>
+            )}
           </div>
         </div>
       </div>
