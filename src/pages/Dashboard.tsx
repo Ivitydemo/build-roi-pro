@@ -4,9 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, FileText, Image, Package, Settings, LogOut, PlusCircle, Webhook, Sparkles, MapPin } from 'lucide-react';
+import { Building2, FileText, Image, Package, Settings, LogOut, PlusCircle, Webhook } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { PropertyPhotoAnalysis } from '@/components/PropertyPhotoAnalysis';
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
@@ -121,23 +120,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* AI Photo Analysis Demo */}
-        <Card className="mb-8 border-2 border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              AI Photo Analysis - Test It Out
-            </CardTitle>
-            <CardDescription>
-              Analyze renovation photos to identify upgrades, materials, and value drivers. 
-              The AI will tell you exactly what makes higher-value homes different!
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <PropertyPhotoAnalysis propertyId={builderProfile?.id || 'demo'} />
-          </CardContent>
-        </Card>
-
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
@@ -223,16 +205,6 @@ const Dashboard = () => {
                 View Reports
               </CardTitle>
               <CardDescription>Browse all generated proposals</CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/property-campaigns')}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                Property Campaigns
-              </CardTitle>
-              <CardDescription>Auto-fetch & analyze listing photos</CardDescription>
             </CardHeader>
           </Card>
         </div>

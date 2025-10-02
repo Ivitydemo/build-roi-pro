@@ -11,12 +11,3 @@ verify_jwt = false
 
 [functions.generate-pitch-scenes]
 verify_jwt = false
-
-[functions.analyze-property-photo]
-verify_jwt = false
-
-[functions.fetch-property-listings]
-verify_jwt = false
-
-[functions.analyze-targeted-properties]
-verify_jwt = false
