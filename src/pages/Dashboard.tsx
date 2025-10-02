@@ -4,8 +4,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, FileText, Image, Package, Settings, LogOut, PlusCircle, Webhook } from 'lucide-react';
+import { Building2, FileText, Image, Package, Settings, LogOut, PlusCircle, Webhook, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { PropertyPhotoAnalysis } from '@/components/PropertyPhotoAnalysis';
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
@@ -117,6 +118,23 @@ const Dashboard = () => {
               <PlusCircle className="mr-2 h-5 w-5" />
               Generate New Report
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* AI Photo Analysis Demo */}
+        <Card className="mb-8 border-2 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              AI Photo Analysis - Test It Out
+            </CardTitle>
+            <CardDescription>
+              Analyze renovation photos to identify upgrades, materials, and value drivers. 
+              The AI will tell you exactly what makes higher-value homes different!
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PropertyPhotoAnalysis propertyId={builderProfile?.id || 'demo'} />
           </CardContent>
         </Card>
 
