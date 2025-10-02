@@ -30,15 +30,9 @@ serve(async (req) => {
     // Build the API request based on search type
     const apiKey = RAPIDAPI_KEY;
     
-    // Build location string based on search type
-    let location = '';
-    if (searchType === 'address') {
-      location = searchParams.address;
-    } else if (searchType === 'zip_code') {
-      location = searchParams.zipCode;
-    } else if (searchType === 'subdivision') {
-      location = `${searchParams.subdivisionName}, ${searchParams.city}, ${searchParams.state}`;
-    }
+    // Build location string for API
+    const location = searchParams.address || searchParams.zipCode || 
+                     `${searchParams.subdivisionName}, ${searchParams.city}, ${searchParams.state}`;
 
     const options = {
       method: 'GET',
@@ -54,16 +48,13 @@ serve(async (req) => {
     soldDateMin.setDate(soldDateMin.getDate() - timePeriodDays);
     const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
     
-    // Build API URL with proper parameters
-    let apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&sold_date_min=${soldDateMinStr}`;
+    // Build API URL
+    let apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&sold_date_min=${soldDateMinStr}&limit=50`;
     
-    // Add radius if specified
-    if (searchType === 'radius' && searchParams.radius) {
+    // Add radius for radius searches
+    if (searchParams.radius) {
       apiUrl += `&radius=${searchParams.radius}`;
     }
-    
-    // Limit results to reasonable number
-    apiUrl += '&limit=50';
     
     console.log('Fetching from:', apiUrl);
     
@@ -74,45 +65,7 @@ serve(async (req) => {
       console.log('Raw properties found:', listingsData?.properties?.length || 0);
       properties = listingsData?.properties || [];
       
-      // If searching by subdivision, filter to only properties that actually match
-      if (searchType === 'subdivision' && searchParams.subdivisionName) {
-        const subdivisionLower = searchParams.subdivisionName.toLowerCase();
-        const originalCount = properties.length;
-        
-        // Log sample property to see what data is available
-        if (properties.length > 0) {
-          console.log('Sample property community data:', {
-            community: properties[0].community,
-            neighborhood: properties[0].neighborhood,
-            location: properties[0].location,
-            description: properties[0].description
-          });
-        }
-        
-        properties = properties.filter((prop: any) => {
-          // Check multiple possible fields for subdivision/community info
-          const communityName = prop.community?.name?.toLowerCase() || '';
-          const neighborhood = prop.neighborhood?.name?.toLowerCase() || '';
-          const subdivisionField = prop.subdivision?.toLowerCase() || '';
-          const description = prop.description?.text?.toLowerCase() || '';
-          const address = prop.location?.address?.neighborhood?.toLowerCase() || '';
-          
-          // Match if subdivision name appears in any of these fields
-          const matches = communityName.includes(subdivisionLower) || 
-                         neighborhood.includes(subdivisionLower) ||
-                         subdivisionField.includes(subdivisionLower) ||
-                         description.includes(subdivisionLower) ||
-                         address.includes(subdivisionLower);
-          
-          if (matches) {
-            console.log(`Found match in property at ${prop.location?.address?.line}`);
-          }
-          
-          return matches;
-        });
-        
-        console.log(`Filtered from ${originalCount} to ${properties.length} properties matching "${searchParams.subdivisionName}"`);
-      }
+      // No post-filtering needed for radius searches - API handles it
     } else {
       console.error('API error:', listingsResponse.status, await listingsResponse.text());
       throw new Error(`API request failed with status ${listingsResponse.status}`);

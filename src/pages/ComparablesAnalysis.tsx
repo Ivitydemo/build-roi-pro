@@ -22,14 +22,10 @@ const ComparablesAnalysis = () => {
   const [analyzing, setAnalyzing] = useState(false);
   
   // Search criteria state
-  const [searchType, setSearchType] = useState<'subdivision' | 'radius' | 'zip_code'>('subdivision');
-  const [subdivisionName, setSubdivisionName] = useState('Taramore');
-  const [city, setCity] = useState('Brentwood');
-  const [state, setState] = useState('TN');
-  const [zipCode, setZipCode] = useState('');
+  const [subjectAddress, setSubjectAddress] = useState('');
   const [radius, setRadius] = useState('1');
-  const [propertyAddress, setPropertyAddress] = useState('');
   const [timePeriod, setTimePeriod] = useState('180'); // days
+  const [selectedPropertyIds, setSelectedPropertyIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user) {
@@ -64,51 +60,27 @@ const ComparablesAnalysis = () => {
       return;
     }
 
-    // Validate search criteria
-    if (searchType === 'subdivision' && (!subdivisionName || !city || !state)) {
+    if (!subjectAddress.trim()) {
       toast({
         title: 'Missing information',
-        description: 'Please enter subdivision name, city, and state',
-        variant: 'destructive'
-      });
-      return;
-    }
-    if (searchType === 'radius' && !propertyAddress) {
-      toast({
-        title: 'Missing information',
-        description: 'Please enter a property address for radius search',
-        variant: 'destructive'
-      });
-      return;
-    }
-    if (searchType === 'zip_code' && !zipCode) {
-      toast({
-        title: 'Missing information',
-        description: 'Please enter a zip code',
+        description: 'Please enter the subject property address',
         variant: 'destructive'
       });
       return;
     }
 
     setLoading(true);
+    setSelectedPropertyIds(new Set()); // Clear previous selections
     const createdCampaigns: any[] = [];
     const fetchedProperties: any[] = [];
 
     try {
-      // Build search parameters
-      let searchParams: any = {};
-      let campaignName = '';
-      
-      if (searchType === 'subdivision') {
-        searchParams = { subdivisionName, city, state };
-        campaignName = `${subdivisionName}, ${city} - Last ${timePeriod} days`;
-      } else if (searchType === 'radius') {
-        searchParams = { address: propertyAddress, radius };
-        campaignName = `Within ${radius}mi of ${propertyAddress} - Last ${timePeriod} days`;
-      } else if (searchType === 'zip_code') {
-        searchParams = { zipCode };
-        campaignName = `ZIP ${zipCode} - Last ${timePeriod} days`;
-      }
+      const searchParams = { 
+        address: subjectAddress, 
+        radius,
+        timePeriod 
+      };
+      const campaignName = `Within ${radius}mi of ${subjectAddress}`;
 
       // STEP 1: Fetch properties
       toast({
@@ -122,8 +94,8 @@ const ComparablesAnalysis = () => {
         .insert({
           builder_id: builderId,
           campaign_name: campaignName,
-          search_type: searchType,
-          search_parameters: { ...searchParams, timePeriod },
+          search_type: 'radius',
+          search_parameters: searchParams,
           status: 'running'
         })
         .select()
@@ -135,10 +107,9 @@ const ComparablesAnalysis = () => {
       // Fetch listings
       const { data, error } = await supabase.functions.invoke('fetch-property-listings', {
         body: {
-          searchType,
-          searchParams: { ...searchParams, timePeriod },
-          campaignId: campaign.id,
-          useMock: false  // Use real API data
+          searchType: 'radius',
+          searchParams,
+          campaignId: campaign.id
         }
       });
 
@@ -170,49 +141,16 @@ const ComparablesAnalysis = () => {
       if (fetchedProperties.length === 0) {
         toast({
           title: 'No properties found',
-          description: 'Could not find listings for the comparable addresses',
+          description: 'No sold properties found in this area. Try expanding the radius.',
           variant: 'destructive'
         });
         setLoading(false);
         return;
       }
 
-      // STEP 2: Analyze all properties automatically
       toast({
-        title: 'Step 2/2: Analyzing properties...',
-        description: `Running AI analysis on ${fetchedProperties.length} properties`
-      });
-
-      let analyzed = 0;
-      for (const property of fetchedProperties) {
-        if (property.analysis_status !== 'pending') continue;
-
-        toast({
-          title: `Analyzing ${analyzed + 1}/${fetchedProperties.length}`,
-          description: property.address
-        });
-
-        const { error } = await supabase.functions.invoke('analyze-targeted-properties', {
-          body: { propertyId: property.id }
-        });
-
-        if (error) {
-          console.error(`Error analyzing ${property.address}:`, error);
-        } else {
-          analyzed++;
-        }
-
-        // Wait between analyses to avoid rate limits
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
-
-      // Reload properties to get updated analysis
-      await loadAllProperties(createdCampaigns.map(c => c.id));
-
-      toast({
-        title: 'Complete! 🎉',
-        description: `Successfully fetched and analyzed ${analyzed} properties`,
-        duration: 5000
+        title: 'Properties loaded',
+        description: `Found ${fetchedProperties.length} properties. Select at least 3 comps to analyze.`
       });
 
     } catch (error) {
@@ -242,8 +180,85 @@ const ComparablesAnalysis = () => {
     }
   };
 
+  const togglePropertySelection = (propertyId: string) => {
+    setSelectedPropertyIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(propertyId)) {
+        newSet.delete(propertyId);
+      } else {
+        newSet.add(propertyId);
+      }
+      return newSet;
+    });
+  };
+
+  const analyzeSelectedProperties = async () => {
+    if (selectedPropertyIds.size < 3) {
+      toast({
+        title: 'Need more comps',
+        description: 'Please select at least 3 comparable properties',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setAnalyzing(true);
+    try {
+      toast({
+        title: 'Analyzing selected properties...',
+        description: `Processing ${selectedPropertyIds.size} properties`
+      });
+
+      let analyzed = 0;
+      const selectedProps = allProperties.filter(p => selectedPropertyIds.has(p.id));
+      
+      for (const property of selectedProps) {
+        if (property.analysis_status === 'completed') {
+          analyzed++;
+          continue;
+        }
+
+        toast({
+          title: `Analyzing ${analyzed + 1}/${selectedProps.length}`,
+          description: property.address
+        });
+
+        const { error } = await supabase.functions.invoke('analyze-targeted-properties', {
+          body: { propertyId: property.id }
+        });
+
+        if (error) {
+          console.error(`Error analyzing ${property.address}:`, error);
+        } else {
+          analyzed++;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+
+      // Reload to get updated analysis
+      await loadAllProperties(campaigns.map(c => c.id));
+
+      toast({
+        title: 'Analysis complete! 🎉',
+        description: `Successfully analyzed ${analyzed} properties`,
+        duration: 5000
+      });
+    } catch (error) {
+      console.error('Error analyzing:', error);
+      toast({
+        title: 'Analysis failed',
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive'
+      });
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   const exportAnalysisData = () => {
-    const exportData = allProperties.map(prop => ({
+    const selectedProps = allProperties.filter(p => selectedPropertyIds.has(p.id));
+    const exportData = selectedProps.map(prop => ({
       address: prop.address,
       city: prop.city,
       state: prop.state,
@@ -269,9 +284,9 @@ const ComparablesAnalysis = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold">Real Comparables Analysis</h1>
+              <h1 className="text-xl font-bold">Comparable Property Analysis</h1>
               <p className="text-sm text-muted-foreground">
-                Fetch and analyze actual listing data for all comparables
+                Search sold properties near your subject property
               </p>
             </div>
           </div>
@@ -282,312 +297,308 @@ const ComparablesAnalysis = () => {
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Search Comparable Properties</CardTitle>
+            <CardTitle>1. Enter Subject Property</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <p className="text-muted-foreground">
-              Define your search criteria to find relevant comparable properties. 
-              The system will fetch real listing data, photos, and run AI analysis.
+              Enter the address of the subject property to find nearby sold comparables.
             </p>
 
-            {/* Search Criteria */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Search Type</Label>
-                  <Select value={searchType} onValueChange={(val: any) => setSearchType(val)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="subdivision">Subdivision/Neighborhood</SelectItem>
-                      <SelectItem value="radius">Radius from Address</SelectItem>
-                      <SelectItem value="zip_code">Zip Code</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Time Period (Last X Days)</Label>
-                  <Select value={timePeriod} onValueChange={setTimePeriod}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30">30 Days</SelectItem>
-                      <SelectItem value="60">60 Days</SelectItem>
-                      <SelectItem value="90">90 Days</SelectItem>
-                      <SelectItem value="180">6 Months</SelectItem>
-                      <SelectItem value="365">1 Year</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2 md:col-span-2">
+                <Label>Subject Property Address</Label>
+                <Input 
+                  value={subjectAddress} 
+                  onChange={(e) => setSubjectAddress(e.target.value)}
+                  placeholder="123 Main St, City, State ZIP"
+                />
               </div>
-
-              {/* Conditional Search Parameters */}
-              {searchType === 'subdivision' && (
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Subdivision Name</Label>
-                    <Input 
-                      value={subdivisionName} 
-                      onChange={(e) => setSubdivisionName(e.target.value)}
-                      placeholder="e.g., Taramore"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>City</Label>
-                    <Input 
-                      value={city} 
-                      onChange={(e) => setCity(e.target.value)}
-                      placeholder="e.g., Brentwood"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>State</Label>
-                    <Input 
-                      value={state} 
-                      onChange={(e) => setState(e.target.value)}
-                      placeholder="e.g., TN"
-                      maxLength={2}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {searchType === 'radius' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Property Address</Label>
-                    <Input 
-                      value={propertyAddress} 
-                      onChange={(e) => setPropertyAddress(e.target.value)}
-                      placeholder="123 Main St, City, State"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Radius (miles)</Label>
-                    <Select value={radius} onValueChange={setRadius}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0.5">0.5 miles</SelectItem>
-                        <SelectItem value="1">1 mile</SelectItem>
-                        <SelectItem value="2">2 miles</SelectItem>
-                        <SelectItem value="3">3 miles</SelectItem>
-                        <SelectItem value="5">5 miles</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
-
-              {searchType === 'zip_code' && (
-                <div className="space-y-2">
-                  <Label>Zip Code</Label>
-                  <Input 
-                    value={zipCode} 
-                    onChange={(e) => setZipCode(e.target.value)}
-                    placeholder="e.g., 37027"
-                    maxLength={5}
-                  />
-                </div>
-              )}
+              
+              <div className="space-y-2">
+                <Label>Search Radius</Label>
+                <Select value={radius} onValueChange={setRadius}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0.5">0.5 miles</SelectItem>
+                    <SelectItem value="1">1 mile</SelectItem>
+                    <SelectItem value="2">2 miles</SelectItem>
+                    <SelectItem value="3">3 miles</SelectItem>
+                    <SelectItem value="5">5 miles</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            {loading && (
-              <div className="bg-primary/5 rounded-lg p-4 text-sm">
-                <p className="font-medium mb-2">Progress:</p>
-                <p className="text-muted-foreground">
-                  Please wait while we fetch listings and analyze photos. 
-                  You'll see updates as each property is processed.
-                </p>
-              </div>
-            )}
-
-            <div className="flex gap-4">
-              <Button 
-                onClick={fetchAndAnalyzeAll} 
-                disabled={loading || !builderId}
-                size="lg"
-                className="text-base px-8"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Search className="mr-2 h-5 w-5" />
-                    Fetch & Analyze All Comparables
-                  </>
-                )}
-              </Button>
-
-              {allProperties.length > 0 && (
-                <Button 
-                  onClick={exportAnalysisData}
-                  variant="outline"
-                  size="lg"
-                >
-                  <Download className="mr-2 h-5 w-5" />
-                  Export Data
-                </Button>
-              )}
+            <div className="space-y-2">
+              <Label>Time Period</Label>
+              <Select value={timePeriod} onValueChange={setTimePeriod}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="90">Last 90 Days</SelectItem>
+                  <SelectItem value="180">Last 6 Months</SelectItem>
+                  <SelectItem value="365">Last Year</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
+            <Button 
+              onClick={fetchAndAnalyzeAll} 
+              disabled={loading || !builderId}
+              size="lg"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2 h-5 w-5" />
+                  Search Comparables
+                </>
+              )}
+            </Button>
           </CardContent>
         </Card>
 
-        {/* Results */}
+        {/* Step 2: Select Properties */}
         {allProperties.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Properties Found ({allProperties.length})</h2>
-            <div className="grid grid-cols-1 gap-4">
-              {allProperties.map((property) => (
-                <Card key={property.id}>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold">{property.address}</h3>
+          <>
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>2. Select Comparables ({selectedPropertyIds.size} selected, minimum 3)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  Review the properties found and select at least 3 comparable properties for detailed analysis.
+                </p>
+                
+                <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">
+                  {allProperties.map((property) => (
+                    <div 
+                      key={property.id}
+                      className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                        selectedPropertyIds.has(property.id) 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => togglePropertySelection(property.id)}
+                    >
+                      <div className="flex items-start gap-4">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedPropertyIds.has(property.id)}
+                          onChange={() => togglePropertySelection(property.id)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-semibold">{property.address}</h3>
                           <p className="text-sm text-muted-foreground">
                             {property.city}, {property.state} {property.zip_code}
                           </p>
-                        </div>
-                        <Badge variant={
-                          property.analysis_status === 'completed' ? 'default' :
-                          property.analysis_status === 'analyzing' ? 'secondary' :
-                          property.analysis_status === 'failed' ? 'destructive' : 'outline'
-                        }>
-                          {property.analysis_status}
-                        </Badge>
-                      </div>
-
-                      {property.photo_urls && property.photo_urls.length > 0 && (
-                        <div>
-                          <p className="text-sm font-medium mb-2">
-                            {property.photo_urls.length} photos available
-                          </p>
-                          <div className="grid grid-cols-4 gap-2">
-                            {property.photo_urls.slice(0, 8).map((url: string, idx: number) => (
-                              <img 
-                                key={idx}
-                                src={url}
-                                alt={`Property photo ${idx + 1}`}
-                                className="w-full h-32 object-cover rounded hover:scale-105 transition-transform"
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {property.listing_data?.price && (
-                        <div className="bg-muted/50 rounded-lg p-3">
-                          <p className="text-sm font-semibold">
-                            Sale Price: ${property.listing_data.price.toLocaleString()}
-                          </p>
-                          {property.listing_data.beds && (
-                            <p className="text-sm text-muted-foreground">
+                          {property.listing_data?.price && (
+                            <p className="text-sm font-medium mt-1">
+                              ${property.listing_data.price.toLocaleString()} • 
                               {property.listing_data.beds} beds • {property.listing_data.baths} baths
                             </p>
                           )}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {property.photo_urls?.length || 0} photos available
+                          </p>
                         </div>
-                      )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-                      {property.analysis_summary && (
-                        <div className="bg-primary/5 rounded-lg p-4 space-y-4">
-                          <div>
-                            <h4 className="font-semibold mb-2">AI Analysis Results</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Photos Analyzed: {property.analysis_summary.total_photos_analyzed}
-                            </p>
-                          </div>
+                <div className="flex gap-4">
+                  <Button 
+                    onClick={analyzeSelectedProperties}
+                    disabled={selectedPropertyIds.size < 3 || analyzing}
+                    size="lg"
+                  >
+                    {analyzing ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        Analyze {selectedPropertyIds.size} Selected Properties
+                      </>
+                    )}
+                  </Button>
 
-                          {/* Overall Summary */}
-                          {property.analysis_summary.overall_summary && (
-                            <div className="space-y-2">
-                              <h5 className="text-sm font-semibold">Overall Assessment</h5>
-                              <div className="grid grid-cols-2 gap-2 text-sm">
-                                <div>
-                                  <span className="text-muted-foreground">Renovation Quality:</span>
-                                  <Badge className="ml-2" variant="outline">
-                                    {property.analysis_summary.overall_summary.dominant_quality || 'N/A'}
-                                  </Badge>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Estimated Value Impact:</span>
-                                  <span className="ml-2 font-semibold">
-                                    {property.analysis_summary.overall_summary.value_impact_range || 'N/A'}
-                                  </span>
+                  {selectedPropertyIds.size >= 3 && (
+                    <Button 
+                      onClick={exportAnalysisData}
+                      variant="outline"
+                      size="lg"
+                    >
+                      <Download className="mr-2 h-5 w-5" />
+                      Export Selected
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Step 3: View Analysis Results */}
+            {selectedPropertyIds.size >= 3 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>3. Analysis Results</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {allProperties
+                      .filter(p => selectedPropertyIds.has(p.id))
+                      .map((property) => (
+                        <div key={property.id} className="border-b pb-6 last:border-b-0">
+                          <div className="space-y-4">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h3 className="text-lg font-semibold">{property.address}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {property.city}, {property.state} {property.zip_code}
+                                </p>
+                              </div>
+                              <Badge variant={
+                                property.analysis_status === 'completed' ? 'default' :
+                                property.analysis_status === 'analyzing' ? 'secondary' :
+                                property.analysis_status === 'failed' ? 'destructive' : 'outline'
+                              }>
+                                {property.analysis_status}
+                              </Badge>
+                            </div>
+
+                            {property.photo_urls && property.photo_urls.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium mb-2">
+                                  {property.photo_urls.length} photos
+                                </p>
+                                <div className="grid grid-cols-4 gap-2">
+                                  {property.photo_urls.slice(0, 8).map((url: string, idx: number) => (
+                                    <img 
+                                      key={idx}
+                                      src={url}
+                                      alt={`Property photo ${idx + 1}`}
+                                      className="w-full h-32 object-cover rounded hover:scale-105 transition-transform"
+                                    />
+                                  ))}
                                 </div>
                               </div>
-                              {property.analysis_summary.overall_summary.key_upgrades && (
-                                <div>
-                                  <p className="text-sm font-medium">Key Upgrades Completed:</p>
-                                  <ul className="text-sm text-muted-foreground list-disc list-inside">
-                                    {property.analysis_summary.overall_summary.key_upgrades.map((upgrade: string, i: number) => (
-                                      <li key={i}>{upgrade}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          )}
+                            )}
 
-                          {/* Photo-by-Photo Analysis */}
-                          {property.analysis_summary.analyses && property.analysis_summary.analyses.length > 0 && (
-                            <div>
-                              <h5 className="text-sm font-semibold mb-2">Detailed Photo Analysis</h5>
-                              <div className="max-h-96 overflow-y-auto space-y-3">
-                                {property.analysis_summary.analyses.map((analysis: any, idx: number) => (
-                                  <div key={idx} className="bg-background rounded p-3 space-y-2">
-                                    <div className="flex items-center gap-2">
-                                      <p className="text-xs font-medium">Photo {idx + 1}</p>
-                                      {analysis.room_type && (
-                                        <Badge variant="secondary" className="text-xs">
-                                          {analysis.room_type}
+                            {property.listing_data?.price && (
+                              <div className="bg-muted/50 rounded-lg p-3">
+                                <p className="text-sm font-semibold">
+                                  Sale Price: ${property.listing_data.price.toLocaleString()}
+                                </p>
+                                {property.listing_data.beds && (
+                                  <p className="text-sm text-muted-foreground">
+                                    {property.listing_data.beds} beds • {property.listing_data.baths} baths
+                                  </p>
+                                )}
+                              </div>
+                            )}
+
+                            {property.analysis_summary && (
+                              <div className="bg-primary/5 rounded-lg p-4 space-y-4">
+                                <div>
+                                  <h4 className="font-semibold mb-2">AI Analysis Results</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    Photos Analyzed: {property.analysis_summary.total_photos_analyzed}
+                                  </p>
+                                </div>
+
+                                {property.analysis_summary.overall_summary && (
+                                  <div className="space-y-2">
+                                    <h5 className="text-sm font-semibold">Overall Assessment</h5>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                      <div>
+                                        <span className="text-muted-foreground">Renovation Quality:</span>
+                                        <Badge className="ml-2" variant="outline">
+                                          {property.analysis_summary.overall_summary.dominant_quality || 'N/A'}
                                         </Badge>
-                                      )}
+                                      </div>
+                                      <div>
+                                        <span className="text-muted-foreground">Estimated Value Impact:</span>
+                                        <span className="ml-2 font-semibold">
+                                          {property.analysis_summary.overall_summary.value_impact_range || 'N/A'}
+                                        </span>
+                                      </div>
                                     </div>
-                                    
-                                    {analysis.renovation_quality && (
-                                      <div className="text-xs">
-                                        <span className="font-medium">Quality:</span> {analysis.renovation_quality}
+                                    {property.analysis_summary.overall_summary.key_upgrades && (
+                                      <div>
+                                        <p className="text-sm font-medium">Key Upgrades Completed:</p>
+                                        <ul className="text-sm text-muted-foreground list-disc list-inside">
+                                          {property.analysis_summary.overall_summary.key_upgrades.map((upgrade: string, i: number) => (
+                                            <li key={i}>{upgrade}</li>
+                                          ))}
+                                        </ul>
                                       </div>
-                                    )}
-                                    
-                                    {analysis.materials && analysis.materials.length > 0 && (
-                                      <div className="text-xs">
-                                        <span className="font-medium">Materials:</span> {analysis.materials.join(', ')}
-                                      </div>
-                                    )}
-                                    
-                                    {analysis.value_impact && (
-                                      <div className="text-xs">
-                                        <span className="font-medium">Value Impact:</span> {analysis.value_impact}
-                                      </div>
-                                    )}
-                                    
-                                    {analysis.analysis && (
-                                      <p className="text-xs text-muted-foreground whitespace-pre-wrap">
-                                        {analysis.analysis}
-                                      </p>
                                     )}
                                   </div>
-                                ))}
+                                )}
+
+                                {property.analysis_summary.analyses && property.analysis_summary.analyses.length > 0 && (
+                                  <div>
+                                    <h5 className="text-sm font-semibold mb-2">Detailed Photo Analysis</h5>
+                                    <div className="max-h-96 overflow-y-auto space-y-3">
+                                      {property.analysis_summary.analyses.map((analysis: any, idx: number) => (
+                                        <div key={idx} className="bg-background rounded p-3 space-y-2">
+                                          <div className="flex items-center gap-2">
+                                            <p className="text-xs font-medium">Photo {idx + 1}</p>
+                                            {analysis.room_type && (
+                                              <Badge variant="secondary" className="text-xs">
+                                                {analysis.room_type}
+                                              </Badge>
+                                            )}
+                                          </div>
+                                          
+                                          {analysis.renovation_quality && (
+                                            <div className="text-xs">
+                                              <span className="font-medium">Quality:</span> {analysis.renovation_quality}
+                                            </div>
+                                          )}
+                                          
+                                          {analysis.materials && analysis.materials.length > 0 && (
+                                            <div className="text-xs">
+                                              <span className="font-medium">Materials:</span> {analysis.materials.join(', ')}
+                                            </div>
+                                          )}
+                                          
+                                          {analysis.value_impact && (
+                                            <div className="text-xs">
+                                              <span className="font-medium">Value Impact:</span> {analysis.value_impact}
+                                            </div>
+                                          )}
+                                          
+                                          {analysis.analysis && (
+                                            <p className="text-xs text-muted-foreground whitespace-pre-wrap">
+                                              {analysis.analysis}
+                                            </p>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
         )}
       </main>
     </div>
