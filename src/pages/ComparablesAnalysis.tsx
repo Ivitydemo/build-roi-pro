@@ -87,11 +87,14 @@ const ComparablesAnalysis = () => {
           if (campaignError) throw campaignError;
           createdCampaigns.push(campaign);
 
-          // Fetch listings for this address
+          // Fetch listings for this address - search by subdivision
           const { data, error } = await supabase.functions.invoke('fetch-property-listings', {
             body: {
               searchType: 'address',
-              searchParams: { address },
+              searchParams: { 
+                address,
+                findSubdivision: true  // Automatically detect and search the subdivision
+              },
               campaignId: campaign.id
             }
           });

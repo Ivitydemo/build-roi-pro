@@ -12,8 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { searchType, searchParams, campaignId, useMock } = await req.json();
-    console.log('Fetch property listings request:', { searchType, searchParams, campaignId, useMock });
+    const { searchType: originalSearchType, searchParams: originalSearchParams, campaignId, useMock } = await req.json();
+    console.log('Fetch property listings request:', { searchType: originalSearchType, searchParams: originalSearchParams, campaignId, useMock });
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -25,6 +25,10 @@ serve(async (req) => {
       console.warn('RAPIDAPI_KEY not configured. Falling back to mock data.');
     }
     let properties: any[] = [];
+    
+    // Allow mutation of search parameters for subdivision lookup
+    let searchType = originalSearchType;
+    let searchParams = originalSearchParams;
 
     // Build the API request based on search type OR fall back to mock comps for Taramore
     if (shouldUseMock) {
@@ -106,6 +110,48 @@ serve(async (req) => {
     } else {
       // Live API mode
       const apiKey = RAPIDAPI_KEY as string;
+
+      // If searching by address and want subdivision comps, first get the subdivision name
+      if (searchType === 'address' && searchParams.findSubdivision) {
+        console.log('Looking up subdivision for address:', searchParams.address);
+        
+        const addressLookupOptions = {
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Key': apiKey,
+            'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
+          } as Record<string, string>
+        };
+
+        // Search for the specific property to get its details including subdivision
+        const lookupUrl = `https://realtor16.p.rapidapi.com/search/forsale?location=${encodeURIComponent(searchParams.address)}&limit=1`;
+        console.log('Address lookup URL:', lookupUrl);
+        
+        const lookupResponse = await fetch(lookupUrl, addressLookupOptions);
+        
+        if (lookupResponse.ok) {
+          const lookupData = await lookupResponse.json();
+          const foundProperty = lookupData?.properties?.[0];
+          
+          if (foundProperty) {
+            const neighborhood = foundProperty.location?.neighborhoods?.[0]?.name;
+            const subdivision = foundProperty.location?.address?.subdivision;
+            const subName = neighborhood || subdivision;
+            
+            console.log('Found subdivision:', subName);
+            
+            if (subName) {
+              // Now search for sold comps in that subdivision
+              searchType = 'subdivision';
+              searchParams = {
+                subdivisionName: subName,
+                city: foundProperty.location?.address?.city || 'Brentwood',
+                state: foundProperty.location?.address?.state_code || 'TN'
+              };
+            }
+          }
+        }
+      }
 
       if (searchType === 'address' || searchType === 'zip_code') {
         // Search for properties by address or zip
