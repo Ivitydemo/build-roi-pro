@@ -52,7 +52,7 @@ const PreferredPartners = () => {
   ];
 
   const handleContinue = () => {
-    navigate("/dashboard");
+    navigate("/partner-portal");
   };
 
   const handleSkip = () => {

@@ -15,6 +15,15 @@ import BuilderImpact from "./pages/BuilderImpact";
 import CRMIntegrations from "./pages/CRMIntegrations";
 import Pricing from "./pages/Pricing";
 import VideoGenerator from "./pages/VideoGenerator";
+import PartnerPortal from "./pages/PartnerPortal";
+import PartnerLeads from "./pages/PartnerLeads";
+import PartnerCommissions from "./pages/PartnerCommissions";
+import PartnerComparison from "./pages/PartnerComparison";
+import BusinessPlan from "./pages/BusinessPlan";
+import BusinessPlanExport from "./pages/BusinessPlanExport";
+import PropertyCampaigns from "./pages/PropertyCampaigns";
+import PropertyAnalysis from "./pages/PropertyAnalysis";
+import ComparablesAnalysis from "./pages/ComparablesAnalysis";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +49,15 @@ const App = () => (
           <Route path="/crm-integrations" element={<CRMIntegrations />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/video-generator" element={<VideoGenerator />} />
+          <Route path="/partner-portal" element={<PartnerPortal />} />
+          <Route path="/partner-leads" element={<PartnerLeads />} />
+          <Route path="/partner-commissions" element={<PartnerCommissions />} />
+          <Route path="/partner-comparison" element={<PartnerComparison />} />
+          <Route path="/business-plan" element={<BusinessPlan />} />
+          <Route path="/business-plan-export" element={<BusinessPlanExport />} />
+          <Route path="/property-campaigns" element={<PropertyCampaigns />} />
+          <Route path="/property-analysis" element={<PropertyAnalysis />} />
+          <Route path="/comparables-analysis" element={<ComparablesAnalysis />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

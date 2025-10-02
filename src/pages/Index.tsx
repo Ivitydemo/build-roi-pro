@@ -22,10 +22,13 @@ const Index = () => {
                 Demo
               </Button>
               <Button variant="ghost" onClick={() => navigate('/video-generator')}>
-                Video Pitch
+                See It In Action
               </Button>
               <Button variant="ghost" onClick={() => navigate('/pricing')}>
                 Pricing
+              </Button>
+              <Button variant="ghost" onClick={() => navigate('/partner-comparison')}>
+                Partner Tiers
               </Button>
               <Button onClick={() => navigate('/auth')}>
                 Get Started
