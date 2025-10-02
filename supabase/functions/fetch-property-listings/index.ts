@@ -56,9 +56,10 @@ serve(async (req) => {
     const desiredTarget = 4;
     const desiredMinimum = 3;
 
-    const baseRadius = parseFloat(String(searchParams.radius ?? '1'));
+    const radiusValue = searchParams.radiusMiles || searchParams.radius || 1;
+    const baseRadius = parseFloat(String(radiusValue));
     const uniqueRadii = Array.from(new Set([
-      baseRadius,
+      isNaN(baseRadius) ? 1 : baseRadius,
       1,
       2,
       3,
