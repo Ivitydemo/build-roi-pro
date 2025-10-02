@@ -20,118 +20,62 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const RAPIDAPI_KEY = Deno.env.get('RAPIDAPI_KEY');
-    const shouldUseMock = Boolean(useMock) || !RAPIDAPI_KEY;
+    
     if (!RAPIDAPI_KEY) {
-      console.warn('RAPIDAPI_KEY not configured. Falling back to mock data.');
+      throw new Error('RAPIDAPI_KEY not configured. Please add your RapidAPI key.');
     }
+
     let properties: any[] = [];
 
-    // Build the API request based on search type OR fall back to mock comps for Taramore
-    if (shouldUseMock) {
-      console.log('Using mock Taramore comps due to missing API key or useMock flag');
+    // Build the API request based on search type
+    const apiKey = RAPIDAPI_KEY;
+    
+    // Build location string based on search type
+    let location = '';
+    if (searchType === 'address') {
+      location = searchParams.address;
+    } else if (searchType === 'zip_code') {
+      location = searchParams.zipCode;
+    } else if (searchType === 'subdivision') {
+      location = `${searchParams.subdivisionName}, ${searchParams.city}, ${searchParams.state}`;
+    }
 
-      const dateWithinDays = (days: number) => {
-        const d = new Date();
-        d.setDate(d.getDate() - days);
-        return d.toISOString().split('T')[0];
-      };
+    const options = {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': apiKey,
+        'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
+      } as Record<string, string>
+    };
 
-      properties = [
-        {
-          location: { address: { line: '1825 Mallory Lane', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
-          sold_date: dateWithinDays(45),
-          price: 1350000,
-          beds: 5,
-          baths: 4.5,
-          photos: [
-            { href: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80' },
-            { href: 'https://images.unsplash.com/photo-1505691723518-36a5ac3b2bba?auto=format&fit=crop&w=1600&q=80' },
-            { href: 'https://images.unsplash.com/photo-1505691723147-36a5ac3b2bba?auto=format&fit=crop&w=1600&q=80' },
-          ],
-          primary_photo: { href: 'https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=1600&q=80' }
-        },
-        {
-          location: { address: { line: '205 Carriage House Ln', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
-          sold_date: dateWithinDays(72),
-          price: 1495000,
-          beds: 5,
-          baths: 5,
-          photos: [
-            { href: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1600&q=80' },
-            { href: 'https://images.unsplash.com/photo-1502673530728-f79b4cab31b1?auto=format&fit=crop&w=1600&q=80' },
-            { href: 'https://images.unsplash.com/photo-1501045661006-fcebe0257c3f?auto=format&fit=crop&w=1600&q=80' },
-          ],
-          primary_photo: { href: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1600&q=80' }
-        },
-        {
-          location: { address: { line: '9301 Anson Way', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
-          sold_date: dateWithinDays(30),
-          price: 1280000,
-          beds: 4,
-          baths: 4,
-          photos: [
-            { href: 'https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=1600&q=80' },
-            { href: 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?auto=format&fit=crop&w=1600&q=80' },
-            { href: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1600&q=80' },
-          ],
-          primary_photo: { href: 'https://images.unsplash.com/photo-1505692794403-34d4982fd1bd?auto=format&fit=crop&w=1600&q=80' }
-        },
-        {
-          location: { address: { line: '308 Radnor Ct', city: 'Brentwood', state_code: 'TN', postal_code: '37027' } },
-          sold_date: dateWithinDays(95),
-          price: 1420000,
-          beds: 5,
-          baths: 4.5,
-          photos: [
-            { href: 'https://images.unsplash.com/photo-1505691723147-36a5ac3b2bba?auto=format&fit=crop&w=1600&q=80' },
-            { href: 'https://images.unsplash.com/photo-1507086181904-9cf9e1e6c1f8?auto=format&fit=crop&w=1600&q=80' },
-            { href: 'https://images.unsplash.com/photo-1523217582562-09d0def993a6?auto=format&fit=crop&w=1600&q=80' },
-          ],
-          primary_photo: { href: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=80' }
-        }
-      ];
-
-      // Filter to only the searched address in mock mode
-      const searchStreet = (searchType === 'address' && searchParams?.address)
-        ? String(searchParams.address).split(',')[0].trim().toLowerCase()
-        : null;
-      if (searchStreet) {
-        properties = properties.filter((p: any) => (
-          (p.location?.address?.line || '').trim().toLowerCase() === searchStreet
-        ));
-      }
+    // Calculate sold date minimum based on time period
+    const timePeriodDays = parseInt(searchParams.timePeriod || '180');
+    const soldDateMin = new Date();
+    soldDateMin.setDate(soldDateMin.getDate() - timePeriodDays);
+    const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
+    
+    // Build API URL with proper parameters
+    let apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&sold_date_min=${soldDateMinStr}`;
+    
+    // Add radius if specified
+    if (searchType === 'radius' && searchParams.radius) {
+      apiUrl += `&radius=${searchParams.radius}`;
+    }
+    
+    // Limit results to reasonable number
+    apiUrl += '&limit=50';
+    
+    console.log('Fetching from:', apiUrl);
+    
+    const listingsResponse = await fetch(apiUrl, options);
+    
+    if (listingsResponse.ok) {
+      const listingsData = await listingsResponse.json();
+      console.log('Properties found:', listingsData?.properties?.length || 0);
+      properties = listingsData?.properties || [];
     } else {
-      // Live API mode - simplified
-      const apiKey = RAPIDAPI_KEY as string;
-      const location = searchType === 'address' ? searchParams.address : 
-                       searchType === 'zip_code' ? searchParams.zipCode :
-                       `${searchParams.subdivisionName}, ${searchParams.city}, ${searchParams.state}`;
-
-      const options = {
-        method: 'GET',
-        headers: {
-          'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': 'realtor16.p.rapidapi.com'
-        } as Record<string, string>
-      };
-
-      const soldDateMin = new Date();
-      soldDateMin.setDate(soldDateMin.getDate() - 180);
-      const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
-      
-      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=20&sold_date_min=${soldDateMinStr}`;
-      console.log('Fetching from:', listingsUrl);
-      
-      const listingsResponse = await fetch(listingsUrl, options);
-      
-      if (listingsResponse.ok) {
-        const listingsData = await listingsResponse.json();
-        console.log('Properties found:', listingsData?.properties?.length || 0);
-        properties = listingsData?.properties || [];
-      } else {
-        console.error('API error:', listingsResponse.status);
-        properties = [];
-      }
+      console.error('API error:', listingsResponse.status, await listingsResponse.text());
+      throw new Error(`API request failed with status ${listingsResponse.status}`);
     }
 
     // Process and store properties
