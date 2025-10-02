@@ -157,6 +157,15 @@ const DemoReport = () => {
               <Button 
                 variant="ghost" 
                 size="sm"
+                onClick={() => navigate('/property-analysis')}
+                className="text-xs"
+              >
+                Get Real Data for This Property →
+              </Button>
+              <div className="h-4 w-px bg-border" />
+              <Button 
+                variant="ghost" 
+                size="sm"
                 onClick={() => navigate('/demo/itemized')}
                 className="text-xs"
               >
