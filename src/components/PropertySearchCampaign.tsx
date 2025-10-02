@@ -16,6 +16,7 @@ interface PropertySearchCampaignProps {
 export const PropertySearchCampaign = ({ builderId, onCampaignCreated }: PropertySearchCampaignProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [campaignType, setCampaignType] = useState<'renovation' | 'new_home'>('renovation');
   const [searchType, setSearchType] = useState<'address' | 'subdivision' | 'radius' | 'zip_code'>('address');
   const [campaignName, setCampaignName] = useState('');
   
@@ -81,6 +82,7 @@ export const PropertySearchCampaign = ({ builderId, onCampaignCreated }: Propert
         .insert({
           builder_id: builderId,
           campaign_name: campaignName,
+          campaign_type: campaignType,
           search_type: searchType,
           search_parameters: searchParams,
           status: 'running'
@@ -147,6 +149,24 @@ export const PropertySearchCampaign = ({ builderId, onCampaignCreated }: Propert
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label>Campaign Purpose</Label>
+          <Select value={campaignType} onValueChange={(value: any) => setCampaignType(value)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="renovation">Renovation Value Analysis (Contractors)</SelectItem>
+              <SelectItem value="new_home">New Home Value Comparison (Builders/Agents)</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-sm text-muted-foreground">
+            {campaignType === 'renovation' 
+              ? 'Compare renovation potential vs. existing homes for contractors'
+              : 'Show why new construction is worth more than resale homes'}
+          </p>
+        </div>
+
         <div className="space-y-2">
           <Label>Campaign Name</Label>
           <Input
