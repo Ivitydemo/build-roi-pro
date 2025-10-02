@@ -39,9 +39,9 @@ serve(async (req) => {
         }
       };
 
-      // Fetch property listings with the new API
-      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsale?location=${encodeURIComponent(location)}&limit=20`;
-      console.log('Fetching listings from:', listingsUrl);
+      // Fetch SOLD property listings for comparables analysis
+      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=20`;
+      console.log('Fetching sold properties from:', listingsUrl);
       
       const listingsResponse = await fetch(listingsUrl, options);
       
@@ -68,8 +68,8 @@ serve(async (req) => {
         }
       };
 
-      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsale?location=${encodeURIComponent(address)}&limit=50`;
-      console.log('Fetching listings from:', listingsUrl);
+      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(address)}&limit=50`;
+      console.log('Fetching sold properties from:', listingsUrl);
       
       const listingsResponse = await fetch(listingsUrl, options);
       
@@ -95,8 +95,8 @@ serve(async (req) => {
         }
       };
 
-      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsale?location=${encodeURIComponent(location)}&limit=50`;
-      console.log('Fetching listings from:', listingsUrl);
+      const listingsUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(location)}&limit=50`;
+      console.log('Fetching sold properties from:', listingsUrl);
       
       const listingsResponse = await fetch(listingsUrl, options);
       
