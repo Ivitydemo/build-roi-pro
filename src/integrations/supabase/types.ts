@@ -417,6 +417,56 @@ export type Database = {
           },
         ]
       }
+      photo_analyses: {
+        Row: {
+          analysis_data: Json
+          confidence_score: number | null
+          created_at: string
+          estimated_value_impact: number | null
+          id: string
+          materials_detected: string[] | null
+          photo_url: string
+          property_id: string | null
+          renovation_quality: string | null
+          rooms_identified: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          analysis_data: Json
+          confidence_score?: number | null
+          created_at?: string
+          estimated_value_impact?: number | null
+          id?: string
+          materials_detected?: string[] | null
+          photo_url: string
+          property_id?: string | null
+          renovation_quality?: string | null
+          rooms_identified?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          analysis_data?: Json
+          confidence_score?: number | null
+          created_at?: string
+          estimated_value_impact?: number | null
+          id?: string
+          materials_detected?: string[] | null
+          photo_url?: string
+          property_id?: string | null
+          renovation_quality?: string | null
+          rooms_identified?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_analyses_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       photo_library: {
         Row: {
           builder_id: string
