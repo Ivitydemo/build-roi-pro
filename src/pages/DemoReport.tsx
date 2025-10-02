@@ -3,6 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, Download, Mail, TrendingUp, DollarSign, Home, BarChart3, Calculator, ImageIcon, Share2, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ComparableWithAnalysis } from '@/components/ComparableWithAnalysis';
+import comparable1Kitchen from '@/assets/comparable-1-kitchen.jpg';
+import comparable2Kitchen from '@/assets/comparable-2-kitchen.jpg';
+import comparable3Kitchen from '@/assets/comparable-3-kitchen.jpg';
+import comparable4Kitchen from '@/assets/comparable-4-kitchen.jpg';
 
 const DemoReport = () => {
   const navigate = useNavigate();
@@ -62,7 +66,8 @@ const DemoReport = () => {
           'Premium appliances increase buyer appeal and price point',
           'Wide-plank hardwood flooring commands premium pricing'
         ],
-        estimatedImpact: 350000
+        estimatedImpact: 350000,
+        photoUrl: comparable1Kitchen
       }
     },
     { 
@@ -82,7 +87,8 @@ const DemoReport = () => {
           'Engineered hardwood offers durability and aesthetic appeal',
           'Strategic focus on high-impact areas (kitchen + master) maximizes ROI'
         ],
-        estimatedImpact: 280000
+        estimatedImpact: 280000,
+        photoUrl: comparable2Kitchen
       }
     },
     { 
@@ -102,7 +108,8 @@ const DemoReport = () => {
           'Walnut flooring commands top-tier pricing ($50+/sqft premium)',
           'Sub-Zero/Wolf appliance suite signals luxury positioning'
         ],
-        estimatedImpact: 450000
+        estimatedImpact: 450000,
+        photoUrl: comparable3Kitchen
       }
     },
     { 
@@ -122,7 +129,8 @@ const DemoReport = () => {
           'Strategic bathroom updates increase perceived value',
           'European appliances add perceived quality'
         ],
-        estimatedImpact: 300000
+        estimatedImpact: 300000,
+        photoUrl: comparable4Kitchen
       }
     }
   ];

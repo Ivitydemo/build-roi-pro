@@ -4,6 +4,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Building2, Download, Mail, Share2, Home, Sparkles, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ComparableWithAnalysis } from '@/components/ComparableWithAnalysis';
+import comparable1Kitchen from '@/assets/comparable-1-kitchen.jpg';
+import comparable2Kitchen from '@/assets/comparable-2-kitchen.jpg';
+import comparable3Kitchen from '@/assets/comparable-3-kitchen.jpg';
+import comparable4Kitchen from '@/assets/comparable-4-kitchen.jpg';
 
 const DemoReportItemized = () => {
   const navigate = useNavigate();
@@ -126,7 +130,8 @@ const DemoReportItemized = () => {
           'Custom cabinetry vs. stock adds $20-30/sqft',
           'Premium appliances increase buyer appeal and price point'
         ],
-        estimatedImpact: 350000
+        estimatedImpact: 350000,
+        photoUrl: comparable1Kitchen
       }
     },
     { 
@@ -145,7 +150,8 @@ const DemoReportItemized = () => {
           'Quality shaker cabinets add timeless value',
           'Strategic focus on high-impact areas maximizes ROI'
         ],
-        estimatedImpact: 280000
+        estimatedImpact: 280000,
+        photoUrl: comparable2Kitchen
       }
     },
     { 
@@ -164,7 +170,8 @@ const DemoReportItemized = () => {
           'Inset cabinetry is the highest-end construction',
           'Walnut flooring commands top-tier pricing'
         ],
-        estimatedImpact: 450000
+        estimatedImpact: 450000,
+        photoUrl: comparable3Kitchen
       }
     },
     { 
@@ -183,7 +190,8 @@ const DemoReportItemized = () => {
           'Semi-custom cabinets balance cost and customization',
           'Strategic bathroom updates increase perceived value'
         ],
-        estimatedImpact: 300000
+        estimatedImpact: 300000,
+        photoUrl: comparable4Kitchen
       }
     }
   ];

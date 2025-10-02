@@ -42,6 +42,16 @@ export const ComparableWithAnalysis = ({
 
   return (
     <Card className="p-4 hover:shadow-lg transition-all">
+      {analysis?.photoUrl && (
+        <div className="mb-4 -mx-4 -mt-4">
+          <img 
+            src={analysis.photoUrl} 
+            alt={`${address} - Property Photo`}
+            className="w-full h-48 object-cover rounded-t-lg"
+          />
+        </div>
+      )}
+      
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="font-semibold text-lg mb-1">{address}</div>
