@@ -155,6 +155,14 @@ const DemoReport = () => {
             </div>
             <div className="flex gap-2 items-center">
               <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => navigate('/comparables-analysis')}
+              >
+                Get REAL Comp Data & Photos →
+              </Button>
+              <div className="h-4 w-px bg-border" />
+              <Button 
                 variant="ghost" 
                 size="sm"
                 onClick={() => navigate('/property-analysis')}
