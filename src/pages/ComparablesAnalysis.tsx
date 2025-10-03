@@ -430,9 +430,9 @@ const ComparablesAnalysis = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <h3 className="font-semibold">{property.address}</h3>
-                            {(property.listing_data as any)?.distance_miles && (
+                            {typeof (property.listing_data as any)?.distance_miles === 'number' && (
                               <Badge variant="secondary">
-                                {(property.listing_data as any).distance_miles.toFixed(2)} mi
+                                {Number((property.listing_data as any).distance_miles).toFixed(2)} mi
                               </Badge>
                             )}
                           </div>

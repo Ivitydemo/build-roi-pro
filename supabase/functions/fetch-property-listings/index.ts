@@ -201,7 +201,7 @@ serve(async (req) => {
 
           // Calculate distance if we have coordinates
           let distance: number | null = null;
-          const propCoord = locInfo.coordinate ?? property.coordinate;
+          const propCoord = locInfo.coordinate ?? locInfo.address?.coordinate ?? property.coordinate;
           
           // If we don't have subject coordinates yet, use the first property as reference
           if (!subjectLat && !subjectLon && propCoord) {
@@ -296,7 +296,7 @@ serve(async (req) => {
 
               // Calculate distance
               let distance: number | null = null;
-              const propCoord = locInfo.coordinate ?? property.coordinate;
+              const propCoord = locInfo.coordinate ?? locInfo.address?.coordinate ?? property.coordinate;
               if (subjectLat && subjectLon && propCoord) {
                 const propLat = propCoord.lat ?? propCoord.latitude;
                 const propLon = propCoord.lon ?? propCoord.longitude;

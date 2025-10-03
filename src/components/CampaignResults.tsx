@@ -226,11 +226,11 @@ export const CampaignResults = ({ builderId, refreshTrigger }: CampaignResultsPr
                             <div className="flex items-center gap-2 mb-2">
                               <MapPin className="h-4 w-4" />
                               <span className="font-medium">{property.address}</span>
-                              {property.listing_data?.distance_miles && (
-                                <Badge variant="secondary" className="ml-2">
-                                  {property.listing_data.distance_miles.toFixed(2)} mi
-                                </Badge>
-                              )}
+                               {typeof property.listing_data?.distance_miles === 'number' && (
+                                 <Badge variant="secondary" className="ml-2">
+                                   {Number(property.listing_data.distance_miles).toFixed(2)} mi
+                                 </Badge>
+                               )}
                             </div>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               {property.listing_data?.sold_date && (
