@@ -601,30 +601,45 @@ const ComparablesAnalysis = () => {
                                 ).trim()}
                               </Badge>
                             )}
-                            {Number((property.listing_data as any)?.price ?? (property.listing_data as any)?.sale_price ?? (property.listing_data as any)?.sold_price ?? (property.listing_data as any)?.list_price) > 0 && (
-                              <span className="font-medium">
-                                ${Number((property.listing_data as any)?.price ?? (property.listing_data as any)?.sale_price ?? (property.listing_data as any)?.sold_price ?? (property.listing_data as any)?.list_price).toLocaleString()}
-                              </span>
-                            )}
-                            {Number((property.listing_data as any)?.sqft ?? (property.listing_data as any)?.living_area ?? (property.listing_data as any)?.square_feet ?? (property.listing_data as any)?.square_footage) > 0 && (
-                              <span>
-                                {Number((property.listing_data as any)?.sqft ?? (property.listing_data as any)?.living_area ?? (property.listing_data as any)?.square_feet ?? (property.listing_data as any)?.square_footage).toLocaleString()} sqft
-                              </span>
-                            )}
-                            {Number((property.listing_data as any)?.price ?? (property.listing_data as any)?.sale_price ?? (property.listing_data as any)?.sold_price ?? (property.listing_data as any)?.list_price) > 0 &&
-                             Number((property.listing_data as any)?.sqft ?? (property.listing_data as any)?.living_area ?? (property.listing_data as any)?.square_feet ?? (property.listing_data as any)?.square_footage) > 0 && (
-                              <Badge variant="outline" className="font-semibold">
-                                ${Math.round(
-                                  Number((property.listing_data as any)?.price ?? (property.listing_data as any)?.sale_price ?? (property.listing_data as any)?.sold_price ?? (property.listing_data as any)?.list_price) /
-                                  Number((property.listing_data as any)?.sqft ?? (property.listing_data as any)?.living_area ?? (property.listing_data as any)?.square_feet ?? (property.listing_data as any)?.square_footage)
-                                ).toLocaleString()}/sqft
-                              </Badge>
-                            )}
-                            {property.listing_data?.beds && property.listing_data?.baths && (
-                              <span>
-                                {property.listing_data.beds} beds • {property.listing_data.baths} baths
-                              </span>
-                            )}
+                            {(() => {
+                              const ld = property.listing_data as any;
+                              const price = ld?.price ?? ld?.sale_price ?? ld?.sold_price ?? ld?.list_price ?? ld?.last_sold_price;
+                              const sqft = ld?.sqft ?? ld?.living_area ?? ld?.square_feet ?? ld?.square_footage ?? 
+                                           ld?.description?.sqft ?? ld?.description?.living_area ??
+                                           ld?.building?.size?.value;
+                              const beds = ld?.beds ?? ld?.description?.beds;
+                              const baths = ld?.baths ?? ld?.description?.baths;
+                              
+                              // Log for debugging
+                              if (!sqft) {
+                                console.log('Missing sqft for:', property.address, 'listing_data keys:', Object.keys(ld || {}));
+                              }
+                              
+                              return (
+                                <>
+                                  {price > 0 && (
+                                    <span className="font-medium">
+                                      ${Number(price).toLocaleString()}
+                                    </span>
+                                  )}
+                                  {sqft > 0 && (
+                                    <span>
+                                      {Number(sqft).toLocaleString()} sqft
+                                    </span>
+                                  )}
+                                  {price > 0 && sqft > 0 && (
+                                    <Badge variant="outline" className="font-semibold">
+                                      ${Math.round(Number(price) / Number(sqft)).toLocaleString()}/sqft
+                                    </Badge>
+                                  )}
+                                  {beds && baths && (
+                                    <span>
+                                      {beds} beds • {baths} baths
+                                    </span>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
                             {property.photo_urls?.length || 0} photos available
