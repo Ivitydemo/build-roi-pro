@@ -590,18 +590,11 @@ const ComparablesAnalysis = () => {
                                 ld?.subdivision
                               );
 
-                              const norm = (s: any) => (s ?? '').toString().toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
-                              const targetSub = (searchMode === 'subdivision' ? subdivision : '') as string;
-                              const matchSubdivision = targetSub && displaySubdivision
-                                ? norm(displaySubdivision) === norm(targetSub)
-                                : null;
-
-                              // Prefer SOLD price, then LIST price (cover nested description fields too)
+                              // Prefer SOLD price, then LIST price (including nested fields)
                               const rawSold = ld?.description?.sold_price ?? ld?.sold_price ?? ld?.sale_price ?? ld?.last_sold_price;
                               const rawList = ld?.description?.list_price ?? ld?.list_price ?? ld?.price;
                               const price = (rawSold ?? rawList) as number | undefined;
 
-                              // Sqft from multiple shapes
                               const sqft = ld?.sqft ?? ld?.living_area ?? ld?.square_feet ?? ld?.square_footage ??
                                            ld?.description?.sqft ?? ld?.description?.living_area ??
                                            ld?.building?.size?.value;
@@ -610,15 +603,9 @@ const ComparablesAnalysis = () => {
 
                               return (
                                 <>
-                                  {/* Always show a Subdivision badge in subdivision mode */}
-                                  {(displaySubdivision || targetSub) && (
+                                  {displaySubdivision && (
                                     <Badge variant="secondary" className="font-medium">
-                                      Subdivision: {String(displaySubdivision || targetSub).trim()}
-                                    </Badge>
-                                  )}
-                                  {matchSubdivision !== null && (
-                                    <Badge variant={matchSubdivision ? 'default' : 'destructive'}>
-                                      {matchSubdivision ? `In ${subdivision}` : `Outside ${subdivision}`}
+                                      Subdivision: {String(displaySubdivision).trim()}
                                     </Badge>
                                   )}
 

@@ -313,8 +313,18 @@ serve(async (req) => {
               _soldDate: enrichedListingData.sold_date,
               _inSubdivision: inSubdivision
             };
-            processedProperties.push(targetedProperty);
-            seenKeys.add(key);
+            // Only include subdivision search results when there is an explicit match in the listing data
+            if (searchType === 'subdivision' && searchParams?.subdivision) {
+              if (inSubdivision) {
+                processedProperties.push(targetedProperty);
+                seenKeys.add(key);
+              } else {
+                console.log('Skipping property outside subdivision:', line);
+              }
+            } else {
+              processedProperties.push(targetedProperty);
+              seenKeys.add(key);
+            }
           }
 
           // Continue scanning all to pick the closest after sorting
@@ -395,7 +405,7 @@ serve(async (req) => {
                   subdivision_name: rawSubdivision2
                 };
                 
-                processedProperties.push({
+                const targetedProperty2 = {
                   campaign_id: campaignId,
                   address: line2 || 'Unknown Address',
                   city: (addrRaw2.city ?? addrRaw2.locality) || null,
@@ -407,8 +417,18 @@ serve(async (req) => {
                   _distance: distance,
                   _soldDate: enrichedListingData.sold_date,
                   _inSubdivision: inSubdivision2
-                });
-                seenKeys.add(key);
+                };
+                if (searchType === 'subdivision' && searchParams?.subdivision) {
+                  if (inSubdivision2) {
+                    processedProperties.push(targetedProperty2);
+                    seenKeys.add(key);
+                  } else {
+                    console.log('Skipping property outside subdivision (expanded):', line2);
+                  }
+                } else {
+                  processedProperties.push(targetedProperty2);
+                  seenKeys.add(key);
+                }
               }
 
               // Continue scanning all to pick the closest after sorting
