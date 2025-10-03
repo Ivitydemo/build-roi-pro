@@ -237,7 +237,8 @@ serve(async (req) => {
             photoUrls.push(property.thumbnail);
           }
 
-          if (photoUrls.length >= 1) {
+          // Accept properties even without photos to show all comps
+          {
             // Add distance and sold_date to listing_data
             const enrichedListingData = {
               ...property,
@@ -317,7 +318,8 @@ serve(async (req) => {
                 photoUrls.unshift(property.primary_photo.href);
               }
 
-              if (photoUrls.length >= 1) {
+              // Accept properties even without photos to show all comps
+              {
                 const enrichedListingData = {
                   ...property,
                   distance_miles: distance,
@@ -353,7 +355,7 @@ serve(async (req) => {
     }
 
 
-    console.log('Processed properties with photos:', processedProperties.length);
+    console.log('Processed properties (photo requirement removed):', processedProperties.length);
 
     // Sort by distance first (closest first), then by date (most recent first)
     processedProperties.sort((a, b) => {
