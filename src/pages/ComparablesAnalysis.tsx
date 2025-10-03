@@ -22,11 +22,11 @@ const ComparablesAnalysis = () => {
   const [analyzing, setAnalyzing] = useState(false);
   
   // Search criteria state
-  const [searchMode, setSearchMode] = useState<'radius' | 'neighborhood' | 'street' | 'zip'>('radius');
+  const [searchMode, setSearchMode] = useState<'radius' | 'subdivision' | 'street' | 'zip'>('radius');
   const [subjectAddress, setSubjectAddress] = useState('');
   const [radius, setRadius] = useState('1');
   const [timePeriod, setTimePeriod] = useState('180'); // days
-  const [neighborhood, setNeighborhood] = useState('');
+  const [subdivision, setSubdivision] = useState('');
   const [streetName, setStreetName] = useState('');
   const [zipCode, setZipCode] = useState('');
   const [cityState, setCityState] = useState('');
@@ -74,10 +74,10 @@ const ComparablesAnalysis = () => {
       });
       return;
     }
-    if (searchMode === 'neighborhood' && !neighborhood.trim()) {
+    if (searchMode === 'subdivision' && !subdivision.trim()) {
       toast({
         title: 'Missing information',
-        description: 'Please enter the neighborhood name',
+        description: 'Please enter the subdivision name',
         variant: 'destructive'
       });
       return;
@@ -116,13 +116,13 @@ const ComparablesAnalysis = () => {
           timePeriod
         };
         campaignName = `Within ${radius}mi of ${subjectAddress}`;
-      } else if (searchMode === 'neighborhood') {
+      } else if (searchMode === 'subdivision') {
         searchParams = {
-          neighborhood,
+          subdivision,
           cityState,
           timePeriod
         };
-        campaignName = `${neighborhood} neighborhood${cityState ? `, ${cityState}` : ''}`;
+        campaignName = `${subdivision} subdivision${cityState ? `, ${cityState}` : ''}`;
       } else if (searchMode === 'street') {
         searchParams = {
           streetName,
@@ -401,7 +401,7 @@ const ComparablesAnalysis = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="radius">Radius from Address</SelectItem>
-                  <SelectItem value="neighborhood">Neighborhood</SelectItem>
+                  <SelectItem value="subdivision">Subdivision</SelectItem>
                   <SelectItem value="street">Street Name</SelectItem>
                   <SelectItem value="zip">Zip Code</SelectItem>
                 </SelectContent>
@@ -439,13 +439,13 @@ const ComparablesAnalysis = () => {
               </div>
             )}
 
-            {searchMode === 'neighborhood' && (
+            {searchMode === 'subdivision' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Neighborhood Name</Label>
+                  <Label>Subdivision Name</Label>
                   <Input
-                    value={neighborhood}
-                    onChange={(e) => setNeighborhood(e.target.value)}
+                    value={subdivision}
+                    onChange={(e) => setSubdivision(e.target.value)}
                     placeholder="e.g., Taramore"
                   />
                 </div>

@@ -38,11 +38,11 @@ serve(async (req) => {
     let subjectLat: number | null = null;
     let subjectLon: number | null = null;
     
-    if (searchType === 'neighborhood') {
-      const neighborhood = searchParams.neighborhood || '';
+    if (searchType === 'subdivision') {
+      const subdivision = searchParams.subdivision || '';
       const cityState = searchParams.cityState || '';
-      locationForSearch = cityState ? `${neighborhood}, ${cityState}` : neighborhood;
-      console.log('Neighborhood search:', locationForSearch);
+      locationForSearch = cityState ? `${subdivision}, ${cityState}` : subdivision;
+      console.log('Subdivision search:', locationForSearch);
     } else if (searchType === 'street') {
       const streetName = searchParams.streetName || '';
       const cityState = searchParams.cityState || '';
@@ -213,6 +213,16 @@ serve(async (req) => {
           const key = `${line}|${zip}`;
           if (seenKeys.has(key)) continue;
 
+          // For subdivision searches, filter to only include properties that mention the subdivision
+          if (searchType === 'subdivision' && searchParams.subdivision) {
+            const subdivisionName = searchParams.subdivision.toLowerCase();
+            const listingText = JSON.stringify(property).toLowerCase();
+            if (!listingText.includes(subdivisionName)) {
+              console.log(`Skipping ${line} - not in ${searchParams.subdivision}`);
+              continue;
+            }
+          }
+
           // Calculate distance if we have coordinates
           let distance: number | null = null;
           const propCoord = locInfo.coordinate ?? locInfo.address?.coordinate ?? property.coordinate;
@@ -309,6 +319,15 @@ serve(async (req) => {
               const key = `${line2}|${zip2}`;
               
               if (seenKeys.has(key)) continue;
+
+              // For subdivision searches, filter to only include properties that mention the subdivision
+              if (searchType === 'subdivision' && searchParams.subdivision) {
+                const subdivisionName = searchParams.subdivision.toLowerCase();
+                const listingText = JSON.stringify(property).toLowerCase();
+                if (!listingText.includes(subdivisionName)) {
+                  continue;
+                }
+              }
 
               // Calculate distance
               let distance: number | null = null;
