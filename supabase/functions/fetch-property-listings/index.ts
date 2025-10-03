@@ -265,10 +265,20 @@ serve(async (req) => {
           // Accept properties even without photos to show all comps
           {
             // Add distance and sold_date to listing_data
+            const rawSubdivision = locInfo?.address?.subdivision 
+              ?? locInfo?.subdivision 
+              ?? property?.subdivision 
+              ?? property?.community?.name 
+              ?? property?.neighborhood?.name 
+              ?? null;
+            const inferredSubdivision = (searchType === 'subdivision' && inSubdivision && searchParams?.subdivision)
+              ? String(searchParams.subdivision).trim()
+              : null;
             const enrichedListingData = {
               ...property,
               distance_miles: distance,
-              sold_date: property.sold_date ?? property.list_date ?? property.last_sold_date
+              sold_date: property.sold_date ?? property.list_date ?? property.last_sold_date,
+              subdivision_name: rawSubdivision || inferredSubdivision
             };
             
             const targetedProperty = {
@@ -354,10 +364,20 @@ serve(async (req) => {
 
               // Accept properties even without photos to show all comps
               {
+                const rawSubdivision2 = locInfo?.address?.subdivision 
+                  ?? locInfo?.subdivision 
+                  ?? property?.subdivision 
+                  ?? property?.community?.name 
+                  ?? property?.neighborhood?.name 
+                  ?? null;
+                const inferredSubdivision2 = (searchType === 'subdivision' && inSubdivision2 && searchParams?.subdivision)
+                  ? String(searchParams.subdivision).trim()
+                  : null;
                 const enrichedListingData = {
                   ...property,
                   distance_miles: distance,
-                  sold_date: property.sold_date ?? property.list_date ?? property.last_sold_date
+                  sold_date: property.sold_date ?? property.list_date ?? property.last_sold_date,
+                  subdivision_name: rawSubdivision2 || inferredSubdivision2
                 };
                 
                 processedProperties.push({

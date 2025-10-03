@@ -238,11 +238,13 @@ export const CampaignResults = ({ builderId, refreshTrigger }: CampaignResultsPr
                                   Sold: {new Date(property.listing_data.sold_date).toLocaleDateString()}
                                 </span>
                               )}
-                              {(property.listing_data?.location?.address?.subdivision || 
+                              {(property.listing_data?.subdivision_name ||
+                                property.listing_data?.location?.address?.subdivision || 
                                 property.listing_data?.location?.subdivision || 
                                 property.listing_data?.subdivision) && (
                                 <Badge variant="outline" className="font-normal">
-                                  {property.listing_data?.location?.address?.subdivision || 
+                                  {property.listing_data?.subdivision_name ||
+                                   property.listing_data?.location?.address?.subdivision || 
                                    property.listing_data?.location?.subdivision || 
                                    property.listing_data?.subdivision}
                                 </Badge>
