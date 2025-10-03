@@ -89,26 +89,45 @@ serve(async (req) => {
       let subjectLat: number | null = null;
       let subjectLon: number | null = null;
       
-      // First try to geocode the subject address to get its coordinates
+      // First try to geocode the subject address to get its coordinates (without date filter)
       const geocodeUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(primaryLocation)}&limit=1`;
+      console.log('Geocoding subject address:', geocodeUrl);
       try {
         const geocodeResponse = await fetch(geocodeUrl, options);
+        console.log('Geocode response status:', geocodeResponse.status);
         if (geocodeResponse.ok) {
           const geocodeData = await geocodeResponse.json();
+          console.log('Geocode data structure:', Object.keys(geocodeData));
           let firstProp: any = null;
           if (Array.isArray(geocodeData?.properties) && geocodeData.properties[0]) {
             firstProp = geocodeData.properties[0];
           } else if (Array.isArray(geocodeData?.data?.home_search?.results) && geocodeData.data.home_search.results[0]) {
             firstProp = geocodeData.data.home_search.results[0].property ?? geocodeData.data.home_search.results[0];
+          } else if (Array.isArray(geocodeData?.data?.results) && geocodeData.data.results[0]) {
+            firstProp = geocodeData.data.results[0].property ?? geocodeData.data.results[0];
           }
+          
           if (firstProp?.location?.coordinate) {
             subjectLat = firstProp.location.coordinate.lat ?? firstProp.location.coordinate.latitude;
             subjectLon = firstProp.location.coordinate.lon ?? firstProp.location.coordinate.longitude;
             console.log('Subject property coordinates:', subjectLat, subjectLon);
+          } else if (firstProp?.location?.address?.coordinate) {
+            subjectLat = firstProp.location.address.coordinate.lat ?? firstProp.location.address.coordinate.latitude;
+            subjectLon = firstProp.location.address.coordinate.lon ?? firstProp.location.address.coordinate.longitude;
+            console.log('Subject property coordinates (from address):', subjectLat, subjectLon);
+          } else {
+            console.log('Could not find coordinates in geocode response');
           }
+        } else {
+          console.warn('Geocode response not OK:', geocodeResponse.status);
         }
       } catch (e) {
         console.warn('Could not geocode subject address:', e);
+      }
+      
+      // If geocoding failed, try to use the search location center
+      if (!subjectLat || !subjectLon) {
+        console.log('Geocoding failed, will calculate distances from first result');
       }
 
       // Build a location optimized for the API: prefer ZIP, else city/state from address
@@ -162,11 +181,23 @@ serve(async (req) => {
           // Calculate distance if we have coordinates
           let distance: number | null = null;
           const propCoord = locInfo.coordinate ?? property.coordinate;
-          if (subjectLat && subjectLon && propCoord) {
+          
+          // If we don't have subject coordinates yet, use the first property as reference
+          if (!subjectLat && !subjectLon && propCoord) {
+            const propLat = propCoord.lat ?? propCoord.latitude;
+            const propLon = propCoord.lon ?? propCoord.longitude;
+            if (propLat && propLon) {
+              subjectLat = propLat;
+              subjectLon = propLon;
+              console.log('Using first property as subject reference:', subjectLat, subjectLon);
+              distance = 0; // First property is the reference
+            }
+          } else if (subjectLat && subjectLon && propCoord) {
             const propLat = propCoord.lat ?? propCoord.latitude;
             const propLon = propCoord.lon ?? propCoord.longitude;
             if (propLat && propLon) {
               distance = getDistance(subjectLat, subjectLon, propLat, propLon);
+              console.log(`Distance calculated: ${distance?.toFixed(2)} miles for ${line}`);
             }
           }
 

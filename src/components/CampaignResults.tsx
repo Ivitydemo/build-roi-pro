@@ -134,7 +134,17 @@ export const CampaignResults = ({ builderId, refreshTrigger }: CampaignResultsPr
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setCampaignProperties(data || []);
+      
+      // Sort by distance (closest first), with null distances at the end
+      const sortedData = (data || []).sort((a, b) => {
+        const listingA = a.listing_data as any;
+        const listingB = b.listing_data as any;
+        const distA = listingA?.distance_miles ?? 9999;
+        const distB = listingB?.distance_miles ?? 9999;
+        return distA - distB;
+      });
+      
+      setCampaignProperties(sortedData);
       setExpandedCampaign(campaignId);
     } catch (error) {
       console.error('Error loading properties:', error);
