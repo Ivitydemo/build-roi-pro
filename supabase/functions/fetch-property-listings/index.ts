@@ -219,7 +219,7 @@ serve(async (req) => {
           // Subdivision hint (soft filter)
           let inSubdivision = false;
           if (searchType === 'subdivision' && searchParams.subdivision) {
-            const subdivisionName = String(searchParams.subdivision).toLowerCase();
+            const subdivisionName = String(searchParams.subdivision).toLowerCase().trim();
             const listingText = JSON.stringify(property).toLowerCase();
             inSubdivision = listingText.includes(subdivisionName);
           }
@@ -282,7 +282,7 @@ serve(async (req) => {
               analysis_status: 'pending',
               _distance: distance, // Store for sorting
               _soldDate: enrichedListingData.sold_date,
-              _inSubdivision: typeof inSubdivision === 'boolean' ? inSubdivision : false
+              _inSubdivision: inSubdivision
             };
             processedProperties.push(targetedProperty);
             seenKeys.add(key);
@@ -325,7 +325,7 @@ serve(async (req) => {
               // Subdivision hint (soft filter)
               let inSubdivision2 = false;
               if (searchType === 'subdivision' && searchParams.subdivision) {
-                const subdivisionName = String(searchParams.subdivision).toLowerCase();
+                const subdivisionName = String(searchParams.subdivision).toLowerCase().trim();
                 const listingText = JSON.stringify(property).toLowerCase();
                 inSubdivision2 = listingText.includes(subdivisionName);
               }
@@ -371,7 +371,7 @@ serve(async (req) => {
                   analysis_status: 'pending',
                   _distance: distance,
                   _soldDate: enrichedListingData.sold_date,
-                  _inSubdivision: typeof inSubdivision2 === 'boolean' ? inSubdivision2 : false
+                  _inSubdivision: inSubdivision2
                 });
                 seenKeys.add(key);
               }
