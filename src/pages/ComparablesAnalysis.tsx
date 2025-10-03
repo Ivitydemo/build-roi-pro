@@ -596,7 +596,12 @@ const ComparablesAnalysis = () => {
                                 ? norm(displaySubdivision) === norm(targetSub)
                                 : null;
 
-                              const price = ld?.price ?? ld?.sale_price ?? ld?.sold_price ?? ld?.list_price ?? ld?.last_sold_price;
+                              // Prefer SOLD price, then LIST price (cover nested description fields too)
+                              const rawSold = ld?.description?.sold_price ?? ld?.sold_price ?? ld?.sale_price ?? ld?.last_sold_price;
+                              const rawList = ld?.description?.list_price ?? ld?.list_price ?? ld?.price;
+                              const price = (rawSold ?? rawList) as number | undefined;
+
+                              // Sqft from multiple shapes
                               const sqft = ld?.sqft ?? ld?.living_area ?? ld?.square_feet ?? ld?.square_footage ??
                                            ld?.description?.sqft ?? ld?.description?.living_area ??
                                            ld?.building?.size?.value;
@@ -605,9 +610,10 @@ const ComparablesAnalysis = () => {
 
                               return (
                                 <>
-                                  {displaySubdivision && (
+                                  {/* Always show a Subdivision badge in subdivision mode */}
+                                  {(displaySubdivision || targetSub) && (
                                     <Badge variant="secondary" className="font-medium">
-                                      Subdivision: {String(displaySubdivision).trim()}
+                                      Subdivision: {String(displaySubdivision || targetSub).trim()}
                                     </Badge>
                                   )}
                                   {matchSubdivision !== null && (
@@ -616,17 +622,17 @@ const ComparablesAnalysis = () => {
                                     </Badge>
                                   )}
 
-                                  {price > 0 && (
+                                  {Number(price) > 0 && (
                                     <span className="font-medium">
                                       ${Number(price).toLocaleString()}
                                     </span>
                                   )}
-                                  {sqft > 0 && (
+                                  {Number(sqft) > 0 && (
                                     <span>
                                       {Number(sqft).toLocaleString()} sqft
                                     </span>
                                   )}
-                                  {price > 0 && sqft > 0 && (
+                                  {Number(price) > 0 && Number(sqft) > 0 && (
                                     <Badge variant="outline" className="font-semibold">
                                       ${Math.round(Number(price) / Number(sqft)).toLocaleString()}/sqft
                                     </Badge>
