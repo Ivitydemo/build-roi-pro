@@ -576,47 +576,46 @@ const ComparablesAnalysis = () => {
                                 Sold: {new Date((property.listing_data as any).sold_date).toLocaleDateString()}
                               </span>
                             )}
-                            {(
-                              (property.listing_data as any)?.subdivision_name ||
-                              (property.listing_data as any)?.subdivisionName ||
-                              (property.listing_data as any)?.location?.address?.subdivision ||
-                              (property.listing_data as any)?.location?.subdivision ||
-                              (property.listing_data as any)?.location?.neighborhood ||
-                              (property.listing_data as any)?.address?.subdivision ||
-                              (property.listing_data as any)?.community?.name ||
-                              (property.listing_data as any)?.neighborhood?.name ||
-                              (property.listing_data as any)?.subdivision
-                            ) && (
-                              <Badge variant="secondary" className="font-medium">
-                                Subdivision: {String(
-                                  (property.listing_data as any)?.subdivision_name ||
-                                  (property.listing_data as any)?.subdivisionName ||
-                                  (property.listing_data as any)?.location?.address?.subdivision ||
-                                  (property.listing_data as any)?.location?.subdivision ||
-                                  (property.listing_data as any)?.location?.neighborhood ||
-                                  (property.listing_data as any)?.address?.subdivision ||
-                                  (property.listing_data as any)?.community?.name ||
-                                  (property.listing_data as any)?.neighborhood?.name ||
-                                  (property.listing_data as any)?.subdivision
-                                ).trim()}
-                              </Badge>
-                            )}
                             {(() => {
                               const ld = property.listing_data as any;
+                              const displaySubdivision = (
+                                ld?.subdivision_name ||
+                                ld?.subdivisionName ||
+                                ld?.location?.address?.subdivision ||
+                                ld?.location?.subdivision ||
+                                ld?.location?.neighborhood ||
+                                ld?.address?.subdivision ||
+                                ld?.community?.name ||
+                                ld?.neighborhood?.name ||
+                                ld?.subdivision
+                              );
+
+                              const norm = (s: any) => (s ?? '').toString().toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
+                              const targetSub = (searchMode === 'subdivision' ? subdivision : '') as string;
+                              const matchSubdivision = targetSub && displaySubdivision
+                                ? norm(displaySubdivision) === norm(targetSub)
+                                : null;
+
                               const price = ld?.price ?? ld?.sale_price ?? ld?.sold_price ?? ld?.list_price ?? ld?.last_sold_price;
-                              const sqft = ld?.sqft ?? ld?.living_area ?? ld?.square_feet ?? ld?.square_footage ?? 
+                              const sqft = ld?.sqft ?? ld?.living_area ?? ld?.square_feet ?? ld?.square_footage ??
                                            ld?.description?.sqft ?? ld?.description?.living_area ??
                                            ld?.building?.size?.value;
                               const beds = ld?.beds ?? ld?.description?.beds;
                               const baths = ld?.baths ?? ld?.description?.baths;
-                              
-                              // Log for debugging
-                              if (!sqft) {
-                                console.log('Missing sqft for:', property.address, 'listing_data keys:', Object.keys(ld || {}));
-                              }
-                              
+
                               return (
                                 <>
+                                  {displaySubdivision && (
+                                    <Badge variant="secondary" className="font-medium">
+                                      Subdivision: {String(displaySubdivision).trim()}
+                                    </Badge>
+                                  )}
+                                  {matchSubdivision !== null && (
+                                    <Badge variant={matchSubdivision ? 'default' : 'destructive'}>
+                                      {matchSubdivision ? `In ${subdivision}` : `Outside ${subdivision}`}
+                                    </Badge>
+                                  )}
+
                                   {price > 0 && (
                                     <span className="font-medium">
                                       ${Number(price).toLocaleString()}
