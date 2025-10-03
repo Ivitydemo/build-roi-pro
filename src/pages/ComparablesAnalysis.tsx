@@ -25,6 +25,7 @@ const ComparablesAnalysis = () => {
   const [subjectAddress, setSubjectAddress] = useState('');
   const [radius, setRadius] = useState('1');
   const [timePeriod, setTimePeriod] = useState('180'); // days
+  const [subdivision, setSubdivision] = useState('');
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -78,7 +79,8 @@ const ComparablesAnalysis = () => {
       const searchParams = { 
         address: subjectAddress, 
         radius,
-        timePeriod 
+        timePeriod,
+        subdivisionName: subdivision
       };
       const campaignName = `Within ${radius}mi of ${subjectAddress}`;
 
@@ -360,6 +362,15 @@ const ComparablesAnalysis = () => {
                     <SelectItem value="5">5 miles</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label>Subdivision (optional)</Label>
+                <Input
+                  value={subdivision}
+                  onChange={(e) => setSubdivision(e.target.value)}
+                  placeholder="e.g., Governors Club"
+                />
               </div>
             </div>
 

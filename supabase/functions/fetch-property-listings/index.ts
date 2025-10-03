@@ -64,7 +64,7 @@ serve(async (req) => {
     }
 
     // Optimized approach: target 4 comps, prefer within 90 days and close distance
-    const desiredTarget = 4;
+    const desiredTarget = 12;
     const desiredMinimum = 3;
 
     const baseRadius = parseFloat(String(searchParams.radius ?? '1'));
@@ -154,6 +154,12 @@ serve(async (req) => {
 
       // Build a location optimized for the API: prefer ZIP, else city/state from address
       const locationForSearch = (() => {
+        // If a subdivision is provided, bias search to subdivision + city/state
+        if (searchParams?.subdivisionName) {
+          const parts = primaryLocation.split(',').map((p: string) => p.trim()).filter(Boolean);
+          const base = parts.length >= 2 ? `${parts[parts.length - 2]}, ${parts[parts.length - 1]}` : primaryLocation;
+          return `${searchParams.subdivisionName}, ${base}`;
+        }
         if (zipFromAddress) return zipFromAddress;
         const parts = primaryLocation.split(',').map((p: string) => p.trim()).filter(Boolean);
         if (parts.length >= 2) {
