@@ -88,46 +88,67 @@ serve(async (req) => {
       // Get subject property coordinates
       let subjectLat: number | null = null;
       let subjectLon: number | null = null;
-      
-      // First try to geocode the subject address to get its coordinates (without date filter)
-      const geocodeUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(primaryLocation)}&limit=1`;
-      console.log('Geocoding subject address:', geocodeUrl);
-      try {
-        const geocodeResponse = await fetch(geocodeUrl, options);
-        console.log('Geocode response status:', geocodeResponse.status);
-        if (geocodeResponse.ok) {
-          const geocodeData = await geocodeResponse.json();
-          console.log('Geocode data structure:', Object.keys(geocodeData));
-          let firstProp: any = null;
-          if (Array.isArray(geocodeData?.properties) && geocodeData.properties[0]) {
-            firstProp = geocodeData.properties[0];
-          } else if (Array.isArray(geocodeData?.data?.home_search?.results) && geocodeData.data.home_search.results[0]) {
-            firstProp = geocodeData.data.home_search.results[0].property ?? geocodeData.data.home_search.results[0];
-          } else if (Array.isArray(geocodeData?.data?.results) && geocodeData.data.results[0]) {
-            firstProp = geocodeData.data.results[0].property ?? geocodeData.data.results[0];
-          }
-          
-          if (firstProp?.location?.coordinate) {
-            subjectLat = firstProp.location.coordinate.lat ?? firstProp.location.coordinate.latitude;
-            subjectLon = firstProp.location.coordinate.lon ?? firstProp.location.coordinate.longitude;
-            console.log('Subject property coordinates:', subjectLat, subjectLon);
-          } else if (firstProp?.location?.address?.coordinate) {
-            subjectLat = firstProp.location.address.coordinate.lat ?? firstProp.location.address.coordinate.latitude;
-            subjectLon = firstProp.location.address.coordinate.lon ?? firstProp.location.address.coordinate.longitude;
-            console.log('Subject property coordinates (from address):', subjectLat, subjectLon);
+
+      // Prefer geocoding the exact subject address when available
+      const geocodeTarget = rawAddress || primaryLocation;
+
+      if (geocodeTarget) {
+        // Try Nominatim (OSM) first for precise coordinates of the subject address
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geocodeTarget)}&format=json&limit=1`;
+        console.log('Geocoding with Nominatim:', nominatimUrl);
+        try {
+          const nomRes = await fetch(nominatimUrl, {
+            headers: { 'User-Agent': 'LovableApp/1.0' }
+          });
+          if (nomRes.ok) {
+            const nomData = await nomRes.json();
+            if (Array.isArray(nomData) && nomData[0]?.lat && nomData[0]?.lon) {
+              subjectLat = parseFloat(nomData[0].lat);
+              subjectLon = parseFloat(nomData[0].lon);
+              console.log('Subject coordinates (Nominatim):', subjectLat, subjectLon);
+            }
           } else {
-            console.log('Could not find coordinates in geocode response');
+            console.warn('Nominatim geocode failed with status:', nomRes.status);
           }
-        } else {
-          console.warn('Geocode response not OK:', geocodeResponse.status);
+        } catch (e) {
+          console.warn('Nominatim geocode error:', e);
         }
-      } catch (e) {
-        console.warn('Could not geocode subject address:', e);
+
+        // Fallback: use Realtor sold search to get a nearby coordinate
+        if (!subjectLat || !subjectLon) {
+          const geocodeUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(geocodeTarget)}&limit=1`;
+          console.log('Realtor geocoding fallback:', geocodeUrl);
+          try {
+            const geocodeResponse = await fetch(geocodeUrl, options);
+            console.log('Realtor geocode response status:', geocodeResponse.status);
+            if (geocodeResponse.ok) {
+              const geocodeData = await geocodeResponse.json();
+              let firstProp: any = null;
+              if (Array.isArray(geocodeData?.properties) && geocodeData.properties[0]) {
+                firstProp = geocodeData.properties[0];
+              } else if (Array.isArray(geocodeData?.data?.home_search?.results) && geocodeData.data.home_search.results[0]) {
+                firstProp = geocodeData.data.home_search.results[0].property ?? geocodeData.data.home_search.results[0];
+              } else if (Array.isArray(geocodeData?.data?.results) && geocodeData.data.results[0]) {
+                firstProp = geocodeData.data.results[0].property ?? geocodeData.data.results[0];
+              }
+              if (firstProp?.location?.coordinate) {
+                subjectLat = firstProp.location.coordinate.lat ?? firstProp.location.coordinate.latitude;
+                subjectLon = firstProp.location.coordinate.lon ?? firstProp.location.coordinate.longitude;
+                console.log('Subject coordinates (Realtor):', subjectLat, subjectLon);
+              } else if (firstProp?.location?.address?.coordinate) {
+                subjectLat = firstProp.location.address.coordinate.lat ?? firstProp.location.address.coordinate.latitude;
+                subjectLon = firstProp.location.address.coordinate.lon ?? firstProp.location.address.coordinate.longitude;
+                console.log('Subject coordinates (Realtor address):', subjectLat, subjectLon);
+              }
+            }
+          } catch (e) {
+            console.warn('Realtor geocode fallback error:', e);
+          }
+        }
       }
-      
-      // If geocoding failed, try to use the search location center
+
       if (!subjectLat || !subjectLon) {
-        console.log('Geocoding failed, will calculate distances from first result');
+        console.log('Subject coordinates unavailable after geocoding; distances may be approximate or null');
       }
 
       // Build a location optimized for the API: prefer ZIP, else city/state from address
@@ -244,7 +265,7 @@ serve(async (req) => {
         }
 
         // If we didn't get enough, expand to 180 days
-        if (processedProperties.length < desiredMinimum) {
+        if (processedProperties.length < desiredTarget) {
           console.log('Not enough properties within 90 days, expanding to 180 days');
           const soldDateMin180 = new Date();
           soldDateMin180.setDate(soldDateMin180.getDate() - fallbackPeriod);
