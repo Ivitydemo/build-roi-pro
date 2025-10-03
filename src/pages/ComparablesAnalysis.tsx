@@ -578,32 +578,46 @@ const ComparablesAnalysis = () => {
                             )}
                             {(
                               (property.listing_data as any)?.subdivision_name ||
+                              (property.listing_data as any)?.subdivisionName ||
                               (property.listing_data as any)?.location?.address?.subdivision ||
                               (property.listing_data as any)?.location?.subdivision ||
+                              (property.listing_data as any)?.location?.neighborhood ||
+                              (property.listing_data as any)?.address?.subdivision ||
+                              (property.listing_data as any)?.community?.name ||
+                              (property.listing_data as any)?.neighborhood?.name ||
                               (property.listing_data as any)?.subdivision
                             ) && (
                               <Badge variant="secondary" className="font-medium">
                                 Subdivision: {String(
                                   (property.listing_data as any)?.subdivision_name ||
+                                  (property.listing_data as any)?.subdivisionName ||
                                   (property.listing_data as any)?.location?.address?.subdivision ||
                                   (property.listing_data as any)?.location?.subdivision ||
+                                  (property.listing_data as any)?.location?.neighborhood ||
+                                  (property.listing_data as any)?.address?.subdivision ||
+                                  (property.listing_data as any)?.community?.name ||
+                                  (property.listing_data as any)?.neighborhood?.name ||
                                   (property.listing_data as any)?.subdivision
                                 ).trim()}
                               </Badge>
                             )}
-                            {typeof property.listing_data?.price === 'number' && (
+                            {Number((property.listing_data as any)?.price ?? (property.listing_data as any)?.sale_price ?? (property.listing_data as any)?.sold_price ?? (property.listing_data as any)?.list_price) > 0 && (
                               <span className="font-medium">
-                                ${property.listing_data.price.toLocaleString()}
+                                ${Number((property.listing_data as any)?.price ?? (property.listing_data as any)?.sale_price ?? (property.listing_data as any)?.sold_price ?? (property.listing_data as any)?.list_price).toLocaleString()}
                               </span>
                             )}
-                            {typeof property.listing_data?.sqft === 'number' && (
+                            {Number((property.listing_data as any)?.sqft ?? (property.listing_data as any)?.living_area ?? (property.listing_data as any)?.square_feet ?? (property.listing_data as any)?.square_footage) > 0 && (
                               <span>
-                                {property.listing_data.sqft.toLocaleString()} sqft
+                                {Number((property.listing_data as any)?.sqft ?? (property.listing_data as any)?.living_area ?? (property.listing_data as any)?.square_feet ?? (property.listing_data as any)?.square_footage).toLocaleString()} sqft
                               </span>
                             )}
-                            {typeof property.listing_data?.price === 'number' && typeof property.listing_data?.sqft === 'number' && property.listing_data.sqft > 0 && (
+                            {Number((property.listing_data as any)?.price ?? (property.listing_data as any)?.sale_price ?? (property.listing_data as any)?.sold_price ?? (property.listing_data as any)?.list_price) > 0 &&
+                             Number((property.listing_data as any)?.sqft ?? (property.listing_data as any)?.living_area ?? (property.listing_data as any)?.square_feet ?? (property.listing_data as any)?.square_footage) > 0 && (
                               <Badge variant="outline" className="font-semibold">
-                                ${Math.round(property.listing_data.price / property.listing_data.sqft).toLocaleString()}/sqft
+                                ${Math.round(
+                                  Number((property.listing_data as any)?.price ?? (property.listing_data as any)?.sale_price ?? (property.listing_data as any)?.sold_price ?? (property.listing_data as any)?.list_price) /
+                                  Number((property.listing_data as any)?.sqft ?? (property.listing_data as any)?.living_area ?? (property.listing_data as any)?.square_feet ?? (property.listing_data as any)?.square_footage)
+                                ).toLocaleString()}/sqft
                               </Badge>
                             )}
                             {property.listing_data?.beds && property.listing_data?.baths && (
