@@ -68,6 +68,7 @@ serve(async (req) => {
     const desiredMinimum = 3;
 
     const baseRadius = parseFloat(String(searchParams.radius ?? '1'));
+    const radiusTolerance = Math.max(0.25, baseRadius * 0.1); // buffer for geocode variance
     const preferredPeriod = 90; // Prefer 90 days
     const fallbackPeriod = 180; // Fall back to 180 days if needed
 
@@ -153,7 +154,11 @@ serve(async (req) => {
 
       // Build a location optimized for the API: prefer ZIP, else city/state from address
       const locationForSearch = (() => {
+        if (rawAddress) return rawAddress;
         if (zipFromAddress) return zipFromAddress;
+        if (searchParams?.subdivisionName && searchParams?.city && searchParams?.state) {
+          return `${searchParams.subdivisionName}, ${searchParams.city}, ${searchParams.state}`;
+        }
         const parts = primaryLocation.split(',').map((p: string) => p.trim()).filter(Boolean);
         if (parts.length >= 2) {
           const statePart = parts[parts.length - 1];
@@ -168,7 +173,7 @@ serve(async (req) => {
       soldDateMin90.setDate(soldDateMin90.getDate() - preferredPeriod);
       const soldDateMinStr90 = soldDateMin90.toISOString().split('T')[0];
 
-      const apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr90}&limit=25&radius=${baseRadius}`;
+      const apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr90}&limit=100&radius=${baseRadius}`;
       console.log('Fetching from (90 days):', apiUrl);
 
       const listingsResponse = await fetch(apiUrl, options);
@@ -219,7 +224,7 @@ serve(async (req) => {
             if (propLat && propLon) {
               distance = getDistance(subjectLat, subjectLon, propLat, propLon);
               console.log(`Distance calculated: ${distance?.toFixed(2)} miles for ${line}`);
-              if (Number.isFinite(distance) && distance > baseRadius) { continue; }
+              if (Number.isFinite(distance) && distance > (baseRadius + radiusTolerance)) { continue; }
             }
           }
 
@@ -262,8 +267,7 @@ serve(async (req) => {
             seenKeys.add(key);
           }
 
-          // Stop when we hit target
-          if (processedProperties.length >= desiredTarget) break;
+          // Continue scanning all to pick the closest after sorting
         }
 
         // If we didn't get enough, expand to 180 days
@@ -272,7 +276,7 @@ serve(async (req) => {
           const soldDateMin180 = new Date();
           soldDateMin180.setDate(soldDateMin180.getDate() - fallbackPeriod);
           const soldDateMinStr180 = soldDateMin180.toISOString().split('T')[0];
-          const expandedUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr180}&limit=25&radius=${baseRadius}`;
+          const expandedUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr180}&limit=100&radius=${baseRadius}`;
           
           const expandedResponse = await fetch(expandedUrl, options);
           if (expandedResponse.ok) {
@@ -304,7 +308,7 @@ serve(async (req) => {
                 const propLon = propCoord.lon ?? propCoord.longitude;
                 if (propLat && propLon) {
                   distance = getDistance(subjectLat, subjectLon, propLat, propLon);
-                  if (Number.isFinite(distance) && distance > baseRadius) { continue; }
+                  if (Number.isFinite(distance) && distance > (baseRadius + radiusTolerance)) { continue; }
                 }
               }
 
@@ -341,7 +345,7 @@ serve(async (req) => {
                 seenKeys.add(key);
               }
 
-              if (processedProperties.length >= desiredTarget) break;
+              // Continue scanning all to pick the closest after sorting
             }
           }
         }
