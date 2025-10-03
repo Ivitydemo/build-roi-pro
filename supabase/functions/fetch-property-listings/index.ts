@@ -61,13 +61,15 @@ serve(async (req) => {
     const seenKeys = new Set<string>();
     const processedProperties: any[] = [];
 
-    // Use only the FIRST location candidate (most specific)
-    const primaryLocation = candidates[0];
+    // Try city/state first (more reliable), then full address if that fails
+    let primaryLocation = candidates.find(c => c.includes(',') && !c.match(/^\d/)); // City, State format
+    if (!primaryLocation) primaryLocation = candidates[0];
     
     if (!primaryLocation) {
       console.warn('No valid location candidate found');
       properties = [];
     } else {
+      console.log('All location candidates:', candidates);
       console.log('Using primary location:', primaryLocation);
       
       // Try with base radius first
@@ -84,7 +86,11 @@ serve(async (req) => {
       if (listingsResponse.ok) {
         const listingsData = await listingsResponse.json();
         const currentProps: any[] = listingsData?.properties || [];
+        console.log('API Response status:', listingsData?.status);
         console.log('Properties found:', currentProps.length);
+        if (currentProps.length === 0) {
+          console.log('Full API response:', JSON.stringify(listingsData).slice(0, 500));
+        }
 
         for (const property of currentProps) {
           const locInfo = property.location || {};
