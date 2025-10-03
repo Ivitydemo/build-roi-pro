@@ -412,7 +412,7 @@ serve(async (req) => {
 
     // Take only the top 4 most relevant
     const selectedProperties = processedProperties.slice(0, desiredTarget).map(p => {
-      const { _distance, _soldDate, ...rest } = p;
+      const { _distance, _soldDate, _inSubdivision, ...rest } = p;
       return rest;
     });
 
