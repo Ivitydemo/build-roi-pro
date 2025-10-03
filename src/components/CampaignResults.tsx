@@ -216,8 +216,35 @@ export const CampaignResults = ({ builderId, refreshTrigger }: CampaignResultsPr
                             <div className="flex items-center gap-2 mb-2">
                               <MapPin className="h-4 w-4" />
                               <span className="font-medium">{property.address}</span>
+                              {property.listing_data?.distance_miles && (
+                                <Badge variant="secondary" className="ml-2">
+                                  {property.listing_data.distance_miles.toFixed(2)} mi
+                                </Badge>
+                              )}
                             </div>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              {property.listing_data?.sold_date && (
+                                <span className="font-medium">
+                                  Sold: {new Date(property.listing_data.sold_date).toLocaleDateString()}
+                                </span>
+                              )}
+                              {property.listing_data?.price && (
+                                <span>
+                                  ${property.listing_data.price.toLocaleString()}
+                                </span>
+                              )}
+                              {property.listing_data?.beds && property.listing_data?.baths && (
+                                <span>
+                                  {property.listing_data.beds} bed • {property.listing_data.baths} bath
+                                </span>
+                              )}
+                              {property.listing_data?.sqft && (
+                                <span>
+                                  {property.listing_data.sqft.toLocaleString()} sqft
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                               <span className="flex items-center gap-1">
                                 <Image className="h-3 w-3" />
                                 {property.photo_urls?.length || 0} photos

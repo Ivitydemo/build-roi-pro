@@ -51,12 +51,25 @@ serve(async (req) => {
       } as Record<string, string>
     };
 
-    // Optimized approach: target 4 comps, minimum 3, with minimal API calls
+    // Helper function to calculate distance between two coordinates (Haversine formula)
+    function getDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+      const R = 3959; // Earth's radius in miles
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    // Optimized approach: target 4 comps, prefer within 90 days and close distance
     const desiredTarget = 4;
     const desiredMinimum = 3;
 
     const baseRadius = parseFloat(String(searchParams.radius ?? '1'));
-    const basePeriod = parseInt(String(searchParams.timePeriod ?? '180'));
+    const preferredPeriod = 90; // Prefer 90 days
+    const fallbackPeriod = 180; // Fall back to 180 days if needed
 
     const seenKeys = new Set<string>();
     const processedProperties: any[] = [];
@@ -72,10 +85,31 @@ serve(async (req) => {
       console.log('All location candidates:', candidates);
       console.log('Using primary location:', primaryLocation);
       
-      // Try with base radius first
-      const soldDateMin = new Date();
-      soldDateMin.setDate(soldDateMin.getDate() - basePeriod);
-      const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
+      // Get subject property coordinates
+      let subjectLat: number | null = null;
+      let subjectLon: number | null = null;
+      
+      // First try to geocode the subject address to get its coordinates
+      const geocodeUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(primaryLocation)}&limit=1`;
+      try {
+        const geocodeResponse = await fetch(geocodeUrl, options);
+        if (geocodeResponse.ok) {
+          const geocodeData = await geocodeResponse.json();
+          let firstProp: any = null;
+          if (Array.isArray(geocodeData?.properties) && geocodeData.properties[0]) {
+            firstProp = geocodeData.properties[0];
+          } else if (Array.isArray(geocodeData?.data?.home_search?.results) && geocodeData.data.home_search.results[0]) {
+            firstProp = geocodeData.data.home_search.results[0].property ?? geocodeData.data.home_search.results[0];
+          }
+          if (firstProp?.location?.coordinate) {
+            subjectLat = firstProp.location.coordinate.lat ?? firstProp.location.coordinate.latitude;
+            subjectLon = firstProp.location.coordinate.lon ?? firstProp.location.coordinate.longitude;
+            console.log('Subject property coordinates:', subjectLat, subjectLon);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not geocode subject address:', e);
+      }
 
       // Build a location optimized for the API: prefer ZIP, else city/state from address
       const locationForSearch = (() => {
@@ -89,9 +123,13 @@ serve(async (req) => {
         return primaryLocation;
       })();
 
-      // Only request what we need (limit=25 instead of 100)
-      const apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr}&limit=25&radius=${baseRadius}`;
-      console.log('Fetching from:', apiUrl);
+      // First try: 90 days, base radius
+      const soldDateMin90 = new Date();
+      soldDateMin90.setDate(soldDateMin90.getDate() - preferredPeriod);
+      const soldDateMinStr90 = soldDateMin90.toISOString().split('T')[0];
+
+      const apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr90}&limit=25&radius=${baseRadius}`;
+      console.log('Fetching from (90 days):', apiUrl);
 
       const listingsResponse = await fetch(apiUrl, options);
       
@@ -121,6 +159,17 @@ serve(async (req) => {
           const key = `${line}|${zip}`;
           if (seenKeys.has(key)) continue;
 
+          // Calculate distance if we have coordinates
+          let distance: number | null = null;
+          const propCoord = locInfo.coordinate ?? property.coordinate;
+          if (subjectLat && subjectLon && propCoord) {
+            const propLat = propCoord.lat ?? propCoord.latitude;
+            const propLon = propCoord.lon ?? propCoord.longitude;
+            if (propLat && propLon) {
+              distance = getDistance(subjectLat, subjectLon, propLat, propLon);
+            }
+          }
+
           // Extract photo URLs
           const photoUrls: string[] = [];
           if (property.photos && Array.isArray(property.photos)) {
@@ -136,15 +185,24 @@ serve(async (req) => {
           }
 
           if (photoUrls.length >= 1) {
+            // Add distance and sold_date to listing_data
+            const enrichedListingData = {
+              ...property,
+              distance_miles: distance,
+              sold_date: property.sold_date ?? property.list_date ?? property.last_sold_date
+            };
+            
             const targetedProperty = {
               campaign_id: campaignId,
               address: line || 'Unknown Address',
               city: (addrRaw.city ?? addrRaw.locality) || null,
               state: (addrRaw.state_code ?? addrRaw.state) || null,
               zip_code: (addrRaw.postal_code ?? addrRaw.zip_code) || null,
-              listing_data: property,
+              listing_data: enrichedListingData,
               photo_urls: photoUrls,
-              analysis_status: 'pending'
+              analysis_status: 'pending',
+              _distance: distance, // Store for sorting
+              _soldDate: enrichedListingData.sold_date
             };
             processedProperties.push(targetedProperty);
             seenKeys.add(key);
@@ -154,13 +212,13 @@ serve(async (req) => {
           if (processedProperties.length >= desiredTarget) break;
         }
 
-        // If we didn't get enough, try expanding radius once
+        // If we didn't get enough, expand to 180 days
         if (processedProperties.length < desiredMinimum) {
-          console.log('Not enough properties, expanding radius to 3 miles and 365 days');
-          const soldDateMin2 = new Date();
-          soldDateMin2.setDate(soldDateMin2.getDate() - 365);
-          const soldDateMinStr2 = soldDateMin2.toISOString().split('T')[0];
-          const expandedUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr2}&limit=25&radius=3`;
+          console.log('Not enough properties within 90 days, expanding to 180 days');
+          const soldDateMin180 = new Date();
+          soldDateMin180.setDate(soldDateMin180.getDate() - fallbackPeriod);
+          const soldDateMinStr180 = soldDateMin180.toISOString().split('T')[0];
+          const expandedUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr180}&limit=25&radius=${baseRadius}`;
           
           const expandedResponse = await fetch(expandedUrl, options);
           if (expandedResponse.ok) {
@@ -184,6 +242,17 @@ serve(async (req) => {
               
               if (seenKeys.has(key)) continue;
 
+              // Calculate distance
+              let distance: number | null = null;
+              const propCoord = locInfo.coordinate ?? property.coordinate;
+              if (subjectLat && subjectLon && propCoord) {
+                const propLat = propCoord.lat ?? propCoord.latitude;
+                const propLon = propCoord.lon ?? propCoord.longitude;
+                if (propLat && propLon) {
+                  distance = getDistance(subjectLat, subjectLon, propLat, propLon);
+                }
+              }
+
               const photoUrls: string[] = [];
               if (property.photos && Array.isArray(property.photos)) {
                 for (const photo of property.photos) {
@@ -195,15 +264,23 @@ serve(async (req) => {
               }
 
               if (photoUrls.length >= 1) {
+                const enrichedListingData = {
+                  ...property,
+                  distance_miles: distance,
+                  sold_date: property.sold_date ?? property.list_date ?? property.last_sold_date
+                };
+                
                 processedProperties.push({
                   campaign_id: campaignId,
                   address: line2 || 'Unknown Address',
                   city: (addrRaw2.city ?? addrRaw2.locality) || null,
                   state: (addrRaw2.state_code ?? addrRaw2.state) || null,
                   zip_code: (addrRaw2.postal_code ?? addrRaw2.zip_code) || null,
-                  listing_data: property,
+                  listing_data: enrichedListingData,
                   photo_urls: photoUrls,
-                  analysis_status: 'pending'
+                  analysis_status: 'pending',
+                  _distance: distance,
+                  _soldDate: enrichedListingData.sold_date
                 });
                 seenKeys.add(key);
               }
@@ -224,12 +301,32 @@ serve(async (req) => {
 
     console.log('Processed properties with photos:', processedProperties.length);
 
+    // Sort by distance first (closest first), then by date (most recent first)
+    processedProperties.sort((a, b) => {
+      const distA = a._distance ?? 999;
+      const distB = b._distance ?? 999;
+      if (Math.abs(distA - distB) > 0.1) {
+        return distA - distB; // Closer is better
+      }
+      // If distances are similar, prefer more recent sales
+      const dateA = a._soldDate ? new Date(a._soldDate).getTime() : 0;
+      const dateB = b._soldDate ? new Date(b._soldDate).getTime() : 0;
+      return dateB - dateA; // More recent is better
+    });
+
+    // Take only the top 4 most relevant
+    const selectedProperties = processedProperties.slice(0, desiredTarget).map(p => {
+      const { _distance, _soldDate, ...rest } = p;
+      return rest;
+    });
+
+    console.log('Selected top properties:', selectedProperties.length);
 
     // Insert all properties into the database
-    if (processedProperties.length > 0) {
+    if (selectedProperties.length > 0) {
       const { data: insertedProperties, error: insertError } = await supabase
         .from('targeted_properties')
-        .insert(processedProperties)
+        .insert(selectedProperties)
         .select();
 
       if (insertError) {
@@ -243,7 +340,7 @@ serve(async (req) => {
       const { error: updateError } = await supabase
         .from('property_search_campaigns')
         .update({ 
-          total_properties: processedProperties.length,
+          total_properties: selectedProperties.length,
           status: 'completed'
         })
         .eq('id', campaignId);
@@ -254,7 +351,7 @@ serve(async (req) => {
 
       return new Response(JSON.stringify({ 
         success: true, 
-        propertiesFound: processedProperties.length,
+        propertiesFound: selectedProperties.length,
         properties: insertedProperties
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
