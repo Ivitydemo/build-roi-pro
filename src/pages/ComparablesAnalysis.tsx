@@ -580,16 +580,14 @@ const ComparablesAnalysis = () => {
                               (property.listing_data as any)?.subdivision_name ||
                               (property.listing_data as any)?.location?.address?.subdivision ||
                               (property.listing_data as any)?.location?.subdivision ||
-                              (property.listing_data as any)?.subdivision ||
-                              (searchMode === 'subdivision' ? subdivision : null)
+                              (property.listing_data as any)?.subdivision
                             ) && (
                               <Badge variant="secondary" className="font-medium">
                                 Subdivision: {String(
                                   (property.listing_data as any)?.subdivision_name ||
                                   (property.listing_data as any)?.location?.address?.subdivision ||
                                   (property.listing_data as any)?.location?.subdivision ||
-                                  (property.listing_data as any)?.subdivision ||
-                                  (searchMode === 'subdivision' ? subdivision : '')
+                                  (property.listing_data as any)?.subdivision
                                 ).trim()}
                               </Badge>
                             )}

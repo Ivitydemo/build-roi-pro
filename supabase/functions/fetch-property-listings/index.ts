@@ -99,6 +99,29 @@ serve(async (req) => {
       return R * c;
     }
 
+    // Helper: normalize and match subdivision names from structured fields
+    function normName(s: any): string {
+      return (s ?? '').toString().toLowerCase().replace(/[^a-z0-9]+/g, '').trim();
+    }
+
+    function matchSubdivisionFromFields(property: any, target: string): { matched: boolean; name?: string } {
+      const t = normName(target);
+      const candidates: Array<{ val: any }> = [
+        { val: property?.location?.address?.subdivision },
+        { val: property?.location?.subdivision },
+        { val: property?.address?.subdivision },
+        { val: property?.subdivision },
+        { val: property?.community?.name },
+        { val: property?.neighborhood?.name },
+      ];
+      for (const c of candidates) {
+        if (c.val && normName(c.val) === t) {
+          return { matched: true, name: String(c.val) };
+        }
+      }
+      return { matched: false };
+    }
+
     // Optimized approach: target 12 comps, prefer within 90 days and close distance
     const desiredTarget = 12;
     const desiredMinimum = 3;
@@ -216,12 +239,11 @@ serve(async (req) => {
           const key = `${line}|${zip}`;
           if (seenKeys.has(key)) continue;
 
-          // Subdivision hint (soft filter)
+          // Subdivision match using structured fields
           let inSubdivision = false;
           if (searchType === 'subdivision' && searchParams.subdivision) {
-            const subdivisionName = String(searchParams.subdivision).toLowerCase().trim();
-            const listingText = JSON.stringify(property).toLowerCase();
-            inSubdivision = listingText.includes(subdivisionName);
+            const res = matchSubdivisionFromFields(property, String(searchParams.subdivision));
+            inSubdivision = res.matched;
           }
 
           // Calculate distance if we have coordinates
@@ -271,14 +293,11 @@ serve(async (req) => {
               ?? property?.community?.name 
               ?? property?.neighborhood?.name 
               ?? null;
-            const inferredSubdivision = (searchType === 'subdivision' && inSubdivision && searchParams?.subdivision)
-              ? String(searchParams.subdivision).trim()
-              : null;
             const enrichedListingData = {
               ...property,
               distance_miles: distance,
               sold_date: property.sold_date ?? property.list_date ?? property.last_sold_date,
-              subdivision_name: rawSubdivision || inferredSubdivision
+              subdivision_name: rawSubdivision
             };
             
             const targetedProperty = {
@@ -332,12 +351,11 @@ serve(async (req) => {
               
               if (seenKeys.has(key)) continue;
 
-              // Subdivision hint (soft filter)
+              // Subdivision match using structured fields
               let inSubdivision2 = false;
               if (searchType === 'subdivision' && searchParams.subdivision) {
-                const subdivisionName = String(searchParams.subdivision).toLowerCase().trim();
-                const listingText = JSON.stringify(property).toLowerCase();
-                inSubdivision2 = listingText.includes(subdivisionName);
+                const res2 = matchSubdivisionFromFields(property, String(searchParams.subdivision));
+                inSubdivision2 = res2.matched;
               }
 
               // Calculate distance
@@ -370,14 +388,11 @@ serve(async (req) => {
                   ?? property?.community?.name 
                   ?? property?.neighborhood?.name 
                   ?? null;
-                const inferredSubdivision2 = (searchType === 'subdivision' && inSubdivision2 && searchParams?.subdivision)
-                  ? String(searchParams.subdivision).trim()
-                  : null;
                 const enrichedListingData = {
                   ...property,
                   distance_miles: distance,
                   sold_date: property.sold_date ?? property.list_date ?? property.last_sold_date,
-                  subdivision_name: rawSubdivision2 || inferredSubdivision2
+                  subdivision_name: rawSubdivision2
                 };
                 
                 processedProperties.push({

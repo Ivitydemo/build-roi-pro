@@ -242,8 +242,7 @@ export const CampaignResults = ({ builderId, refreshTrigger }: CampaignResultsPr
                                 property.listing_data?.subdivision_name ||
                                 property.listing_data?.location?.address?.subdivision ||
                                 property.listing_data?.location?.subdivision ||
-                                property.listing_data?.subdivision ||
-                                (campaign.search_type === 'subdivision' ? campaign.search_parameters?.subdivision : null)
+                                property.listing_data?.subdivision
                               ) && (
                                 <Badge variant="secondary" className="font-medium">
                                   Subdivision: {
@@ -251,8 +250,7 @@ export const CampaignResults = ({ builderId, refreshTrigger }: CampaignResultsPr
                                       property.listing_data?.subdivision_name ||
                                       property.listing_data?.location?.address?.subdivision ||
                                       property.listing_data?.location?.subdivision ||
-                                      property.listing_data?.subdivision ||
-                                      (campaign.search_type === 'subdivision' ? campaign.search_parameters?.subdivision : '')
+                                      property.listing_data?.subdivision
                                     ).trim()
                                   }
                                 </Badge>
