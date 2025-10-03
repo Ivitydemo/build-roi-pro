@@ -245,12 +245,16 @@ export const CampaignResults = ({ builderId, refreshTrigger }: CampaignResultsPr
                                 property.listing_data?.subdivision ||
                                 (campaign.search_type === 'subdivision' ? campaign.search_parameters?.subdivision : null)
                               ) && (
-                                <Badge variant="outline" className="font-normal">
-                                  {property.listing_data?.subdivision_name ||
-                                   property.listing_data?.location?.address?.subdivision ||
-                                   property.listing_data?.location?.subdivision ||
-                                   property.listing_data?.subdivision ||
-                                   (campaign.search_type === 'subdivision' ? campaign.search_parameters?.subdivision : null)}
+                                <Badge variant="secondary" className="font-medium">
+                                  Subdivision: {
+                                    String(
+                                      property.listing_data?.subdivision_name ||
+                                      property.listing_data?.location?.address?.subdivision ||
+                                      property.listing_data?.location?.subdivision ||
+                                      property.listing_data?.subdivision ||
+                                      (campaign.search_type === 'subdivision' ? campaign.search_parameters?.subdivision : '')
+                                    ).trim()
+                                  }
                                 </Badge>
                               )}
                               {property.listing_data?.price && (
