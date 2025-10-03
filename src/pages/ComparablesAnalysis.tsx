@@ -22,10 +22,14 @@ const ComparablesAnalysis = () => {
   const [analyzing, setAnalyzing] = useState(false);
   
   // Search criteria state
+  const [searchMode, setSearchMode] = useState<'radius' | 'neighborhood' | 'street' | 'zip'>('radius');
   const [subjectAddress, setSubjectAddress] = useState('');
   const [radius, setRadius] = useState('1');
   const [timePeriod, setTimePeriod] = useState('180'); // days
-  const [subdivision, setSubdivision] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
+  const [streetName, setStreetName] = useState('');
+  const [zipCode, setZipCode] = useState('');
+  const [cityState, setCityState] = useState('');
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -61,10 +65,35 @@ const ComparablesAnalysis = () => {
       return;
     }
 
-    if (!subjectAddress.trim()) {
+    // Validate based on search mode
+    if (searchMode === 'radius' && !subjectAddress.trim()) {
       toast({
         title: 'Missing information',
         description: 'Please enter the subject property address',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (searchMode === 'neighborhood' && !neighborhood.trim()) {
+      toast({
+        title: 'Missing information',
+        description: 'Please enter the neighborhood name',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (searchMode === 'street' && !streetName.trim()) {
+      toast({
+        title: 'Missing information',
+        description: 'Please enter the street name',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (searchMode === 'zip' && !zipCode.trim()) {
+      toast({
+        title: 'Missing information',
+        description: 'Please enter the zip code',
         variant: 'destructive'
       });
       return;
@@ -76,13 +105,38 @@ const ComparablesAnalysis = () => {
     const fetchedProperties: any[] = [];
 
     try {
-      const searchParams = { 
-        address: subjectAddress, 
-        radius,
-        timePeriod,
-        subdivisionName: subdivision
-      };
-      const campaignName = `Within ${radius}mi of ${subjectAddress}`;
+      // Build search params based on mode
+      let searchParams: any = { timePeriod };
+      let campaignName = '';
+      
+      if (searchMode === 'radius') {
+        searchParams = { 
+          address: subjectAddress, 
+          radius,
+          timePeriod
+        };
+        campaignName = `Within ${radius}mi of ${subjectAddress}`;
+      } else if (searchMode === 'neighborhood') {
+        searchParams = {
+          neighborhood,
+          cityState,
+          timePeriod
+        };
+        campaignName = `${neighborhood} neighborhood${cityState ? `, ${cityState}` : ''}`;
+      } else if (searchMode === 'street') {
+        searchParams = {
+          streetName,
+          cityState,
+          timePeriod
+        };
+        campaignName = `${streetName}${cityState ? `, ${cityState}` : ''}`;
+      } else if (searchMode === 'zip') {
+        searchParams = {
+          zipCode,
+          timePeriod
+        };
+        campaignName = `ZIP ${zipCode}`;
+      }
 
       // STEP 1: Fetch properties with photos
       toast({
@@ -94,11 +148,11 @@ const ComparablesAnalysis = () => {
       const { data: campaign, error: campaignError } = await supabase
         .from('property_search_campaigns')
         .insert({
-          builder_id: builderId,
-          campaign_name: campaignName,
-          search_type: 'radius',
-          search_parameters: searchParams,
-          status: 'running'
+        builder_id: builderId,
+        campaign_name: campaignName,
+        search_type: searchMode,
+        search_parameters: searchParams,
+        status: 'running'
         })
         .select()
         .single();
@@ -109,7 +163,7 @@ const ComparablesAnalysis = () => {
       // Fetch listings
       const { data, error } = await supabase.functions.invoke('fetch-property-listings', {
         body: {
-          searchType: 'radius',
+          searchType: searchMode,
           searchParams,
           campaignId: campaign.id
         }
@@ -338,7 +392,25 @@ const ComparablesAnalysis = () => {
               Find recently sold properties with interior photos. AI will analyze kitchens, bathrooms, and other renovations to identify what drives value in your market.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Search Mode Selector */}
+            <div className="space-y-2">
+              <Label>Search by:</Label>
+              <Select value={searchMode} onValueChange={(v: any) => setSearchMode(v)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="radius">Radius from Address</SelectItem>
+                  <SelectItem value="neighborhood">Neighborhood</SelectItem>
+                  <SelectItem value="street">Street Name</SelectItem>
+                  <SelectItem value="zip">Zip Code</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Conditional Fields based on Search Mode */}
+            {searchMode === 'radius' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2 md:col-span-2">
                 <Label>Subject Property Address</Label>
                 <Input 
@@ -364,15 +436,63 @@ const ComparablesAnalysis = () => {
                 </Select>
               </div>
 
-              <div className="space-y-2 md:col-span-2">
-                <Label>Subdivision (optional)</Label>
-                <Input
-                  value={subdivision}
-                  onChange={(e) => setSubdivision(e.target.value)}
-                  placeholder="e.g., Governors Club"
-                />
               </div>
-            </div>
+            )}
+
+            {searchMode === 'neighborhood' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Neighborhood Name</Label>
+                  <Input
+                    value={neighborhood}
+                    onChange={(e) => setNeighborhood(e.target.value)}
+                    placeholder="e.g., Taramore"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>City, State (optional)</Label>
+                  <Input
+                    value={cityState}
+                    onChange={(e) => setCityState(e.target.value)}
+                    placeholder="e.g., Brentwood, TN"
+                  />
+                </div>
+              </div>
+            )}
+
+            {searchMode === 'street' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Street Name</Label>
+                  <Input
+                    value={streetName}
+                    onChange={(e) => setStreetName(e.target.value)}
+                    placeholder="e.g., Main St"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>City, State (optional)</Label>
+                  <Input
+                    value={cityState}
+                    onChange={(e) => setCityState(e.target.value)}
+                    placeholder="e.g., Brentwood, TN"
+                  />
+                </div>
+              </div>
+            )}
+
+            {searchMode === 'zip' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Zip Code</Label>
+                  <Input
+                    value={zipCode}
+                    onChange={(e) => setZipCode(e.target.value)}
+                    placeholder="e.g., 37027"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Time Period</Label>

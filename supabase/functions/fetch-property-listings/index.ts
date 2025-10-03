@@ -32,16 +32,51 @@ serve(async (req) => {
     // Build the API request based on search type
     const apiKey = RAPIDAPI_KEY;
     
-    // Build location string for API
-    const rawAddress = (searchParams.address ?? '').toString().trim();
-    const zipFromAddress = rawAddress.match(/\b\d{5}(?:-\d{4})?\b/)?.[0]?.slice(0, 5);
-    const candidates: string[] = Array.from(new Set([
-      rawAddress || undefined,
-      (searchParams.zipCode ?? '').toString().trim() || undefined,
-      zipFromAddress,
-      [searchParams.city, searchParams.state].filter(Boolean).join(', ') || undefined,
-      searchParams.subdivisionName && [searchParams.subdivisionName, searchParams.city, searchParams.state].filter(Boolean).join(', ')
-    ].filter((v): v is string => !!v && v.length > 0)));
+    // Build location string based on search mode
+    let locationForSearch = '';
+    let useDistanceFilter = false;
+    let subjectLat: number | null = null;
+    let subjectLon: number | null = null;
+    
+    if (searchType === 'neighborhood') {
+      const neighborhood = searchParams.neighborhood || '';
+      const cityState = searchParams.cityState || '';
+      locationForSearch = cityState ? `${neighborhood}, ${cityState}` : neighborhood;
+      console.log('Neighborhood search:', locationForSearch);
+    } else if (searchType === 'street') {
+      const streetName = searchParams.streetName || '';
+      const cityState = searchParams.cityState || '';
+      locationForSearch = cityState ? `${streetName}, ${cityState}` : streetName;
+      console.log('Street search:', locationForSearch);
+    } else if (searchType === 'zip') {
+      locationForSearch = searchParams.zipCode || '';
+      console.log('Zip search:', locationForSearch);
+    } else {
+      // Radius search (original logic)
+      useDistanceFilter = true;
+      const rawAddress = (searchParams.address ?? '').toString().trim();
+      const zipFromAddress = rawAddress.match(/\b\d{5}(?:-\d{4})?\b/)?.[0]?.slice(0, 5);
+      const candidates: string[] = Array.from(new Set([
+        rawAddress || undefined,
+        (searchParams.zipCode ?? '').toString().trim() || undefined,
+        zipFromAddress,
+        [searchParams.city, searchParams.state].filter(Boolean).join(', ') || undefined
+      ].filter((v): v is string => !!v && v.length > 0)));
+      
+      const primaryLocation = candidates.find(c => c.includes(',') && !c.match(/^\d/)) || candidates[0];
+      if (!primaryLocation) {
+        console.warn('No valid location candidate found for radius search');
+        properties = [];
+      } else {
+        locationForSearch = zipFromAddress || primaryLocation;
+        console.log('Radius search from:', locationForSearch);
+      }
+    }
+    
+    if (!locationForSearch) {
+      console.warn('No location specified');
+      properties = [];
+    }
 
     const options = {
       method: 'GET',
@@ -63,35 +98,23 @@ serve(async (req) => {
       return R * c;
     }
 
-    // Optimized approach: target 4 comps, prefer within 90 days and close distance
+    // Optimized approach: target 12 comps, prefer within 90 days and close distance
     const desiredTarget = 12;
     const desiredMinimum = 3;
 
     const baseRadius = parseFloat(String(searchParams.radius ?? '1'));
-    const radiusTolerance = Math.max(0.25, baseRadius * 0.1); // buffer for geocode variance
-    const preferredPeriod = 90; // Prefer 90 days
-    const fallbackPeriod = 180; // Fall back to 180 days if needed
+    const radiusTolerance = useDistanceFilter ? Math.max(0.25, baseRadius * 0.1) : 9999;
+    const preferredPeriod = 90;
+    const fallbackPeriod = 180;
 
     const seenKeys = new Set<string>();
     const processedProperties: any[] = [];
 
-    // Try city/state first (more reliable), then full address if that fails
-    let primaryLocation = candidates.find(c => c.includes(',') && !c.match(/^\d/)); // City, State format
-    if (!primaryLocation) primaryLocation = candidates[0];
-    
-    if (!primaryLocation) {
-      console.warn('No valid location candidate found');
-      properties = [];
-    } else {
-      console.log('All location candidates:', candidates);
-      console.log('Using primary location:', primaryLocation);
-      
-      // Get subject property coordinates
-      let subjectLat: number | null = null;
-      let subjectLon: number | null = null;
-
-      // Prefer geocoding the exact subject address when available
-      const geocodeTarget = rawAddress || primaryLocation;
+    if (locationForSearch) {
+      // Geocode subject property only for radius searches
+      if (useDistanceFilter && searchType === 'radius') {
+        const rawAddress = (searchParams.address ?? '').toString().trim();
+        const geocodeTarget = rawAddress || locationForSearch;
 
       if (geocodeTarget) {
         // Try Nominatim (OSM) first for precise coordinates of the subject address
@@ -148,34 +171,18 @@ serve(async (req) => {
         }
       }
 
-      if (!subjectLat || !subjectLon) {
-        console.log('Subject coordinates unavailable after geocoding; distances may be approximate or null');
+        if (!subjectLat || !subjectLon) {
+          console.log('Subject coordinates unavailable after geocoding; distances may be approximate or null');
+        }
       }
 
-      // Build a location optimized for the API: prefer ZIP, else city/state from address
-      const locationForSearch = (() => {
-        // If a subdivision is provided, bias search to subdivision + city/state
-        if (searchParams?.subdivisionName) {
-          const parts = primaryLocation.split(',').map((p: string) => p.trim()).filter(Boolean);
-          const base = parts.length >= 2 ? `${parts[parts.length - 2]}, ${parts[parts.length - 1]}` : primaryLocation;
-          return `${searchParams.subdivisionName}, ${base}`;
-        }
-        if (zipFromAddress) return zipFromAddress;
-        const parts = primaryLocation.split(',').map((p: string) => p.trim()).filter(Boolean);
-        if (parts.length >= 2) {
-          const statePart = parts[parts.length - 1];
-          const cityPart = parts[parts.length - 2];
-          return `${cityPart}, ${statePart}`;
-        }
-        return primaryLocation;
-      })();
-
-      // First try: 90 days, base radius
+      // First try: 90 days, base radius or no radius
       const soldDateMin90 = new Date();
       soldDateMin90.setDate(soldDateMin90.getDate() - preferredPeriod);
       const soldDateMinStr90 = soldDateMin90.toISOString().split('T')[0];
 
-      const apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr90}&limit=100&radius=${baseRadius}`;
+      const apiUrlBase = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr90}&limit=100`;
+      const apiUrl = useDistanceFilter ? `${apiUrlBase}&radius=${baseRadius}` : apiUrlBase;
       console.log('Fetching from (90 days):', apiUrl);
 
       const listingsResponse = await fetch(apiUrl, options);
@@ -226,7 +233,7 @@ serve(async (req) => {
             if (propLat && propLon) {
               distance = getDistance(subjectLat, subjectLon, propLat, propLon);
               console.log(`Distance calculated: ${distance?.toFixed(2)} miles for ${line}`);
-              if (Number.isFinite(distance) && distance > (baseRadius + radiusTolerance)) { continue; }
+              if (useDistanceFilter && Number.isFinite(distance) && distance > (baseRadius + radiusTolerance)) { continue; }
             }
           }
 
@@ -277,8 +284,9 @@ serve(async (req) => {
           console.log('Not enough properties within 90 days, expanding to 180 days');
           const soldDateMin180 = new Date();
           soldDateMin180.setDate(soldDateMin180.getDate() - fallbackPeriod);
-          const soldDateMinStr180 = soldDateMin180.toISOString().split('T')[0];
-          const expandedUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr180}&limit=100&radius=${baseRadius}`;
+            const soldDateMinStr180 = soldDateMin180.toISOString().split('T')[0];
+            const expandedUrlBase = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr180}&limit=100`;
+            const expandedUrl = useDistanceFilter ? `${expandedUrlBase}&radius=${baseRadius}` : expandedUrlBase;
           
           const expandedResponse = await fetch(expandedUrl, options);
           if (expandedResponse.ok) {
@@ -310,7 +318,7 @@ serve(async (req) => {
                 const propLon = propCoord.lon ?? propCoord.longitude;
                 if (propLat && propLon) {
                   distance = getDistance(subjectLat, subjectLon, propLat, propLon);
-                  if (Number.isFinite(distance) && distance > (baseRadius + radiusTolerance)) { continue; }
+                  if (useDistanceFilter && Number.isFinite(distance) && distance > (baseRadius + radiusTolerance)) { continue; }
                 }
               }
 
