@@ -134,11 +134,21 @@ const ComparablesAnalysis = () => {
 
       if (loadError) throw loadError;
       
-      const props = properties || [];
-      setAllProperties(props);
-      fetchedProperties.push(...props);
+      const rawProps = properties || [];
+      // Sort by distance (closest first). Null distances go to the end. Tie-breaker: most recent sold date first
+      const sortedProps = [...rawProps].sort((a: any, b: any) => {
+        const distA = (a.listing_data as any)?.distance_miles ?? 9999;
+        const distB = (b.listing_data as any)?.distance_miles ?? 9999;
+        if (distA !== distB) return distA - distB;
+        const dateA = (a.listing_data as any)?.sold_date ? new Date((a.listing_data as any).sold_date).getTime() : 0;
+        const dateB = (b.listing_data as any)?.sold_date ? new Date((b.listing_data as any).sold_date).getTime() : 0;
+        return dateB - dateA;
+      });
+      
+      setAllProperties(sortedProps);
+      fetchedProperties.push(...sortedProps);
 
-      if (props.length === 0) {
+      if (sortedProps.length === 0) {
         toast({
           title: 'No properties found',
           description: 'No sold properties found nearby. Try increasing the radius or time period.',
@@ -148,19 +158,26 @@ const ComparablesAnalysis = () => {
         return;
       }
 
-      // Auto-suggest comps: target 4, minimum 3
-      const preselectCount = Math.min(4, props.length);
+      // Auto-select up to 4 comps, preferring those within last 90 days; only go outside 90 if necessary
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+      const within90 = sortedProps.filter((p: any) => {
+        const sd = (p.listing_data as any)?.sold_date;
+        return sd ? new Date(sd) >= ninetyDaysAgo : false;
+      });
+      const selection = (within90.length >= 4 ? within90.slice(0, 4) : sortedProps.slice(0, 4));
+      const preselectCount = Math.min(4, selection.length);
       if (preselectCount >= 3) {
-        const suggested = props.slice(0, preselectCount).map((p: any) => p.id);
+        const suggested = selection.slice(0, preselectCount).map((p: any) => p.id);
         setSelectedPropertyIds(new Set(suggested));
         toast({
-          title: 'Properties Selected',
-          description: `${preselectCount} properties selected. Click "Analyze" to examine interior photos and identify renovations.`
+          title: 'Closest comps selected',
+          description: `${preselectCount} closest properties selected by distance${within90.length < 4 ? ' (included some beyond 90 days to reach 4)' : ''}.`
         });
       } else {
         toast({
           title: 'Need More Properties',
-          description: `Only ${props.length} found. Try increasing radius or time period.`,
+          description: `Only ${sortedProps.length} found. Try increasing radius or time period.`,
           variant: 'destructive'
         });
       }
@@ -411,16 +428,34 @@ const ComparablesAnalysis = () => {
                           className="mt-1"
                         />
                         <div className="flex-1">
-                          <h3 className="font-semibold">{property.address}</h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{property.address}</h3>
+                            {(property.listing_data as any)?.distance_miles && (
+                              <Badge variant="secondary">
+                                {(property.listing_data as any).distance_miles.toFixed(2)} mi
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {property.city}, {property.state} {property.zip_code}
                           </p>
-                          {property.listing_data?.price && (
-                            <p className="text-sm font-medium mt-1">
-                              ${property.listing_data.price.toLocaleString()} • 
-                              {property.listing_data.beds} beds • {property.listing_data.baths} baths
-                            </p>
-                          )}
+                          <div className="text-sm text-muted-foreground mt-1 flex flex-wrap items-center gap-3">
+                            {(property.listing_data as any)?.sold_date && (
+                              <span>
+                                Sold: {new Date((property.listing_data as any).sold_date).toLocaleDateString()}
+                              </span>
+                            )}
+                            {property.listing_data?.price && (
+                              <span className="font-medium">
+                                ${property.listing_data.price.toLocaleString()}
+                              </span>
+                            )}
+                            {property.listing_data?.beds && property.listing_data?.baths && (
+                              <span>
+                                {property.listing_data.beds} beds • {property.listing_data.baths} baths
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground mt-1">
                             {property.photo_urls?.length || 0} photos available
                           </p>
