@@ -591,10 +591,20 @@ const ComparablesAnalysis = () => {
                                 ).trim()}
                               </Badge>
                             )}
-                            {property.listing_data?.price && (
+                            {typeof property.listing_data?.price === 'number' && (
                               <span className="font-medium">
                                 ${property.listing_data.price.toLocaleString()}
                               </span>
+                            )}
+                            {typeof property.listing_data?.sqft === 'number' && (
+                              <span>
+                                {property.listing_data.sqft.toLocaleString()} sqft
+                              </span>
+                            )}
+                            {typeof property.listing_data?.price === 'number' && typeof property.listing_data?.sqft === 'number' && property.listing_data.sqft > 0 && (
+                              <Badge variant="outline" className="font-semibold">
+                                ${Math.round(property.listing_data.price / property.listing_data.sqft).toLocaleString()}/sqft
+                              </Badge>
                             )}
                             {property.listing_data?.beds && property.listing_data?.baths && (
                               <span>
