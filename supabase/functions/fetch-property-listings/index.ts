@@ -77,8 +77,8 @@ serve(async (req) => {
       soldDateMin.setDate(soldDateMin.getDate() - basePeriod);
       const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
 
-      // Only request what we need (limit=10 instead of 100)
-      const apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(primaryLocation)}&sold_date_min=${soldDateMinStr}&limit=10&radius=${baseRadius}`;
+      // Use properties/list-sold endpoint for multiple results
+      const apiUrl = `https://realtor16.p.rapidapi.com/properties/list-sold?city=${encodeURIComponent('Brentwood')}&state_code=TN&offset=0&limit=10&sort=sold_date&radius=${baseRadius}`;
       console.log('Fetching from:', apiUrl);
 
       const listingsResponse = await fetch(apiUrl, options);
@@ -134,8 +134,8 @@ serve(async (req) => {
 
         // If we didn't get enough, try expanding radius once
         if (processedProperties.length < desiredMinimum) {
-          console.log('Not enough properties, expanding radius to 3 miles');
-          const expandedUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(primaryLocation)}&sold_date_min=${soldDateMinStr}&limit=10&radius=3`;
+          console.log('Not enough properties, expanding radius to 10 miles');
+          const expandedUrl = `https://realtor16.p.rapidapi.com/properties/list-sold?city=${encodeURIComponent('Brentwood')}&state_code=TN&offset=0&limit=20&sort=sold_date&radius=10`;
           
           const expandedResponse = await fetch(expandedUrl, options);
           if (expandedResponse.ok) {
