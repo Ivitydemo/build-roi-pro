@@ -576,6 +576,23 @@ const ComparablesAnalysis = () => {
                                 Sold: {new Date((property.listing_data as any).sold_date).toLocaleDateString()}
                               </span>
                             )}
+                            {(
+                              (property.listing_data as any)?.subdivision_name ||
+                              (property.listing_data as any)?.location?.address?.subdivision ||
+                              (property.listing_data as any)?.location?.subdivision ||
+                              (property.listing_data as any)?.subdivision ||
+                              (searchMode === 'subdivision' ? subdivision : null)
+                            ) && (
+                              <Badge variant="secondary" className="font-medium">
+                                Subdivision: {String(
+                                  (property.listing_data as any)?.subdivision_name ||
+                                  (property.listing_data as any)?.location?.address?.subdivision ||
+                                  (property.listing_data as any)?.location?.subdivision ||
+                                  (property.listing_data as any)?.subdivision ||
+                                  (searchMode === 'subdivision' ? subdivision : '')
+                                ).trim()}
+                              </Badge>
+                            )}
                             {property.listing_data?.price && (
                               <span className="font-medium">
                                 ${property.listing_data.price.toLocaleString()}
