@@ -51,116 +51,134 @@ serve(async (req) => {
       } as Record<string, string>
     };
 
-    // Attempt to fetch enough sold comps with automatic fallbacks
-    // Goal: target 4 comps, minimum 3
+    // Optimized approach: target 4 comps, minimum 3, with minimal API calls
     const desiredTarget = 4;
     const desiredMinimum = 3;
 
     const baseRadius = parseFloat(String(searchParams.radius ?? '1'));
-    const uniqueRadii = Array.from(new Set([
-      baseRadius,
-      1,
-      2,
-      3,
-      5,
-    ].filter((r) => !isNaN(r) && r > 0))).sort((a, b) => a - b);
-
     const basePeriod = parseInt(String(searchParams.timePeriod ?? '180'));
-    const uniquePeriods = Array.from(new Set([
-      basePeriod,
-      365,
-    ])).sort((a, b) => a - b);
 
-    const attemptDetails: Array<{ radius: number; period: number; rawCount: number; withPhotos: number }> = [];
-
-    // We'll dedupe properties across attempts using an address key
     const seenKeys = new Set<string>();
     const processedProperties: any[] = [];
 
-    let done = false;
-    for (const loc of candidates) {
-      console.log('Trying location candidate:', loc);
-      for (const period of uniquePeriods) {
-        const soldDateMin = new Date();
-        soldDateMin.setDate(soldDateMin.getDate() - period);
-        const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
+    // Use only the FIRST location candidate (most specific)
+    const primaryLocation = candidates[0];
+    
+    if (!primaryLocation) {
+      console.warn('No valid location candidate found');
+      properties = [];
+    } else {
+      console.log('Using primary location:', primaryLocation);
+      
+      // Try with base radius first
+      const soldDateMin = new Date();
+      soldDateMin.setDate(soldDateMin.getDate() - basePeriod);
+      const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
 
-        for (const r of uniqueRadii) {
-          const apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(loc)}&sold_date_min=${soldDateMinStr}&limit=100&radius=${r}`;
-          console.log('Fetching from:', apiUrl);
+      // Only request what we need (limit=10 instead of 100)
+      const apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(primaryLocation)}&sold_date_min=${soldDateMinStr}&limit=10&radius=${baseRadius}`;
+      console.log('Fetching from:', apiUrl);
 
-          const listingsResponse = await fetch(apiUrl, options);
-          if (!listingsResponse.ok) {
-            const status = listingsResponse.status;
-            const bodyText = await listingsResponse.text();
-            console.error('API error:', status, bodyText);
-            if (status === 429) {
-              quotaExceeded = true;
+      const listingsResponse = await fetch(apiUrl, options);
+      
+      if (listingsResponse.ok) {
+        const listingsData = await listingsResponse.json();
+        const currentProps: any[] = listingsData?.properties || [];
+        console.log('Properties found:', currentProps.length);
+
+        for (const property of currentProps) {
+          const locInfo = property.location || {};
+          const addr = locInfo.address || {};
+
+          const key = `${addr.line ?? ''}|${addr.postal_code ?? ''}`;
+          if (seenKeys.has(key)) continue;
+
+          // Extract photo URLs
+          const photoUrls: string[] = [];
+          if (property.photos && Array.isArray(property.photos)) {
+            for (const photo of property.photos) {
+              if (photo?.href) photoUrls.push(photo.href);
             }
-            continue; // try next attempt
+          }
+          if (property.primary_photo?.href && !photoUrls.includes(property.primary_photo.href)) {
+            photoUrls.unshift(property.primary_photo.href);
+          }
+          if (property.thumbnail && !photoUrls.includes(property.thumbnail)) {
+            photoUrls.push(property.thumbnail);
           }
 
-          const listingsData = await listingsResponse.json();
-          const currentProps: any[] = listingsData?.properties || [];
-          console.log('Raw properties found:', currentProps.length, 'for loc:', loc, 'radius:', r, 'period:', period);
-
-          let withPhotosCount = 0;
-
-          for (const property of currentProps) {
-            const locInfo = property.location || {};
-            const addr = locInfo.address || {};
-
-            // Build a natural dedupe key
-            const key = `${addr.line ?? ''}|${addr.postal_code ?? ''}`;
-            if (seenKeys.has(key)) continue;
-
-            // Extract photo URLs
-            const photoUrls: string[] = [];
-            if (property.photos && Array.isArray(property.photos)) {
-              for (const photo of property.photos) {
-                if (photo?.href) photoUrls.push(photo.href);
-              }
-            }
-            if (property.primary_photo?.href && !photoUrls.includes(property.primary_photo.href)) {
-              photoUrls.unshift(property.primary_photo.href);
-            }
-            if (property.thumbnail && !photoUrls.includes(property.thumbnail)) {
-              photoUrls.push(property.thumbnail);
-            }
-
-            if (photoUrls.length >= 1) {
-              withPhotosCount++;
-              const targetedProperty = {
-                campaign_id: campaignId,
-                address: addr.line || 'Unknown Address',
-                city: addr.city || null,
-                state: addr.state_code || null,
-                zip_code: addr.postal_code || null,
-                listing_data: property,
-                photo_urls: photoUrls,
-                analysis_status: 'pending'
-              };
-              processedProperties.push(targetedProperty);
-              seenKeys.add(key);
-            }
-
-            // Stop early if we hit the target
-            if (processedProperties.length >= desiredTarget) break;
+          if (photoUrls.length >= 1) {
+            const targetedProperty = {
+              campaign_id: campaignId,
+              address: addr.line || 'Unknown Address',
+              city: addr.city || null,
+              state: addr.state_code || null,
+              zip_code: addr.postal_code || null,
+              listing_data: property,
+              photo_urls: photoUrls,
+              analysis_status: 'pending'
+            };
+            processedProperties.push(targetedProperty);
+            seenKeys.add(key);
           }
 
-          attemptDetails.push({ radius: r, period, rawCount: currentProps.length, withPhotos: withPhotosCount });
-
-          // If we already have the minimum, we can stop trying larger searches
-          if (processedProperties.length >= desiredMinimum) {
-            done = true;
-            break;
-          }
+          // Stop when we hit target
+          if (processedProperties.length >= desiredTarget) break;
         }
 
-        if (done) break;
-      }
+        // If we didn't get enough, try expanding radius once
+        if (processedProperties.length < desiredMinimum) {
+          console.log('Not enough properties, expanding radius to 3 miles');
+          const expandedUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(primaryLocation)}&sold_date_min=${soldDateMinStr}&limit=10&radius=3`;
+          
+          const expandedResponse = await fetch(expandedUrl, options);
+          if (expandedResponse.ok) {
+            const expandedData = await expandedResponse.json();
+            const expandedProps: any[] = expandedData?.properties || [];
+            console.log('Expanded search found:', expandedProps.length);
 
-      if (done) break;
+            for (const property of expandedProps) {
+              const locInfo = property.location || {};
+              const addr = locInfo.address || {};
+              const key = `${addr.line ?? ''}|${addr.postal_code ?? ''}`;
+              
+              if (seenKeys.has(key)) continue;
+
+              const photoUrls: string[] = [];
+              if (property.photos && Array.isArray(property.photos)) {
+                for (const photo of property.photos) {
+                  if (photo?.href) photoUrls.push(photo.href);
+                }
+              }
+              if (property.primary_photo?.href && !photoUrls.includes(property.primary_photo.href)) {
+                photoUrls.unshift(property.primary_photo.href);
+              }
+
+              if (photoUrls.length >= 1) {
+                processedProperties.push({
+                  campaign_id: campaignId,
+                  address: addr.line || 'Unknown Address',
+                  city: addr.city || null,
+                  state: addr.state_code || null,
+                  zip_code: addr.postal_code || null,
+                  listing_data: property,
+                  photo_urls: photoUrls,
+                  analysis_status: 'pending'
+                });
+                seenKeys.add(key);
+              }
+
+              if (processedProperties.length >= desiredTarget) break;
+            }
+          }
+        }
+      } else {
+        const status = listingsResponse.status;
+        console.error('API error:', status);
+        if (status === 429) {
+          quotaExceeded = true;
+        }
+      }
     }
 
 
