@@ -39,6 +39,7 @@ serve(async (req) => {
     let subjectLon: number | null = null;
     
     if (searchType === 'subdivision') {
+      useDistanceFilter = true;
       const subdivision = searchParams.subdivision || '';
       const cityState = searchParams.cityState || '';
       locationForSearch = cityState ? `${subdivision}, ${cityState}` : subdivision;
@@ -111,10 +112,12 @@ serve(async (req) => {
     const processedProperties: any[] = [];
 
     if (locationForSearch) {
-      // Geocode subject property only for radius searches
-      if (useDistanceFilter && searchType === 'radius') {
-        const rawAddress = (searchParams.address ?? '').toString().trim();
-        const geocodeTarget = rawAddress || locationForSearch;
+      // Geocode subject coordinates when distance filter is used (radius or subdivision)
+      if (useDistanceFilter) {
+        const rawAddressStr = (searchParams.address ?? '').toString().trim();
+        const geocodeTarget = searchType === 'radius'
+          ? (rawAddressStr || locationForSearch)
+          : locationForSearch;
 
       if (geocodeTarget) {
         // Try Nominatim (OSM) first for precise coordinates of the subject address
@@ -213,14 +216,12 @@ serve(async (req) => {
           const key = `${line}|${zip}`;
           if (seenKeys.has(key)) continue;
 
-          // For subdivision searches, filter to only include properties that mention the subdivision
+          // Subdivision hint (soft filter)
+          let inSubdivision = false;
           if (searchType === 'subdivision' && searchParams.subdivision) {
-            const subdivisionName = searchParams.subdivision.toLowerCase();
+            const subdivisionName = String(searchParams.subdivision).toLowerCase();
             const listingText = JSON.stringify(property).toLowerCase();
-            if (!listingText.includes(subdivisionName)) {
-              console.log(`Skipping ${line} - not in ${searchParams.subdivision}`);
-              continue;
-            }
+            inSubdivision = listingText.includes(subdivisionName);
           }
 
           // Calculate distance if we have coordinates
@@ -280,7 +281,8 @@ serve(async (req) => {
               photo_urls: photoUrls,
               analysis_status: 'pending',
               _distance: distance, // Store for sorting
-              _soldDate: enrichedListingData.sold_date
+              _soldDate: enrichedListingData.sold_date,
+              _inSubdivision: typeof inSubdivision === 'boolean' ? inSubdivision : false
             };
             processedProperties.push(targetedProperty);
             seenKeys.add(key);
@@ -320,13 +322,12 @@ serve(async (req) => {
               
               if (seenKeys.has(key)) continue;
 
-              // For subdivision searches, filter to only include properties that mention the subdivision
+              // Subdivision hint (soft filter)
+              let inSubdivision2 = false;
               if (searchType === 'subdivision' && searchParams.subdivision) {
-                const subdivisionName = searchParams.subdivision.toLowerCase();
+                const subdivisionName = String(searchParams.subdivision).toLowerCase();
                 const listingText = JSON.stringify(property).toLowerCase();
-                if (!listingText.includes(subdivisionName)) {
-                  continue;
-                }
+                inSubdivision2 = listingText.includes(subdivisionName);
               }
 
               // Calculate distance
@@ -369,7 +370,8 @@ serve(async (req) => {
                   photo_urls: photoUrls,
                   analysis_status: 'pending',
                   _distance: distance,
-                  _soldDate: enrichedListingData.sold_date
+                  _soldDate: enrichedListingData.sold_date,
+                  _inSubdivision: typeof inSubdivision2 === 'boolean' ? inSubdivision2 : false
                 });
                 seenKeys.add(key);
               }
@@ -390,8 +392,13 @@ serve(async (req) => {
 
     console.log('Processed properties (photo requirement removed):', processedProperties.length);
 
-    // Sort by distance first (closest first), then by date (most recent first)
+    // Sort by subdivision match first, then distance, then date
     processedProperties.sort((a, b) => {
+      // Subdivision match priority
+      const inSubA = a._inSubdivision ? 1 : 0;
+      const inSubB = b._inSubdivision ? 1 : 0;
+      if (inSubA !== inSubB) return inSubB - inSubA;
+
       const distA = a._distance ?? 999;
       const distB = b._distance ?? 999;
       if (Math.abs(distA - distB) > 0.1) {
