@@ -219,6 +219,7 @@ serve(async (req) => {
             if (propLat && propLon) {
               distance = getDistance(subjectLat, subjectLon, propLat, propLon);
               console.log(`Distance calculated: ${distance?.toFixed(2)} miles for ${line}`);
+              if (Number.isFinite(distance) && distance > baseRadius) { continue; }
             }
           }
 
@@ -302,6 +303,7 @@ serve(async (req) => {
                 const propLon = propCoord.lon ?? propCoord.longitude;
                 if (propLat && propLon) {
                   distance = getDistance(subjectLat, subjectLon, propLat, propLon);
+                  if (Number.isFinite(distance) && distance > baseRadius) { continue; }
                 }
               }
 
