@@ -77,26 +77,48 @@ serve(async (req) => {
       soldDateMin.setDate(soldDateMin.getDate() - basePeriod);
       const soldDateMinStr = soldDateMin.toISOString().split('T')[0];
 
-      // Use properties/list-sold endpoint for multiple results
-      const apiUrl = `https://realtor16.p.rapidapi.com/properties/list-sold?city=${encodeURIComponent('Brentwood')}&state_code=TN&offset=0&limit=10&sort=sold_date&radius=${baseRadius}`;
+      // Build a location optimized for the API: prefer ZIP, else city/state from address
+      const locationForSearch = (() => {
+        if (zipFromAddress) return zipFromAddress;
+        const parts = primaryLocation.split(',').map((p: string) => p.trim()).filter(Boolean);
+        if (parts.length >= 2) {
+          const statePart = parts[parts.length - 1];
+          const cityPart = parts[parts.length - 2];
+          return `${cityPart}, ${statePart}`;
+        }
+        return primaryLocation;
+      })();
+
+      // Only request what we need (limit=25 instead of 100)
+      const apiUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr}&limit=25&radius=${baseRadius}`;
       console.log('Fetching from:', apiUrl);
 
       const listingsResponse = await fetch(apiUrl, options);
       
       if (listingsResponse.ok) {
         const listingsData = await listingsResponse.json();
-        const currentProps: any[] = listingsData?.properties || [];
+        // Normalize possible result shapes from the API
+        let currentProps: any[] = [];
+        if (Array.isArray(listingsData?.properties)) {
+          currentProps = listingsData.properties;
+        } else if (Array.isArray(listingsData?.data?.home_search?.results)) {
+          currentProps = listingsData.data.home_search.results.map((r: any) => r.property ?? r);
+        } else if (Array.isArray(listingsData?.data?.results)) {
+          currentProps = listingsData.data.results.map((r: any) => r.property ?? r);
+        }
         console.log('API Response status:', listingsData?.status);
         console.log('Properties found:', currentProps.length);
         if (currentProps.length === 0) {
-          console.log('Full API response:', JSON.stringify(listingsData).slice(0, 500));
+          console.log('Full API response:', JSON.stringify(listingsData).slice(0, 1000));
         }
 
         for (const property of currentProps) {
           const locInfo = property.location || {};
-          const addr = locInfo.address || {};
+          const addrRaw = locInfo.address || property.address || {};
+          const line = addrRaw.line ?? addrRaw.street_line ?? addrRaw.address_line ?? addrRaw.full_address ?? '';
+          const zip = addrRaw.postal_code ?? addrRaw.zip_code ?? '';
 
-          const key = `${addr.line ?? ''}|${addr.postal_code ?? ''}`;
+          const key = `${line}|${zip}`;
           if (seenKeys.has(key)) continue;
 
           // Extract photo URLs
@@ -116,10 +138,10 @@ serve(async (req) => {
           if (photoUrls.length >= 1) {
             const targetedProperty = {
               campaign_id: campaignId,
-              address: addr.line || 'Unknown Address',
-              city: addr.city || null,
-              state: addr.state_code || null,
-              zip_code: addr.postal_code || null,
+              address: line || 'Unknown Address',
+              city: (addrRaw.city ?? addrRaw.locality) || null,
+              state: (addrRaw.state_code ?? addrRaw.state) || null,
+              zip_code: (addrRaw.postal_code ?? addrRaw.zip_code) || null,
               listing_data: property,
               photo_urls: photoUrls,
               analysis_status: 'pending'
@@ -134,19 +156,31 @@ serve(async (req) => {
 
         // If we didn't get enough, try expanding radius once
         if (processedProperties.length < desiredMinimum) {
-          console.log('Not enough properties, expanding radius to 10 miles');
-          const expandedUrl = `https://realtor16.p.rapidapi.com/properties/list-sold?city=${encodeURIComponent('Brentwood')}&state_code=TN&offset=0&limit=20&sort=sold_date&radius=10`;
+          console.log('Not enough properties, expanding radius to 3 miles and 365 days');
+          const soldDateMin2 = new Date();
+          soldDateMin2.setDate(soldDateMin2.getDate() - 365);
+          const soldDateMinStr2 = soldDateMin2.toISOString().split('T')[0];
+          const expandedUrl = `https://realtor16.p.rapidapi.com/search/forsold?location=${encodeURIComponent(locationForSearch)}&sold_date_min=${soldDateMinStr2}&limit=25&radius=3`;
           
           const expandedResponse = await fetch(expandedUrl, options);
           if (expandedResponse.ok) {
             const expandedData = await expandedResponse.json();
-            const expandedProps: any[] = expandedData?.properties || [];
+            let expandedProps: any[] = [];
+            if (Array.isArray(expandedData?.properties)) {
+              expandedProps = expandedData.properties;
+            } else if (Array.isArray(expandedData?.data?.home_search?.results)) {
+              expandedProps = expandedData.data.home_search.results.map((r: any) => r.property ?? r);
+            } else if (Array.isArray(expandedData?.data?.results)) {
+              expandedProps = expandedData.data.results.map((r: any) => r.property ?? r);
+            }
             console.log('Expanded search found:', expandedProps.length);
 
             for (const property of expandedProps) {
               const locInfo = property.location || {};
-              const addr = locInfo.address || {};
-              const key = `${addr.line ?? ''}|${addr.postal_code ?? ''}`;
+              const addrRaw2 = locInfo.address || property.address || {};
+              const line2 = addrRaw2.line ?? addrRaw2.street_line ?? addrRaw2.address_line ?? addrRaw2.full_address ?? '';
+              const zip2 = addrRaw2.postal_code ?? addrRaw2.zip_code ?? '';
+              const key = `${line2}|${zip2}`;
               
               if (seenKeys.has(key)) continue;
 
@@ -163,10 +197,10 @@ serve(async (req) => {
               if (photoUrls.length >= 1) {
                 processedProperties.push({
                   campaign_id: campaignId,
-                  address: addr.line || 'Unknown Address',
-                  city: addr.city || null,
-                  state: addr.state_code || null,
-                  zip_code: addr.postal_code || null,
+                  address: line2 || 'Unknown Address',
+                  city: (addrRaw2.city ?? addrRaw2.locality) || null,
+                  state: (addrRaw2.state_code ?? addrRaw2.state) || null,
+                  zip_code: (addrRaw2.postal_code ?? addrRaw2.zip_code) || null,
                   listing_data: property,
                   photo_urls: photoUrls,
                   analysis_status: 'pending'
