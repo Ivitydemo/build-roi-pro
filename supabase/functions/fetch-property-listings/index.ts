@@ -154,11 +154,7 @@ serve(async (req) => {
 
       // Build a location optimized for the API: prefer ZIP, else city/state from address
       const locationForSearch = (() => {
-        if (rawAddress) return rawAddress;
         if (zipFromAddress) return zipFromAddress;
-        if (searchParams?.subdivisionName && searchParams?.city && searchParams?.state) {
-          return `${searchParams.subdivisionName}, ${searchParams.city}, ${searchParams.state}`;
-        }
         const parts = primaryLocation.split(',').map((p: string) => p.trim()).filter(Boolean);
         if (parts.length >= 2) {
           const statePart = parts[parts.length - 1];
