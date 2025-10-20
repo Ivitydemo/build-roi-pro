@@ -134,17 +134,7 @@ export const CampaignResults = ({ builderId, refreshTrigger }: CampaignResultsPr
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
-      // Sort by distance (closest first), with null distances at the end
-      const sortedData = (data || []).sort((a, b) => {
-        const listingA = a.listing_data as any;
-        const listingB = b.listing_data as any;
-        const distA = listingA?.distance_miles ?? 9999;
-        const distB = listingB?.distance_miles ?? 9999;
-        return distA - distB;
-      });
-      
-      setCampaignProperties(sortedData);
+      setCampaignProperties(data || []);
       setExpandedCampaign(campaignId);
     } catch (error) {
       console.error('Error loading properties:', error);
@@ -226,52 +216,8 @@ export const CampaignResults = ({ builderId, refreshTrigger }: CampaignResultsPr
                             <div className="flex items-center gap-2 mb-2">
                               <MapPin className="h-4 w-4" />
                               <span className="font-medium">{property.address}</span>
-                               {typeof property.listing_data?.distance_miles === 'number' && (
-                                 <Badge variant="secondary" className="ml-2">
-                                   {Number(property.listing_data.distance_miles).toFixed(2)} mi
-                                 </Badge>
-                               )}
                             </div>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              {property.listing_data?.sold_date && (
-                                <span className="font-medium">
-                                  Sold: {new Date(property.listing_data.sold_date).toLocaleDateString()}
-                                </span>
-                              )}
-                              {(
-                                property.listing_data?.subdivision_name ||
-                                property.listing_data?.location?.address?.subdivision ||
-                                property.listing_data?.location?.subdivision ||
-                                property.listing_data?.subdivision
-                              ) && (
-                                <Badge variant="secondary" className="font-medium">
-                                  Subdivision: {
-                                    String(
-                                      property.listing_data?.subdivision_name ||
-                                      property.listing_data?.location?.address?.subdivision ||
-                                      property.listing_data?.location?.subdivision ||
-                                      property.listing_data?.subdivision
-                                    ).trim()
-                                  }
-                                </Badge>
-                              )}
-                              {property.listing_data?.price && (
-                                <span>
-                                  ${property.listing_data.price.toLocaleString()}
-                                </span>
-                              )}
-                              {property.listing_data?.beds && property.listing_data?.baths && (
-                                <span>
-                                  {property.listing_data.beds} bed • {property.listing_data.baths} bath
-                                </span>
-                              )}
-                              {property.listing_data?.sqft && (
-                                <span>
-                                  {property.listing_data.sqft.toLocaleString()} sqft
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                               <span className="flex items-center gap-1">
                                 <Image className="h-3 w-3" />
                                 {property.photo_urls?.length || 0} photos

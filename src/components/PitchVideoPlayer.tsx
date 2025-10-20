@@ -189,15 +189,6 @@ export const PitchVideoPlayer = ({ scenes, audioUrl }: PitchVideoPlayerProps) =>
 
   const totalDuration = scenes.reduce((sum, scene) => sum + scene.duration, 0);
 
-  const handleDownloadAudio = () => {
-    const link = document.createElement('a');
-    link.href = audioUrl;
-    link.download = 'pitch-narration.mp3';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <div className="space-y-4">
       <div className="relative bg-black rounded-lg overflow-hidden">
@@ -217,7 +208,7 @@ export const PitchVideoPlayer = ({ scenes, audioUrl }: PitchVideoPlayerProps) =>
       />
 
       <div className="space-y-2">
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2">
           {!isPlaying ? (
             <button
               onClick={handlePlay}
@@ -236,12 +227,6 @@ export const PitchVideoPlayer = ({ scenes, audioUrl }: PitchVideoPlayerProps) =>
           <span className="px-4 py-2 text-sm">
             {Math.floor(currentTime / 60)}:{Math.floor(currentTime % 60).toString().padStart(2, "0")} / {Math.floor(totalDuration / 60)}:{Math.floor(totalDuration % 60).toString().padStart(2, "0")}
           </span>
-          <button
-            onClick={handleDownloadAudio}
-            className="ml-auto px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90"
-          >
-            📥 Download Audio
-          </button>
         </div>
 
         <input
