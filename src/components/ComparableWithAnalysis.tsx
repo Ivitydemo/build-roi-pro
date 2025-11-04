@@ -52,28 +52,47 @@ export const ComparableWithAnalysis = ({
         </div>
       )}
       
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <div className="font-semibold text-lg mb-1">{address}</div>
-          <div className="text-sm text-muted-foreground">
-            {distance} miles away • {sqft.toLocaleString()} sq ft
+      <div className="space-y-3 mb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="font-semibold text-lg mb-1">{address}</div>
+            <div className="text-sm text-muted-foreground">
+              {distance} miles away
+            </div>
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold">${price.toLocaleString()}</div>
-          <div className="text-sm font-semibold text-primary">${priceSqft}/sqft</div>
+        
+        {/* Price Point Achievement Box */}
+        <div className="bg-primary/5 rounded-lg p-3 border border-primary/20">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">Sale Price</div>
+              <div className="text-xl font-bold">${price.toLocaleString()}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">Square Footage</div>
+              <div className="text-xl font-bold">{sqft.toLocaleString()}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">Price Achievement</div>
+              <div className="text-2xl font-bold text-primary">${priceSqft}/sqft</div>
+            </div>
+          </div>
         </div>
       </div>
 
       {analysis && (
         <div className="space-y-3 mt-4 pt-4 border-t">
-          <div className="flex flex-wrap gap-2 mb-3">
-            <Badge className={`${qualityColor[analysis.quality]} border`}>
-              {analysis.quality} Quality
-            </Badge>
-            <Badge className={`${renovationColor[analysis.renovationStatus]} border`}>
-              {analysis.renovationStatus}
-            </Badge>
+          <div className="bg-muted/30 rounded-md p-3 mb-3">
+            <div className="text-xs font-medium text-muted-foreground mb-2">How This Price Point Was Achieved:</div>
+            <div className="flex flex-wrap gap-2">
+              <Badge className={`${qualityColor[analysis.quality]} border`}>
+                {analysis.quality} Quality
+              </Badge>
+              <Badge className={`${renovationColor[analysis.renovationStatus]} border`}>
+                {analysis.renovationStatus}
+              </Badge>
+            </div>
           </div>
 
           {analysis.renovatedAreas && analysis.renovatedAreas.length > 0 && (

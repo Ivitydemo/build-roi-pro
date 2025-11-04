@@ -572,6 +572,7 @@ export type Database = {
           analyzed_properties: number | null
           builder_id: string
           campaign_name: string
+          campaign_type: string | null
           created_at: string
           id: string
           search_parameters: Json
@@ -584,6 +585,7 @@ export type Database = {
           analyzed_properties?: number | null
           builder_id: string
           campaign_name: string
+          campaign_type?: string | null
           created_at?: string
           id?: string
           search_parameters: Json
@@ -596,6 +598,7 @@ export type Database = {
           analyzed_properties?: number | null
           builder_id?: string
           campaign_name?: string
+          campaign_type?: string | null
           created_at?: string
           id?: string
           search_parameters?: Json
