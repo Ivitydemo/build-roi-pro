@@ -114,7 +114,7 @@ const Dashboard = () => {
             <CardDescription>Generate a professional ROI analysis for your client</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button size="lg" onClick={() => navigate('/generate-report')}>
+            <Button size="lg" onClick={() => navigate('/property-campaigns')}>
               <PlusCircle className="mr-2 h-5 w-5" />
               Generate New Report
             </Button>
@@ -176,7 +176,7 @@ const Dashboard = () => {
 
         {/* Quick Links */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/packages')}>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/settings')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
@@ -186,13 +186,13 @@ const Dashboard = () => {
             </CardHeader>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/photos')}>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/property-campaigns')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Image className="h-5 w-5" />
                 Photo Library
               </CardTitle>
-              <CardDescription>Upload before/after project photos</CardDescription>
+              <CardDescription>Browse property photos from campaigns</CardDescription>
             </CardHeader>
           </Card>
 
@@ -216,13 +216,13 @@ const Dashboard = () => {
             </CardHeader>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/reports')}>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/comparables-analysis')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                View Reports
+                Comparables Analysis
               </CardTitle>
-              <CardDescription>Browse all generated proposals</CardDescription>
+              <CardDescription>Search & analyze sold comps near any property</CardDescription>
             </CardHeader>
           </Card>
 

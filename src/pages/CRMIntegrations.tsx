@@ -22,7 +22,7 @@ const CRMIntegrations = () => {
   // Load existing webhook configuration
   useEffect(() => {
     const loadIntegration = async () => {
-      if (!user) return;
+      if (!user) { setLoading(false); return; }
 
       try {
         // Get builder profile

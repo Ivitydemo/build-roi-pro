@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, ArrowLeft, Loader2, Search, Download } from 'lucide-react';
+import { Building2, ArrowLeft, Loader2, Search, Download, FileBarChart2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
@@ -630,13 +630,30 @@ const ComparablesAnalysis = () => {
                   </Button>
 
                   {selectedPropertyIds.size >= 3 && (
-                    <Button 
+                    <Button
                       onClick={exportAnalysisData}
                       variant="outline"
                       size="lg"
                     >
                       <Download className="mr-2 h-5 w-5" />
                       Export Selected
+                    </Button>
+                  )}
+
+                  {selectedPropertyIds.size >= 3 && (
+                    <Button
+                      variant="default"
+                      size="lg"
+                      className="bg-indigo-600 hover:bg-indigo-700"
+                      onClick={() => navigate('/comparables-report', {
+                        state: {
+                          propertyIds: Array.from(selectedPropertyIds),
+                          subjectAddress: subjectAddress || undefined,
+                        }
+                      })}
+                    >
+                      <FileBarChart2 className="mr-2 h-5 w-5" />
+                      Generate ROI Report
                     </Button>
                   )}
                 </div>

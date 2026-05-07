@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ const PropertyCampaigns = () => {
   const [builderId, setBuilderId] = useState<string>('');
 
   // Get builder ID from profile
-  useState(() => {
+  useEffect(() => {
     if (user) {
       import('@/integrations/supabase/client').then(({ supabase }) => {
         supabase
@@ -28,7 +28,7 @@ const PropertyCampaigns = () => {
           });
       });
     }
-  });
+  }, [user]);
 
   if (!builderId) {
     return (

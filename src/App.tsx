@@ -24,6 +24,8 @@ import BusinessPlanExport from "./pages/BusinessPlanExport";
 import PropertyCampaigns from "./pages/PropertyCampaigns";
 import PropertyAnalysis from "./pages/PropertyAnalysis";
 import ComparablesAnalysis from "./pages/ComparablesAnalysis";
+import ComparablesReport from "./pages/ComparablesReport";
+import BuilderSettings from "./pages/BuilderSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +60,8 @@ const App = () => (
           <Route path="/property-campaigns" element={<PropertyCampaigns />} />
           <Route path="/property-analysis" element={<PropertyAnalysis />} />
           <Route path="/comparables-analysis" element={<ComparablesAnalysis />} />
+          <Route path="/comparables-report" element={<ComparablesReport />} />
+          <Route path="/settings" element={<BuilderSettings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
