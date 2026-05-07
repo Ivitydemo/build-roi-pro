@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Mail, Download, ChevronDown, ChevronUp, Loader2, TrendingUp, Home, Zap, Sparkles } from 'lucide-react';
+import { ArrowLeft, Mail, Download, ChevronDown, ChevronUp, Loader2, TrendingUp, Home, Zap, Sparkles, BarChart2, Award, DollarSign, CheckCircle, Wrench, Phone, Globe, ExternalLink } from 'lucide-react';
 
 /* ══════════════════════════════════════════════
    HELPERS
@@ -189,6 +189,8 @@ const ComparablesReport = () => {
   const [partners,       setPartners]       = useState<any[]>(isDemo ? DEMO_PARTNERS : []);
   const [sqft,           setSqft]           = useState(isDemo ? 2200 : 0);
   const [sqftInput,      setSqftInput]      = useState(isDemo ? '2200' : '');
+  const [currentValue,      setCurrentValue]      = useState(isDemo ? 425000 : 0);
+  const [currentValueInput, setCurrentValueInput] = useState(isDemo ? '425000' : '');
   const [showEmail,      setShowEmail]      = useState(false);
   const [emailAddr,      setEmailAddr]      = useState('');
   const [sending,        setSending]        = useState(false);
@@ -506,7 +508,7 @@ const ComparablesReport = () => {
                                   {takeaways.length > 0 && (
                                     <div style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', border: '1px solid #fde68a', borderRadius: 10, padding: '14px 16px' }}>
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                                        <span style={{ fontSize: 14 }}>🔨</span>
+                                        <Wrench size={12} color="#b45309" />
                                         <span style={{ fontSize: 10, fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Builder Takeaways</span>
                                       </div>
                                       {takeaways.map((t: string, ti: number) => (
@@ -532,46 +534,111 @@ const ComparablesReport = () => {
           </div>
         )}
 
-        {/* ── RENOVATION UPSIDE + SQFT INPUT ── */}
+        {/* ── PROPERTY INPUTS + VALUE OPPORTUNITY ── */}
         {packages.length > 0 && (
           <div style={{ marginBottom: 24 }}>
-            {/* Sqft input row */}
-            <div style={{ background: '#fff', borderRadius: 12, padding: '14px 20px', border: '1px solid #e2e8f0', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-              <div style={{ flex: 1, minWidth: 200 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#0f172a', marginBottom: 2 }}>Subject Property Square Footage</div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>Used to calculate personalized financing estimates and after-renovation values</div>
+
+            {/* ── Inputs: sqft + current value ── */}
+            <div style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', border: '1px solid #e2e8f0', marginBottom: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+              {/* Sqft */}
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>Subject Sq Ft</div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <input type="number" value={sqftInput} onChange={e => setSqftInput(e.target.value)}
+                    placeholder="e.g. 2,200" style={{ flex: 1, padding: '7px 10px', borderRadius: 7, border: '1px solid #e2e8f0', fontSize: 13, fontWeight: 600, color: '#0f172a', outline: 'none' }} />
+                  <button onClick={() => { const v = parseInt(sqftInput); if (v > 0) setSqft(v); }}
+                    style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 7, padding: '8px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    Update
+                  </button>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <input type="number" value={sqftInput} onChange={e => setSqftInput(e.target.value)}
-                  placeholder="e.g. 2,400" style={{ width: 110, padding: '7px 11px', borderRadius: 7, border: '1px solid #e2e8f0', fontSize: 13, fontWeight: 600, color: '#0f172a', outline: 'none' }} />
-                <button onClick={() => { const v = parseInt(sqftInput); if (v > 0) setSqft(v); }}
-                  style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 7, padding: '8px 16px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                  Update
-                </button>
+              {/* Current value */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Current Home Value</div>
+                  <a href={`https://www.zillow.com/homes/${encodeURIComponent(subjectAddr || '')}_rb/`} target="_blank" rel="noreferrer"
+                    style={{ fontSize: 10, color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
+                    Look up Zestimate ↗
+                  </a>
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <input type="number" value={currentValueInput} onChange={e => setCurrentValueInput(e.target.value)}
+                    placeholder="e.g. 425,000" style={{ flex: 1, padding: '7px 10px', borderRadius: 7, border: '1px solid #e2e8f0', fontSize: 13, fontWeight: 600, color: '#0f172a', outline: 'none' }} />
+                  <button onClick={() => { const v = parseInt(currentValueInput); if (v > 0) setCurrentValue(v); }}
+                    style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 7, padding: '8px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    Update
+                  </button>
+                </div>
               </div>
-              {sqft > 0 && <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 600 }}>{sqft.toLocaleString()} sqft</span>}
             </div>
 
-            {/* Hero callout */}
-            {topEndVal > 0 && (
-              <div style={{ background: 'linear-gradient(135deg,#312e81 0%,#1e1b4b 100%)', borderRadius: 12, padding: '18px 24px', marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, border: '1px solid #3730a3' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ background: 'rgba(99,102,241,0.2)', borderRadius: 8, padding: 8 }}>
-                    <TrendingUp size={20} color="#a5b4fc" />
+            {/* ── Value Opportunity Hero ── */}
+            {topEndVal > 0 && currentValue > 0 && (() => {
+              const netGain     = topEndVal - currentValue;
+              const pctGain     = Math.round((netGain / currentValue) * 100);
+              const showOppty   = netGain > 0;
+              return (
+                <div style={{ background: 'linear-gradient(135deg,#0f172a 0%,#1e1b4b 60%,#312e81 100%)', borderRadius: 14, padding: '24px 28px', marginBottom: 10, border: '1px solid #3730a3' }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: 18 }}>
+                    Your Home's Value Opportunity
                   </div>
-                  <div>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 3 }}>Full Renovation Target Value</div>
-                    <div style={{ fontSize: 12, color: '#94a3b8' }}>{sqft.toLocaleString()} sqft × ${maxPpsf}/sqft (highest comp benchmark)</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr auto 1fr', gap: 8, alignItems: 'center' }}>
+                    {/* Current value */}
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 8 }}>Current Value</div>
+                      <div style={{ fontSize: '1.9rem', fontWeight: 900, color: '#e2e8f0', lineHeight: 1, letterSpacing: '-0.03em' }}>{fmt$(currentValue)}</div>
+                      <div style={{ fontSize: 10, color: '#475569', marginTop: 6 }}>Zillow Zestimate</div>
+                    </div>
+                    {/* Arrow */}
+                    <div style={{ textAlign: 'center', padding: '0 4px' }}>
+                      <div style={{ fontSize: 22, color: '#4f46e5', lineHeight: 1 }}>→</div>
+                      <div style={{ fontSize: 9, color: '#475569', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>renovate</div>
+                    </div>
+                    {/* After-reno */}
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 8 }}>After Renovation</div>
+                      <div style={{ fontSize: '1.9rem', fontWeight: 900, color: '#a5b4fc', lineHeight: 1, letterSpacing: '-0.03em' }}>{fmt$(topEndVal)}</div>
+                      <div style={{ fontSize: 10, color: '#4f46e5', marginTop: 6 }}>{sqft.toLocaleString()} sqft × ${maxPpsf}/sqft</div>
+                    </div>
+                    {/* Arrow */}
+                    <div style={{ textAlign: 'center', padding: '0 4px' }}>
+                      <div style={{ fontSize: 22, color: '#22c55e', lineHeight: 1 }}>=</div>
+                    </div>
+                    {/* Net upside */}
+                    <div style={{ textAlign: 'center', background: showOppty ? 'rgba(34,197,94,0.08)' : 'rgba(99,102,241,0.08)', borderRadius: 10, padding: '14px 10px', border: `1px solid ${showOppty ? 'rgba(34,197,94,0.2)' : 'rgba(99,102,241,0.2)'}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: showOppty ? '#16a34a' : '#818cf8', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 8 }}>
+                        {showOppty ? 'Net Upside' : 'Value Gain'}
+                      </div>
+                      <div style={{ fontSize: '1.9rem', fontWeight: 900, color: showOppty ? '#4ade80' : '#a5b4fc', lineHeight: 1, letterSpacing: '-0.03em' }}>
+                        {showOppty ? '+' : ''}{fmt$(netGain)}
+                      </div>
+                      {showOppty && pctGain > 0 && (
+                        <div style={{ display: 'inline-block', background: 'rgba(34,197,94,0.15)', color: '#4ade80', borderRadius: 6, padding: '3px 8px', fontSize: 11, fontWeight: 800, marginTop: 6 }}>
+                          +{pctGain}% above Zestimate
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.07)', fontSize: 10, color: '#334155', textAlign: 'center' }}>
+                    Based on top comparable sale of ${maxPpsf}/sqft · Full renovation to market ceiling
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '2.2rem', fontWeight: 900, color: '#a5b4fc', lineHeight: 1, letterSpacing: '-0.04em' }}>{fmt$(topEndVal)}</div>
-                  {avgPrice > 0 && <div style={{ fontSize: 11, color: '#6366f1', marginTop: 3 }}>+{fmt$(topEndVal - avgPrice)} above current avg</div>}
+              );
+            })()}
+
+            {/* ── Fallback if no current value entered yet ── */}
+            {topEndVal > 0 && currentValue === 0 && (
+              <div style={{ background: 'rgba(99,102,241,0.06)', borderRadius: 12, padding: '14px 20px', marginBottom: 10, border: '1px dashed #c7d2fe', textAlign: 'center' }}>
+                <div style={{ fontSize: 13, color: '#6366f1', fontWeight: 600, marginBottom: 4 }}>
+                  ↑ Enter the current home value above to see the full value opportunity
+                </div>
+                <div style={{ fontSize: 11, color: '#94a3b8' }}>
+                  Get the Zestimate from zillow.com and enter it to show the homeowner their exact upside
                 </div>
               </div>
             )}
 
-            {/* HELOC table */}
+            {/* ── HELOC table ── */}
             <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
               <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Zap size={15} color="#6366f1" />
@@ -582,21 +649,25 @@ const ComparablesReport = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 580 }}>
                   <thead>
                     <tr style={{ background: '#fafafa', borderBottom: '1px solid #f1f5f9' }}>
-                      {['Package', 'Scope', 'Loan Amount', 'IO / mo', '15-yr / mo', 'Value Add', 'After-Reno Value'].map((h, i) => (
-                        <th key={i} style={{ padding: '9px 16px', textAlign: i === 0 ? 'left' : 'right', fontSize: 9, fontWeight: 700, color: i === 6 ? '#4f46e5' : '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.09em', whiteSpace: 'nowrap' }}>{h}</th>
+                      {['Package', 'Scope', 'Renovation Cost', 'IO / mo', '15-yr / mo', 'Value Gain vs Today', 'After-Reno Value'].map((h, i) => (
+                        <th key={i} style={{ padding: '9px 16px', textAlign: i === 0 ? 'left' : 'right', fontSize: 9, fontWeight: 700, color: i === 5 ? '#059669' : i === 6 ? '#4f46e5' : '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.09em', whiteSpace: 'nowrap' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {packages.slice(0, 4).map((pkg, i) => {
-                      const idx = Math.min(i, GAIN_FRACTIONS.length - 1);
-                      const loanAmt = pkg.price_per_sqft && sqft > 0 ? Math.round(pkg.price_per_sqft * sqft) : pkg.base_price ?? 0;
-                      const valueAdd = avgPrice > 0 && topEndVal > avgPrice ? Math.round((topEndVal - avgPrice) * GAIN_FRACTIONS[idx]) : 0;
-                      const isTop = idx === GAIN_FRACTIONS.length - 1;
+                      const idx      = Math.min(i, GAIN_FRACTIONS.length - 1);
+                      const loanAmt  = pkg.price_per_sqft && sqft > 0 ? Math.round(pkg.price_per_sqft * sqft) : pkg.base_price ?? 0;
+                      const isTop    = idx === GAIN_FRACTIONS.length - 1;
+                      // After-reno value anchored to top comp benchmark, scaled by tier
+                      const baseRef  = currentValue > 0 ? currentValue : avgPrice;
                       const afterReno = sqft > 0 && maxPpsf > 0
-                        ? isTop ? Math.round(topEndVal / 1000) * 1000
-                        : loanAmt > 0 && valueAdd > 0 ? Math.round((avgPrice + valueAdd) / 1000) * 1000 : null
+                        ? isTop
+                          ? Math.round(topEndVal / 1000) * 1000
+                          : Math.round((baseRef + (topEndVal - baseRef) * GAIN_FRACTIONS[idx]) / 1000) * 1000
                         : null;
+                      const valueGain = afterReno && currentValue > 0 ? afterReno - currentValue
+                        : afterReno && avgPrice > 0 ? afterReno - avgPrice : 0;
                       return (
                         <tr key={pkg.id} style={{ background: isTop ? '#fafbff' : 'transparent', borderBottom: i < packages.length - 1 ? '1px solid #f8fafc' : 'none' }}>
                           <td style={{ padding: '13px 16px' }}>
@@ -611,7 +682,10 @@ const ComparablesReport = () => {
                           <td style={{ padding: '13px 16px', textAlign: 'right', fontSize: 13, fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap' }}>{loanAmt > 0 ? fmt$(loanAmt) : '—'}</td>
                           <td style={{ padding: '13px 16px', textAlign: 'right', fontSize: 12, color: '#64748b', whiteSpace: 'nowrap' }}>{loanAmt > 0 ? fmt$(helocIO(loanAmt)) : '—'}</td>
                           <td style={{ padding: '13px 16px', textAlign: 'right', fontSize: 12, color: '#64748b', whiteSpace: 'nowrap' }}>{loanAmt > 0 ? fmt$(heloc15yr(loanAmt)) : '—'}</td>
-                          <td style={{ padding: '13px 16px', textAlign: 'right', fontSize: 12, fontWeight: 600, color: valueAdd > 0 ? '#059669' : '#94a3b8', whiteSpace: 'nowrap' }}>{valueAdd > 0 ? `+${fmt$(valueAdd)}` : '—'}</td>
+                          <td style={{ padding: '13px 16px', textAlign: 'right', fontSize: 12, fontWeight: 600, color: valueGain > 0 ? '#059669' : '#94a3b8', whiteSpace: 'nowrap' }}>
+                            {valueGain > 0 ? `+${fmt$(valueGain)}` : '—'}
+                            {valueGain > 0 && currentValue === 0 && <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 1 }}>vs avg</div>}
+                          </td>
                           <td style={{ padding: '13px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                             <span style={{ fontSize: isTop ? 15 : 13, fontWeight: 800, color: isTop ? '#4f46e5' : '#374151' }}>{afterReno ? fmt$(afterReno) : '—'}</span>
                             {isTop && afterReno && sqft > 0 && (
@@ -630,20 +704,23 @@ const ComparablesReport = () => {
 
         {/* ── MARKET INTELLIGENCE ── */}
         {properties.length > 0 && (() => {
-          const intel: { icon: string; text: string }[] = [];
-          if (ppsfGap > 20) intel.push({ icon: '📊', text: `$${ppsfGap}/sqft gap between lowest and highest comp — renovation quality is directly rewarded in this market` });
-          if (maxPpsf > 0 && avgPpsf > 0) intel.push({ icon: '🏆', text: `Top comps are trading at $${maxPpsf}/sqft vs the market average of $${avgPpsf}/sqft` });
-          if (topEndVal > 0 && avgPrice > 0) intel.push({ icon: '💰', text: `Full renovation upside: ${fmt$(topEndVal - avgPrice)} above current market average` });
-          if (properties.length >= 3) intel.push({ icon: '✅', text: `${properties.length} sold comps analyzed — sufficient data to support pricing with confidence` });
+          const intel: { Icon: React.ElementType; color: string; bg: string; text: string }[] = [];
+          if (ppsfGap > 20) intel.push({ Icon: BarChart2, color: '#6366f1', bg: '#eef2ff', text: `$${ppsfGap}/sqft gap between lowest and highest comp — renovation quality is directly rewarded in this market` });
+          if (maxPpsf > 0 && avgPpsf > 0) intel.push({ Icon: Award, color: '#0284c7', bg: '#e0f2fe', text: `Top comps trading at $${maxPpsf}/sqft vs. the market average of $${avgPpsf}/sqft` });
+          if (topEndVal > 0 && currentValue > 0) intel.push({ Icon: TrendingUp, color: '#059669', bg: '#dcfce7', text: `Full renovation upside: ${fmt$(topEndVal - currentValue)} above current Zestimate (${Math.round(((topEndVal - currentValue) / currentValue) * 100)}% gain)` });
+          else if (topEndVal > 0 && avgPrice > 0) intel.push({ Icon: TrendingUp, color: '#059669', bg: '#dcfce7', text: `Full renovation upside: ${fmt$(topEndVal - avgPrice)} above current market average` });
+          if (properties.length >= 3) intel.push({ Icon: CheckCircle, color: '#0f172a', bg: '#f1f5f9', text: `${properties.length} sold comps analyzed — sufficient data to support pricing with confidence` });
           if (intel.length === 0) return null;
           return (
             <div style={{ background: '#fff', borderRadius: 12, padding: '18px 20px', marginBottom: 24, border: '1px solid #e2e8f0' }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 }}>Market Intelligence</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {intel.map((item, ii) => (
-                  <div key={ii} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: 15, flexShrink: 0, lineHeight: 1.4 }}>{item.icon}</span>
-                    <span style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>{item.text}</span>
+                  <div key={ii} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    <div style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 7, background: item.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
+                      <item.Icon size={14} color={item.color} />
+                    </div>
+                    <span style={{ fontSize: 13, color: '#374151', lineHeight: 1.6, paddingTop: 4 }}>{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -661,10 +738,10 @@ const ComparablesReport = () => {
                 <div key={p.id ?? i} style={{ border: '1px solid #e2e8f0', borderRadius: 9, padding: '12px 14px' }}>
                   <div style={{ fontSize: 9, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>{p.role}</div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>{p.name}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {p.phone && <span style={{ fontSize: 11, color: '#64748b' }}>📞 {p.phone}</span>}
-                    {p.email && <span style={{ fontSize: 11, color: '#64748b' }}>✉ {p.email}</span>}
-                    {p.website && <a href={p.website.startsWith('http') ? p.website : `https://${p.website}`} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: '#6366f1', textDecoration: 'none' }}>🌐 {p.website.replace(/^https?:\/\/(www\.)?/, '')}</a>}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {p.phone && <span style={{ fontSize: 11, color: '#64748b', display: 'flex', alignItems: 'center', gap: 5 }}><Phone size={10} color="#94a3b8" /> {p.phone}</span>}
+                    {p.email && <span style={{ fontSize: 11, color: '#64748b', display: 'flex', alignItems: 'center', gap: 5 }}><Mail size={10} color="#94a3b8" /> {p.email}</span>}
+                    {p.website && <a href={p.website.startsWith('http') ? p.website : `https://${p.website}`} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: '#6366f1', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5 }}><Globe size={10} color="#6366f1" /> {p.website.replace(/^https?:\/\/(www\.)?/, '')}</a>}
                   </div>
                 </div>
               ))}
