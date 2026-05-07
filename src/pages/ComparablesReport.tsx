@@ -24,7 +24,11 @@ const extractBullets = (text: string, heading: string): string[] => {
   return chunk
     // Split on: newlines, sentence boundaries, or " - " separators (like " - HIGH PRIORITY:")
     .split(/\n|\r|(?<=[.!?])\s+(?=[A-Z–-])|\s+[-–]\s+(?=[A-Z])/)
-    .map(l => stripMd(l.replace(/^[-–•*\d.)\s]+/, '').trim()))
+    .map(l => {
+      const clean = stripMd(l.replace(/^[-–•*\d.)\s]+/, '').trim());
+      // Strip "HIGH PRIORITY:" / "MEDIUM PRIORITY:" / "LOW PRIORITY:" prefixes — noisy in a curated list
+      return clean.replace(/^(HIGH|MEDIUM|LOW)\s+PRIORITY:\s*/i, '').trim();
+    })
     .filter(l => l.length > 15 && l.length < 300 && !/^builder\s+takeaways/i.test(l) && !l.match(/^[A-Za-z\s]+:$/) )
     .slice(0, 5);
 };
@@ -36,9 +40,11 @@ const getPropMetrics = (prop: any) => {
   const sqft  = Number(ld.sqft ?? ld.square_feet ?? ld.squareFeet ?? ld.living_area ?? desc.sqft ?? desc.square_feet ?? 0);
   const ppsf  = sqft > 0 ? Math.round(price / sqft) : 0;
   const beds  = ld.beds ?? ld.bedrooms ?? desc.beds ?? desc.bed_count ?? null;
-  const bf    = desc.baths_full ?? desc.baths_consolidated ?? 0;
-  const bh    = desc.baths_half ?? 0;
-  const baths = ld.baths ?? ld.bathrooms ?? (bf > 0 ? bf + (bh > 0 ? 0.5 : 0) : null) ?? desc.baths ?? null;
+  const bf    = Number(desc.baths_full ?? desc.baths_consolidated ?? 0);
+  const bh    = Number(desc.baths_half ?? 0);
+  // Sanity-cap: Realtor API sometimes returns nonsense (e.g. 20 baths); clamp to ≤10
+  const rawBaths = ld.baths ?? ld.bathrooms ?? (bf > 0 ? bf + (bh > 0 ? 0.5 : 0) : null) ?? desc.baths ?? null;
+  const baths = rawBaths != null && Number(rawBaths) <= 10 ? rawBaths : (bf > 0 && bf <= 10 ? bf + (bh > 0 ? 0.5 : 0) : null);
   const sold  = ld.sold_date ?? ld.soldDate ?? null;
   return { price, sqft, ppsf, beds, baths, sold };
 };
@@ -344,7 +350,16 @@ const ComparablesReport = () => {
               <span style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Comparable Sales</span>
               <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 4 }}>sorted by $/sqft</span>
             </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+              <colgroup>
+                <col style={{ width: '34%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '13%' }} />
+                <col style={{ width: '15%' }} />
+              </colgroup>
               <thead>
                 <tr style={{ background: '#fafafa' }}>
                   {['Address', 'Sold', 'Beds / Baths', 'Sale Price', '$/sqft', ''].map((h, i) => (
@@ -420,7 +435,7 @@ const ComparablesReport = () => {
                       {/* ── Expanded panel ── */}
                       {isOpen && (
                         <tr key={`${prop.id}-exp`}>
-                          <td colSpan={6} style={{ background: '#fafbff', borderBottom: '1px solid #f1f5f9', padding: '0 16px 20px' }}>
+                          <td colSpan={6} style={{ background: '#fafbff', borderBottom: '1px solid #f1f5f9', padding: '0 16px 20px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
 
                             {/* Photos */}
                             {photos.length > 0 && (
@@ -497,7 +512,7 @@ const ComparablesReport = () => {
                                       {takeaways.map((t: string, ti: number) => (
                                         <div key={ti} style={{ display: 'flex', gap: 9, fontSize: 12.5, color: '#78350f', marginBottom: ti < takeaways.length - 1 ? 8 : 0, lineHeight: 1.55 }}>
                                           <span style={{ color: '#d97706', flexShrink: 0, fontWeight: 700, marginTop: 1 }}>→</span>
-                                          <span>{t}</span>
+                                          <span style={{ wordBreak: 'break-word', overflowWrap: 'break-word', minWidth: 0 }}>{t}</span>
                                         </div>
                                       ))}
                                     </div>
@@ -513,6 +528,7 @@ const ComparablesReport = () => {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         )}
 
